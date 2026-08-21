@@ -333,7 +333,6 @@ import type {
   DashboardStats,
   TrendDataPoint,
   ModelStat,
-  UserUsageTrendPoint,
   UserSpendingRankingItem
 } from '@/types'
 import AppLayout from '@/components/layout/AppLayout.vue'
@@ -412,17 +411,6 @@ const granularityOptions = computed(() => [
   { value: 'day', label: t('admin.dashboard.day') },
   { value: 'hour', label: t('admin.dashboard.hour') }
 ])
-
-// Dark mode detection
-const isDarkMode = computed(() => {
-  return document.documentElement.classList.contains('dark')
-})
-
-// Chart colors
-const chartColors = computed(() => ({
-  text: isDarkMode.value ? '#e5e7eb' : '#374151',
-  grid: isDarkMode.value ? '#374151' : '#e5e7eb'
-}))
 
 // Format helpers
 const formatTokens = (value: number | undefined): string => {
