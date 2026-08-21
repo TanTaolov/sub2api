@@ -101,7 +101,7 @@ export default {
         platformType: '平台/类型',
         platform: '平台',
         type: '类型',
-        capacity: '容量',
+        capacity: '并发',
         notes: '备注',
         priority: '优先级',
         billingRateMultiplier: '账号倍率',

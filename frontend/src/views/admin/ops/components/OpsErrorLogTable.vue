@@ -95,8 +95,8 @@
           <span
             v-if="row.account_id"
             class="text-sm text-gray-900 dark:text-white"
-            :title="t('admin.ops.errorLog.accountId') + ' ' + row.account_id"
-          >{{ row.account_name || '#' + row.account_id }}</span>
+            :title="(row.account_name ? row.account_name + ' · ' : '') + t('admin.ops.errorLog.accountId') + ' ' + row.account_id"
+          >{{ truncateMiddle(row.account_name || '#' + row.account_id) }}</span>
           <span v-else class="text-sm text-gray-400 dark:text-gray-500">-</span>
         </template>
 
@@ -189,6 +189,7 @@ import IpGeoBatchToolbar from '@/components/common/IpGeoBatchToolbar.vue'
 import type { OpsErrorLog } from '@/api/admin/ops'
 import type { Column } from '@/components/common/types'
 import { getSeverityClass, formatDateTime } from '../utils/opsFormatters'
+import { truncateMiddle } from '@/utils/format'
 import { mapErrorCategory } from '@/utils/errorCategory'
 import { mapErrorSortKey, statusCodeBadgeClass } from '@/utils/errorBadges'
 

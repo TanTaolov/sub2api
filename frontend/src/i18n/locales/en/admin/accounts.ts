@@ -190,7 +190,7 @@ export default {
         platformType: 'Platform/Type',
         platform: 'Platform',
         type: 'Type',
-        capacity: 'Capacity',
+        capacity: 'Concurrency',
         notes: 'Notes',
         priority: 'Priority',
         billingRateMultiplier: 'Billing Rate',

@@ -364,3 +364,22 @@ export function formatRelativeWithDateTime(date: string | Date | null | undefine
 
   return `${relativeTime} · ${dateTime}`
 }
+
+/**
+ * 将过长的字符串从中间省略，保留首尾部分
+ * @param text 原始字符串
+ * @param maxLength 最大显示长度（含省略号），默认 24
+ * @returns 省略后的字符串，如 "abcdefghij...uvwxyz"；未超长时原样返回
+ */
+export function truncateMiddle(text: string, maxLength: number = 24): string {
+  const chars = Array.from(text)
+  if (chars.length <= maxLength) return text
+
+  const ellipsis = '…'
+  if (maxLength <= ellipsis.length) return ellipsis
+
+  const budget = maxLength - ellipsis.length
+  const head = Math.ceil(budget * 0.6)
+  const tail = budget - head
+  return chars.slice(0, head).join('') + ellipsis + chars.slice(chars.length - tail).join('')
+}
