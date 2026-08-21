@@ -315,25 +315,6 @@
             />
             <TokenUsageTrend :trend-data="trendData" :loading="chartsLoading" />
           </div>
-
-          <!-- User Usage Trend (Full Width) -->
-          <div class="card p-4">
-            <h3 class="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
-              {{ t('admin.dashboard.recentUsage') }} (Top 12)
-            </h3>
-            <div class="h-64">
-              <div v-if="userTrendLoading" class="flex h-full items-center justify-center">
-                <LoadingSpinner size="md" />
-              </div>
-              <Line v-else-if="userTrendChartData" :data="userTrendChartData" :options="lineOptions" />
-              <div
-                v-else
-                class="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400"
-              >
-                {{ t('admin.dashboard.noDataAvailable') }}
-              </div>
-            </div>
-          </div>
         </div>
       </template>
     </div>
