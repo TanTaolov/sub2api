@@ -254,7 +254,11 @@ func (h *ConcurrencyHelper) AcquireOpenAIWSIngressLease(ctx context.Context, api
 // TryAcquireAccountSlot 尝试立即获取账号并发槽位。
 // 返回值: (releaseFunc, acquired, error)
 func (h *ConcurrencyHelper) TryAcquireAccountSlot(ctx context.Context, accountID int64, maxConcurrency int) (func(), bool, error) {
-	result, err := h.concurrencyService.AcquireAccountSlot(ctx, accountID, maxConcurrency)
+	return h.TryAcquireAccountSlotForProxy(ctx, accountID, maxConcurrency, nil)
+}
+
+func (h *ConcurrencyHelper) TryAcquireAccountSlotForProxy(ctx context.Context, accountID int64, maxConcurrency int, proxyID *int64) (func(), bool, error) {
+	result, err := h.concurrencyService.AcquireAccountSlotForProxy(ctx, accountID, maxConcurrency, proxyID)
 	if err != nil {
 		return nil, false, err
 	}
@@ -359,6 +363,10 @@ func (h *ConcurrencyHelper) waitForSlotWithPing(c *gin.Context, slotType string,
 
 // waitForSlotWithPingTimeout waits for a concurrency slot with a custom timeout.
 func (h *ConcurrencyHelper) waitForSlotWithPingTimeout(c *gin.Context, slotType string, id int64, maxConcurrency int, timeout time.Duration, isStream bool, streamStarted *bool, tryImmediate bool) (func(), error) {
+	return h.waitForSlotWithPingTimeoutForProxy(c, slotType, id, maxConcurrency, nil, timeout, isStream, streamStarted, tryImmediate)
+}
+
+func (h *ConcurrencyHelper) waitForSlotWithPingTimeoutForProxy(c *gin.Context, slotType string, id int64, maxConcurrency int, proxyID *int64, timeout time.Duration, isStream bool, streamStarted *bool, tryImmediate bool) (func(), error) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), timeout)
 	defer cancel()
 
@@ -366,7 +374,7 @@ func (h *ConcurrencyHelper) waitForSlotWithPingTimeout(c *gin.Context, slotType 
 		if slotType == "user" {
 			return h.concurrencyService.AcquireUserSlot(ctx, id, maxConcurrency)
 		}
-		return h.concurrencyService.AcquireAccountSlot(ctx, id, maxConcurrency)
+		return h.concurrencyService.AcquireAccountSlotForProxy(ctx, id, maxConcurrency, proxyID)
 	}
 
 	if tryImmediate {
@@ -448,7 +456,11 @@ func (h *ConcurrencyHelper) waitForSlotWithPingTimeout(c *gin.Context, slotType 
 
 // AcquireAccountSlotWithWaitTimeout acquires an account slot with a custom timeout (keeps SSE ping).
 func (h *ConcurrencyHelper) AcquireAccountSlotWithWaitTimeout(c *gin.Context, accountID int64, maxConcurrency int, timeout time.Duration, isStream bool, streamStarted *bool) (func(), error) {
-	return h.waitForSlotWithPingTimeout(c, "account", accountID, maxConcurrency, timeout, isStream, streamStarted, true)
+	return h.AcquireAccountSlotWithWaitTimeoutForProxy(c, accountID, maxConcurrency, nil, timeout, isStream, streamStarted)
+}
+
+func (h *ConcurrencyHelper) AcquireAccountSlotWithWaitTimeoutForProxy(c *gin.Context, accountID int64, maxConcurrency int, proxyID *int64, timeout time.Duration, isStream bool, streamStarted *bool) (func(), error) {
+	return h.waitForSlotWithPingTimeoutForProxy(c, "account", accountID, maxConcurrency, proxyID, timeout, isStream, streamStarted, true)
 }
 
 // nextBackoff 计算下一次退避时间

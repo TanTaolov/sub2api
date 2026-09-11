@@ -291,13 +291,17 @@
               <span
                 v-for="entry in proxyConcurrencyEntries(row)"
                 :key="`${row.id}-${entry.proxyId}`"
-                class="inline-flex max-w-full items-center gap-1 rounded-md bg-gray-100 px-1.5 py-px text-[10px] font-medium leading-tight text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                :title="entry.name"
+                :class="[
+                  'inline-flex max-w-full items-center gap-1 rounded-md px-1.5 py-px text-[10px] font-medium leading-tight',
+                  proxyConcurrencyBadgeClass(entry)
+                ]"
+                :title="`${entry.name}: ${entry.currentConcurrency} / ${entry.concurrency}`"
               >
+                <Icon name="server" size="xs" class="shrink-0" aria-hidden="true" />
                 <span class="min-w-0 max-w-40 truncate">{{ entry.name }}</span>
+                <span class="shrink-0 font-mono tabular-nums">{{ entry.currentConcurrency }}</span>
                 <span class="shrink-0 text-gray-400 dark:text-gray-500">/</span>
                 <span class="shrink-0 font-mono tabular-nums">{{ entry.concurrency }}</span>
-                <span class="shrink-0 text-gray-400 dark:text-gray-500">{{ t('admin.accounts.columns.proxyConcurrencyUnit') }}</span>
               </span>
             </div>
             <span v-else class="text-gray-400 dark:text-dark-500">-</span>
@@ -1400,6 +1404,7 @@ const shouldReplaceAutoRefreshRow = (current: Account, next: Account) => {
   return (
     current.updated_at !== next.updated_at ||
     current.current_concurrency !== next.current_concurrency ||
+    JSON.stringify(current.proxy_current_concurrency ?? {}) !== JSON.stringify(next.proxy_current_concurrency ?? {}) ||
     current.current_window_cost !== next.current_window_cost ||
     current.active_sessions !== next.active_sessions ||
     current.schedulable !== next.schedulable ||
@@ -2195,6 +2200,7 @@ const accountMatchesCurrentFilters = (account: Account) => {
 const mergeRuntimeFields = (oldAccount: Account, updatedAccount: Account): Account => ({
   ...updatedAccount,
   current_concurrency: updatedAccount.current_concurrency ?? oldAccount.current_concurrency,
+  proxy_current_concurrency: updatedAccount.proxy_current_concurrency ?? oldAccount.proxy_current_concurrency,
   current_window_cost: updatedAccount.current_window_cost ?? oldAccount.current_window_cost,
   active_sessions: updatedAccount.active_sessions ?? oldAccount.active_sessions
 })
@@ -2506,12 +2512,28 @@ const isExpired = (value: number | null) => {
 type ProxyConcurrencyDisplayEntry = {
   proxyId: number
   name: string
+  currentConcurrency: number
   concurrency: number
 }
 
 const proxyName = (proxyId: number): string => {
   const proxy = proxies.value.find((item) => item.id === proxyId)
   return proxy?.name ?? `#${proxyId}`
+}
+
+const proxyCurrentConcurrency = (account: Account, proxyId: number, fallback = 0): number => {
+  const current = Number(account.proxy_current_concurrency?.[String(proxyId)] ?? fallback)
+  return Number.isFinite(current) && current > 0 ? Math.trunc(current) : 0
+}
+
+const proxyConcurrencyBadgeClass = (entry: ProxyConcurrencyDisplayEntry): string => {
+  if (entry.currentConcurrency >= entry.concurrency) {
+    return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+  }
+  if (entry.currentConcurrency > 0) {
+    return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+  }
+  return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
 }
 
 const proxyConcurrencyEntries = (account: Account): ProxyConcurrencyDisplayEntry[] => {
@@ -2531,7 +2553,12 @@ const proxyConcurrencyEntries = (account: Account): ProxyConcurrencyDisplayEntry
         return []
       }
       seenProxyIds.add(proxyId)
-      return [{ proxyId, name: proxyName(proxyId), concurrency }]
+      return [{
+        proxyId,
+        name: proxyName(proxyId),
+        currentConcurrency: proxyCurrentConcurrency(account, proxyId),
+        concurrency
+      }]
     })
   }
 
@@ -2539,6 +2566,7 @@ const proxyConcurrencyEntries = (account: Account): ProxyConcurrencyDisplayEntry
   return [{
     proxyId: account.proxy.id,
     name: account.proxy.name,
+    currentConcurrency: proxyCurrentConcurrency(account, account.proxy.id, account.current_concurrency ?? 0),
     concurrency: account.concurrency
   }]
 }

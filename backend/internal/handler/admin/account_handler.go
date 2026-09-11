@@ -192,10 +192,11 @@ type CheckMixedChannelRequest struct {
 // AccountWithConcurrency extends Account with real-time concurrency info
 type AccountWithConcurrency struct {
 	*dto.Account
-	simpleMode         bool                         `json:"-"`
-	CurrentConcurrency int                          `json:"current_concurrency"`
-	SchedulerScore     *AccountSchedulerScore       `json:"scheduler_score,omitempty"`
-	SchedulerScores    []AccountSchedulerGroupScore `json:"scheduler_scores,omitempty"`
+	simpleMode              bool                         `json:"-"`
+	CurrentConcurrency      int                          `json:"current_concurrency"`
+	ProxyCurrentConcurrency map[int64]int                `json:"proxy_current_concurrency,omitempty"`
+	SchedulerScore          *AccountSchedulerScore       `json:"scheduler_score,omitempty"`
+	SchedulerScores         []AccountSchedulerGroupScore `json:"scheduler_scores,omitempty"`
 	// 以下字段仅对 Anthropic OAuth/SetupToken 账号有效，且仅在启用相应功能时返回
 	CurrentWindowCost *float64 `json:"current_window_cost,omitempty"` // 当前窗口费用
 	ActiveSessions    *int     `json:"active_sessions,omitempty"`     // 当前活跃会话数
@@ -207,12 +208,13 @@ type AccountWithConcurrency struct {
 // so groups/account_groups never appear in the list payload.
 type AccountListItemWithConcurrency struct {
 	*dto.AccountListItem
-	CurrentConcurrency int                          `json:"current_concurrency"`
-	SchedulerScore     *AccountSchedulerScore       `json:"scheduler_score,omitempty"`
-	SchedulerScores    []AccountSchedulerGroupScore `json:"scheduler_scores,omitempty"`
-	CurrentWindowCost  *float64                     `json:"current_window_cost,omitempty"`
-	ActiveSessions     *int                         `json:"active_sessions,omitempty"`
-	CurrentRPM         *int                         `json:"current_rpm,omitempty"`
+	CurrentConcurrency      int                          `json:"current_concurrency"`
+	ProxyCurrentConcurrency map[int64]int                `json:"proxy_current_concurrency,omitempty"`
+	SchedulerScore          *AccountSchedulerScore       `json:"scheduler_score,omitempty"`
+	SchedulerScores         []AccountSchedulerGroupScore `json:"scheduler_scores,omitempty"`
+	CurrentWindowCost       *float64                     `json:"current_window_cost,omitempty"`
+	ActiveSessions          *int                         `json:"active_sessions,omitempty"`
+	CurrentRPM              *int                         `json:"current_rpm,omitempty"`
 }
 
 type simpleModeGroupReference struct {
@@ -354,6 +356,41 @@ func (h *AccountHandler) accountListResponseFromService(account *service.Account
 	return out
 }
 
+func accountProxyConcurrencyKeys(account *service.Account) []service.AccountProxyConcurrencyKey {
+	if account == nil {
+		return nil
+	}
+	pool := account.ProxyPool()
+	if len(pool) > 0 {
+		keys := make([]service.AccountProxyConcurrencyKey, 0, len(pool))
+		seen := make(map[int64]struct{}, len(pool))
+		for _, entry := range pool {
+			if _, exists := seen[entry.ProxyID]; exists {
+				continue
+			}
+			seen[entry.ProxyID] = struct{}{}
+			keys = append(keys, service.AccountProxyConcurrencyKey{AccountID: account.ID, ProxyID: entry.ProxyID})
+		}
+		return keys
+	}
+	if account.ProxyID == nil || *account.ProxyID <= 0 {
+		return nil
+	}
+	return []service.AccountProxyConcurrencyKey{{AccountID: account.ID, ProxyID: *account.ProxyID}}
+}
+
+func proxyCurrentConcurrencyForAccount(account *service.Account, counts map[service.AccountProxyConcurrencyKey]int) map[int64]int {
+	keys := accountProxyConcurrencyKeys(account)
+	if len(keys) == 0 {
+		return nil
+	}
+	result := make(map[int64]int, len(keys))
+	for _, key := range keys {
+		result[key.ProxyID] = counts[key]
+	}
+	return result
+}
+
 func (h *AccountHandler) isSimpleMode() bool {
 	return h != nil && h.cfg != nil && h.cfg.RunMode == config.RunModeSimple
 }
@@ -371,6 +408,10 @@ func (h *AccountHandler) buildAccountResponseWithRuntime(ctx context.Context, ac
 	if h.concurrencyService != nil {
 		if counts, err := h.concurrencyService.GetAccountConcurrencyBatch(ctx, []int64{account.ID}); err == nil {
 			item.CurrentConcurrency = counts[account.ID]
+		}
+		proxyKeys := accountProxyConcurrencyKeys(account)
+		if counts, err := h.concurrencyService.GetAccountProxyConcurrencyBatch(ctx, proxyKeys); err == nil {
+			item.ProxyCurrentConcurrency = proxyCurrentConcurrencyForAccount(account, counts)
 		}
 	}
 
@@ -692,6 +733,7 @@ func (h *AccountHandler) List(c *gin.Context) {
 	}
 
 	concurrencyCounts := make(map[int64]int)
+	proxyConcurrencyCounts := make(map[service.AccountProxyConcurrencyKey]int)
 	var windowCosts map[int64]float64
 	var activeSessions map[int64]int
 	var rpmCounts map[int64]int
@@ -714,6 +756,13 @@ func (h *AccountHandler) List(c *gin.Context) {
 	if h.concurrencyService != nil {
 		if cc, ccErr := h.concurrencyService.GetAccountConcurrencyBatch(c.Request.Context(), accountIDs); ccErr == nil && cc != nil {
 			concurrencyCounts = cc
+		}
+		proxyKeys := make([]service.AccountProxyConcurrencyKey, 0)
+		for i := range accounts {
+			proxyKeys = append(proxyKeys, accountProxyConcurrencyKeys(&accounts[i])...)
+		}
+		if cc, ccErr := h.concurrencyService.GetAccountProxyConcurrencyBatch(c.Request.Context(), proxyKeys); ccErr == nil && cc != nil {
+			proxyConcurrencyCounts = cc
 		}
 	}
 
@@ -794,11 +843,12 @@ func (h *AccountHandler) List(c *gin.Context) {
 			}
 		}
 		item := AccountWithConcurrency{
-			Account:            accountResponse,
-			simpleMode:         h.isSimpleMode(),
-			CurrentConcurrency: concurrencyCounts[acc.ID],
-			SchedulerScore:     schedulerScores[acc.ID],
-			SchedulerScores:    schedulerGroupScores[acc.ID],
+			Account:                 accountResponse,
+			simpleMode:              h.isSimpleMode(),
+			CurrentConcurrency:      concurrencyCounts[acc.ID],
+			ProxyCurrentConcurrency: proxyCurrentConcurrencyForAccount(acc, proxyConcurrencyCounts),
+			SchedulerScore:          schedulerScores[acc.ID],
+			SchedulerScores:         schedulerGroupScores[acc.ID],
 		}
 
 		// 添加窗口费用（仅当启用时）
@@ -832,13 +882,14 @@ func (h *AccountHandler) List(c *gin.Context) {
 		for i := range result {
 			item := result[i]
 			compact[i] = AccountListItemWithConcurrency{
-				AccountListItem:    dto.AccountListItemFromAccount(item.Account),
-				CurrentConcurrency: item.CurrentConcurrency,
-				SchedulerScore:     item.SchedulerScore,
-				SchedulerScores:    item.SchedulerScores,
-				CurrentWindowCost:  item.CurrentWindowCost,
-				ActiveSessions:     item.ActiveSessions,
-				CurrentRPM:         item.CurrentRPM,
+				AccountListItem:         dto.AccountListItemFromAccount(item.Account),
+				CurrentConcurrency:      item.CurrentConcurrency,
+				ProxyCurrentConcurrency: item.ProxyCurrentConcurrency,
+				SchedulerScore:          item.SchedulerScore,
+				SchedulerScores:         item.SchedulerScores,
+				CurrentWindowCost:       item.CurrentWindowCost,
+				ActiveSessions:          item.ActiveSessions,
+				CurrentRPM:              item.CurrentRPM,
 			}
 		}
 		etag := buildAccountsListETag(compact, total, page, pageSize, platform, accountType, status, search, true)

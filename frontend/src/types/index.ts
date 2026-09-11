@@ -1199,6 +1199,7 @@ export interface Account {
   concurrency: number
   load_factor?: number | null
   current_concurrency?: number // Real-time concurrency count from Redis
+  proxy_current_concurrency?: Record<string, number> // Real-time concurrency by proxy ID
   scheduler_score?: {
     base_score: number
     sticky_score?: number

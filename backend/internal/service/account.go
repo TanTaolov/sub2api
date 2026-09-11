@@ -148,6 +148,14 @@ type Account struct {
 	headerOverrideCacheRawSig         uint64
 }
 
+// RuntimeProxyID returns the proxy that will actually be used for requests.
+func (a *Account) RuntimeProxyID() *int64 {
+	if a == nil || a.Proxy == nil || a.ProxyID == nil || *a.ProxyID <= 0 {
+		return nil
+	}
+	return a.ProxyID
+}
+
 type OpenAIEndpointCapability string
 
 const openAILongContextBillingEnabledKey = "openai_long_context_billing_enabled"

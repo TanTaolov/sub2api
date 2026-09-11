@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 	"github.com/Wei-Shaw/sub2api/internal/service"
@@ -26,6 +27,8 @@ const (
 	// 并发槽位键前缀（有序集合）
 	// 格式: concurrency:account:{accountID}
 	accountSlotKeyPrefix = "concurrency:account:"
+	// 格式: concurrency:account_proxy:{accountID}:{proxyID}
+	accountProxySlotKeyPrefix = "concurrency:account_proxy:"
 	// 格式: concurrency:user:{userID}
 	userSlotKeyPrefix = "concurrency:user:"
 	// 格式: concurrency:api_key:{apiKeyID}
@@ -382,6 +385,10 @@ func accountSlotKey(accountID int64) string {
 	return fmt.Sprintf("%s%d", accountSlotKeyPrefix, accountID)
 }
 
+func accountProxySlotKey(key service.AccountProxyConcurrencyKey) string {
+	return fmt.Sprintf("%s%d:%d", accountProxySlotKeyPrefix, key.AccountID, key.ProxyID)
+}
+
 func userSlotKey(userID int64) string {
 	return fmt.Sprintf("%s%d", userSlotKeyPrefix, userID)
 }
@@ -699,6 +706,69 @@ func (c *concurrencyCache) GetAccountConcurrencyBatch(ctx context.Context, accou
 	result := make(map[int64]int, len(accountIDs))
 	for _, cmd := range cmds {
 		result[cmd.accountID] = int(cmd.zcardCmd.Val() + cmd.liveCmd.Val())
+	}
+	return result, nil
+}
+
+func (c *concurrencyCache) TrackAccountProxySlot(ctx context.Context, key service.AccountProxyConcurrencyKey, requestID string) error {
+	if key.AccountID <= 0 || key.ProxyID <= 0 || requestID == "" {
+		return nil
+	}
+	now, err := c.redisUnixSeconds(ctx)
+	if err != nil {
+		return err
+	}
+	slotKey := accountProxySlotKey(key)
+	pipe := c.rdb.Pipeline()
+	pipe.ZRemRangeByScore(ctx, slotKey, "-inf", strconv.FormatInt(now-int64(c.slotTTLSeconds), 10))
+	pipe.ZAdd(ctx, slotKey, redis.Z{Score: float64(now), Member: requestID})
+	pipe.Expire(ctx, slotKey, time.Duration(c.slotTTLSeconds)*time.Second)
+	_, err = pipe.Exec(ctx)
+	return err
+}
+
+func (c *concurrencyCache) ReleaseAccountProxySlot(ctx context.Context, key service.AccountProxyConcurrencyKey, requestID string) error {
+	if key.AccountID <= 0 || key.ProxyID <= 0 || requestID == "" {
+		return nil
+	}
+	return c.rdb.ZRem(ctx, accountProxySlotKey(key), requestID).Err()
+}
+
+func (c *concurrencyCache) GetAccountProxyConcurrencyBatch(ctx context.Context, keys []service.AccountProxyConcurrencyKey) (map[service.AccountProxyConcurrencyKey]int, error) {
+	result := make(map[service.AccountProxyConcurrencyKey]int, len(keys))
+	if len(keys) == 0 {
+		return result, nil
+	}
+
+	now, err := c.redisUnixSeconds(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cutoff := strconv.FormatInt(now-int64(c.slotTTLSeconds), 10)
+	pipe := c.rdb.Pipeline()
+	type proxyCmd struct {
+		key  service.AccountProxyConcurrencyKey
+		card *redis.IntCmd
+	}
+	commands := make([]proxyCmd, 0, len(keys))
+	seen := make(map[service.AccountProxyConcurrencyKey]struct{}, len(keys))
+	for _, key := range keys {
+		if key.AccountID <= 0 || key.ProxyID <= 0 {
+			continue
+		}
+		if _, exists := seen[key]; exists {
+			continue
+		}
+		seen[key] = struct{}{}
+		slotKey := accountProxySlotKey(key)
+		pipe.ZRemRangeByScore(ctx, slotKey, "-inf", cutoff)
+		commands = append(commands, proxyCmd{key: key, card: pipe.ZCard(ctx, slotKey)})
+	}
+	if _, err := pipe.Exec(ctx); err != nil && !errors.Is(err, redis.Nil) {
+		return nil, fmt.Errorf("proxy concurrency pipeline exec: %w", err)
+	}
+	for _, command := range commands {
+		result[command.key] = int(command.card.Val())
 	}
 	return result, nil
 }

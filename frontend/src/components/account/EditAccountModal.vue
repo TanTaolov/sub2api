@@ -1648,12 +1648,74 @@
           <label class="input-label mb-0">{{ t('admin.accounts.proxy') }}</label>
         </div>
         <ProxySelector v-model="form.proxy_id" :proxies="proxies" />
-        <div class="mt-2 rounded-md border border-gray-200 p-2 dark:border-dark-600">
-          <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">代理池（可多选）</div>
-          <div v-for="proxy in proxies" :key="proxy.id" class="flex items-center gap-2 py-1 text-sm">
-            <input v-model="proxyPoolIds" :value="proxy.id" type="checkbox" class="rounded border-gray-300 text-primary-600" />
-            <span class="min-w-0 flex-1 truncate">{{ proxy.name }}</span>
-            <input v-if="proxyPoolIds.includes(proxy.id)" v-model.number="proxyPoolConcurrency[proxy.id]" type="number" min="1" class="input w-20 py-1 text-xs" placeholder="并发" />
+        <div class="mt-3 rounded-md border border-gray-200 p-3 dark:border-dark-600 sm:p-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div class="min-w-0">
+              <div class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                {{ t('admin.accounts.proxyPool') }}
+              </div>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {{ t('admin.accounts.proxyPoolHint') }}
+              </p>
+            </div>
+            <button
+              type="button"
+              class="btn btn-secondary min-h-10 shrink-0 self-start text-sm focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-dark-800"
+              :disabled="!canAddProxyPoolRow"
+              @click="addProxyPoolRow"
+            >
+              <Icon name="plus" size="sm" class="mr-1.5" aria-hidden="true" />
+              {{ t('admin.accounts.addProxy') }}
+            </button>
+          </div>
+
+          <div v-if="proxyPoolRows.length > 0" class="mt-3 space-y-2">
+            <div
+              v-for="row in proxyPoolRows"
+              :key="row.key"
+              class="grid grid-cols-[minmax(0,1fr)_2.5rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_7rem_2.5rem]"
+            >
+              <div class="col-span-2 min-w-0 sm:col-span-1">
+                <Select
+                  v-model="row.proxyId"
+                  :options="getProxyPoolOptions(row)"
+                  :placeholder="t('admin.accounts.selectProxy')"
+                  :aria-label="t('admin.accounts.selectProxy')"
+                  :searchable="true"
+                />
+              </div>
+              <input
+                v-model.number="row.concurrency"
+                type="number"
+                inputmode="numeric"
+                :name="`proxy_pool_concurrency_${row.key}`"
+                min="1"
+                required
+                autocomplete="off"
+                class="input min-w-0 py-2.5 text-sm tabular-nums"
+                :aria-label="t('admin.accounts.proxyConcurrency')"
+                @blur="normalizeProxyPoolConcurrency(row)"
+              />
+              <button
+                type="button"
+                class="flex h-10 w-10 items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 dark:hover:bg-red-900/20 dark:hover:text-red-400 dark:focus-visible:ring-offset-dark-800"
+                :aria-label="t('admin.accounts.removeProxy')"
+                :title="t('admin.accounts.removeProxy')"
+                @click="removeProxyPoolRow(row.key)"
+              >
+                <Icon name="trash" size="sm" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+          <p v-else class="mt-4 py-2 text-center text-sm text-gray-500 dark:text-gray-400">
+            {{ t('admin.accounts.proxyPoolEmpty') }}
+          </p>
+
+          <div class="mt-3 flex items-center justify-between border-t border-gray-200 pt-3 text-sm dark:border-dark-600">
+            <span class="text-gray-600 dark:text-gray-400">{{ t('admin.accounts.totalConcurrency') }}</span>
+            <span class="font-semibold tabular-nums text-gray-900 dark:text-white">
+              {{ totalProxyPoolConcurrency }}
+            </span>
           </div>
         </div>
       </div>
@@ -3859,8 +3921,82 @@ const form = reactive({
   expires_at: null as number | null,
   proxy_pool: [] as Array<{ proxy_id: number; concurrency: number }>
 })
-const proxyPoolIds = ref<number[]>([])
-const proxyPoolConcurrency = reactive<Record<number, number>>({})
+
+interface ProxyPoolFormRow {
+  key: number
+  proxyId: number | null
+  concurrency: number | null
+}
+
+let nextProxyPoolRowKey = 0
+const createProxyPoolRow = (
+  proxyId: number | null = null,
+  concurrency: number | null = 1
+): ProxyPoolFormRow => ({
+  key: ++nextProxyPoolRowKey,
+  proxyId,
+  concurrency
+})
+
+const proxyPoolRows = ref<ProxyPoolFormRow[]>([])
+
+const selectedProxyPoolIds = computed(
+  () => new Set(proxyPoolRows.value.flatMap((row) => (row.proxyId === null ? [] : [row.proxyId])))
+)
+
+const canAddProxyPoolRow = computed(
+  () =>
+    proxyPoolRows.value.every((row) => row.proxyId !== null) &&
+    props.proxies.some((proxy) => !selectedProxyPoolIds.value.has(proxy.id))
+)
+
+const getProxyPoolOptions = (currentRow: ProxyPoolFormRow) => {
+  const selectedByOtherRows = new Set(
+    proxyPoolRows.value.flatMap((row) =>
+      row.key === currentRow.key || row.proxyId === null ? [] : [row.proxyId]
+    )
+  )
+  const options = props.proxies
+    .filter((proxy) => !selectedByOtherRows.has(proxy.id))
+    .map((proxy) => ({ value: proxy.id, label: proxy.name }))
+
+  if (
+    currentRow.proxyId !== null &&
+    !props.proxies.some((proxy) => proxy.id === currentRow.proxyId)
+  ) {
+    options.unshift({
+      value: currentRow.proxyId,
+      label: t('admin.accounts.proxyUnavailable', { id: currentRow.proxyId })
+    })
+  }
+
+  return options
+}
+
+const getNormalizedProxyPoolConcurrency = (value: number | null) => {
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) ? Math.max(1, Math.trunc(numericValue)) : 1
+}
+
+const normalizeProxyPoolConcurrency = (row: ProxyPoolFormRow) => {
+  row.concurrency = getNormalizedProxyPoolConcurrency(row.concurrency)
+}
+
+const addProxyPoolRow = () => {
+  if (!canAddProxyPoolRow.value) return
+  proxyPoolRows.value.push(createProxyPoolRow())
+}
+
+const removeProxyPoolRow = (key: number) => {
+  proxyPoolRows.value = proxyPoolRows.value.filter((row) => row.key !== key)
+}
+
+const totalProxyPoolConcurrency = computed(() =>
+  proxyPoolRows.value.reduce((total, row) => {
+    if (row.proxyId === null) return total
+    return total + getNormalizedProxyPoolConcurrency(row.concurrency)
+  }, 0)
+)
 
 const handleUpstreamBillingRateSyncChange = (enabled: boolean) => {
   upstreamBillingRateSyncEnabled.value = enabled
@@ -3962,9 +4098,12 @@ const syncFormFromAccount = (newAccount: Account | null) => {
   form.notes = newAccount.notes || ''
   form.proxy_id = newAccount.proxy_id
   const pool = newAccount.extra?.proxy_pool ?? []
-  proxyPoolIds.value = pool.map((entry) => entry.proxy_id)
-  Object.keys(proxyPoolConcurrency).forEach((key) => delete proxyPoolConcurrency[Number(key)])
-  pool.forEach((entry) => { proxyPoolConcurrency[entry.proxy_id] = entry.concurrency })
+  const loadedProxyIds = new Set<number>()
+  proxyPoolRows.value = pool.flatMap((entry) => {
+    if (entry.proxy_id <= 0 || loadedProxyIds.has(entry.proxy_id)) return []
+    loadedProxyIds.add(entry.proxy_id)
+    return [createProxyPoolRow(entry.proxy_id, getNormalizedProxyPoolConcurrency(entry.concurrency))]
+  })
   form.concurrency = newAccount.concurrency
   form.load_factor = newAccount.load_factor ?? null
   form.priority = newAccount.priority
@@ -4985,7 +5124,16 @@ const handleSubmit = async () => {
     const updatePayload: Record<string, unknown> = { ...form }
     updatePayload.extra = {
       ...(props.account.extra ?? {}),
-      proxy_pool: proxyPoolIds.value.map((proxyId) => ({ proxy_id: proxyId, concurrency: Math.max(1, proxyPoolConcurrency[proxyId] || 1) }))
+      proxy_pool: proxyPoolRows.value.flatMap((row) =>
+        row.proxyId === null
+          ? []
+          : [
+              {
+                proxy_id: row.proxyId,
+                concurrency: getNormalizedProxyPoolConcurrency(row.concurrency)
+              }
+            ]
+      )
     }
   try {
     // 后端期望 proxy_id: 0 表示清除代理，而不是 null

@@ -61,6 +61,20 @@ type APIKeyConcurrencyCache interface {
 	GetAPIKeyConcurrencyBatch(ctx context.Context, apiKeyIDs []int64) (map[int64]int, error)
 }
 
+// AccountProxyConcurrencyKey identifies one proxy within an account's proxy pool.
+type AccountProxyConcurrencyKey struct {
+	AccountID int64
+	ProxyID   int64
+}
+
+// AccountProxyConcurrencyCache tracks observable per-proxy load without changing
+// the existing account-level concurrency limit.
+type AccountProxyConcurrencyCache interface {
+	TrackAccountProxySlot(ctx context.Context, key AccountProxyConcurrencyKey, requestID string) error
+	ReleaseAccountProxySlot(ctx context.Context, key AccountProxyConcurrencyKey, requestID string) error
+	GetAccountProxyConcurrencyBatch(ctx context.Context, keys []AccountProxyConcurrencyKey) (map[AccountProxyConcurrencyKey]int, error)
+}
+
 // OpenAIWSIngressLeaseCache owns the short-lived distributed lease used to
 // bound live client WebSocket sessions. It is deliberately independent of the
 // request-slot namespace: idle ingress connections do not occupy turn slots.
@@ -340,6 +354,16 @@ type UserLoadInfo struct {
 // If the account is at max concurrency, it waits until a slot is available or timeout.
 // Returns a release function that MUST be called when the request completes.
 func (s *ConcurrencyService) AcquireAccountSlot(ctx context.Context, accountID int64, maxConcurrency int) (*AcquireResult, error) {
+	return s.acquireAccountSlot(ctx, accountID, maxConcurrency, nil)
+}
+
+// AcquireAccountSlotForProxy acquires the normal account slot and, when the
+// cache supports it, tracks which proxy the request will use.
+func (s *ConcurrencyService) AcquireAccountSlotForProxy(ctx context.Context, accountID int64, maxConcurrency int, proxyID *int64) (*AcquireResult, error) {
+	return s.acquireAccountSlot(ctx, accountID, maxConcurrency, proxyID)
+}
+
+func (s *ConcurrencyService) acquireAccountSlot(ctx context.Context, accountID int64, maxConcurrency int, proxyID *int64) (*AcquireResult, error) {
 	// If maxConcurrency is 0 or negative, no limit
 	if maxConcurrency <= 0 {
 		return &AcquireResult{
@@ -357,11 +381,28 @@ func (s *ConcurrencyService) AcquireAccountSlot(ctx context.Context, accountID i
 	}
 
 	if acquired {
+		proxyKey := AccountProxyConcurrencyKey{AccountID: accountID}
+		proxyCache, proxyTrackingSupported := s.cache.(AccountProxyConcurrencyCache)
+		proxyTracked := false
+		if proxyTrackingSupported && proxyID != nil && *proxyID > 0 {
+			proxyKey.ProxyID = *proxyID
+			if err := proxyCache.TrackAccountProxySlot(ctx, proxyKey, requestID); err != nil {
+				logger.LegacyPrintf("service.concurrency", "Warning: failed to track proxy slot for account %d proxy %d (req=%s): %v", accountID, proxyKey.ProxyID, requestID, err)
+			} else {
+				proxyTracked = true
+			}
+		}
+
 		return &AcquireResult{
 			Acquired: true,
 			ReleaseFunc: func() {
 				bgCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
+				if proxyTracked {
+					if err := proxyCache.ReleaseAccountProxySlot(bgCtx, proxyKey, requestID); err != nil {
+						logger.LegacyPrintf("service.concurrency", "Warning: failed to release proxy slot for account %d proxy %d (req=%s): %v", accountID, proxyKey.ProxyID, requestID, err)
+					}
+				}
 				if err := s.cache.ReleaseAccountSlot(bgCtx, accountID, requestID); err != nil {
 					logger.LegacyPrintf("service.concurrency", "Warning: failed to release account slot for %d (req=%s): %v", accountID, requestID, err)
 				}
@@ -373,6 +414,26 @@ func (s *ConcurrencyService) AcquireAccountSlot(ctx context.Context, accountID i
 		Acquired:    false,
 		ReleaseFunc: nil,
 	}, nil
+}
+
+// GetAccountProxyConcurrencyBatch returns current request counts for known
+// account/proxy pairs. Older cache implementations safely report zero.
+func (s *ConcurrencyService) GetAccountProxyConcurrencyBatch(ctx context.Context, keys []AccountProxyConcurrencyKey) (map[AccountProxyConcurrencyKey]int, error) {
+	result := make(map[AccountProxyConcurrencyKey]int, len(keys))
+	for _, key := range keys {
+		result[key] = 0
+	}
+	if len(keys) == 0 || s == nil || s.cache == nil {
+		return result, nil
+	}
+	proxyCache, ok := s.cache.(AccountProxyConcurrencyCache)
+	if !ok {
+		return result, nil
+	}
+
+	redisCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	return proxyCache.GetAccountProxyConcurrencyBatch(redisCtx, keys)
 }
 
 // AcquireUserSlot attempts to acquire a concurrency slot for a user.
