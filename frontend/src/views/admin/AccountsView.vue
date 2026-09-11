@@ -287,8 +287,16 @@
             <AccountCapacityCell :account="row" />
           </template>
           <template #cell-status="{ row }">
-            <div class="flex items-center gap-1.5">
+            <div class="flex flex-col items-start gap-1.5">
               <AccountStatusIndicator :account="row" @show-temp-unsched="handleShowTempUnsched" />
+              <div v-if="row.proxy || row.extra?.proxy_pool?.length" class="flex flex-col items-start gap-1">
+                <span v-if="row.proxy" class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 font-mono text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200" :title="row.proxy.name">
+                  {{ row.current_concurrency ?? 0 }} / {{ row.concurrency }}
+                </span>
+                <span v-for="entry in (row.extra?.proxy_pool ?? [])" :key="`${row.id}-${entry.proxy_id}`" class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 font-mono text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200" :title="proxyPoolName(entry.proxy_id)">
+                  0 / {{ entry.concurrency }}
+                </span>
+              </div>
             </div>
           </template>
           <template #cell-schedulable="{ row }">
@@ -2489,6 +2497,11 @@ const isExpired = (value: number | null) => {
   return value * 1000 <= Date.now()
 }
 // 所绑定代理的有效期(逻辑同 /admin/proxies,见 utils/proxyExpiry)
+const proxyPoolName = (proxyId: number): string => {
+  const proxy = proxies.value.find((item) => item.id === proxyId)
+  return proxy?.name ?? `#${proxyId}`
+}
+
 const proxyExpiryBadge = (p: AccountProxy): string => proxyExpiryBadgeClass(p.expires_at, p.status)
 const proxyExpiryText = (p: AccountProxy): string => {
   const { key, params } = proxyExpiryLabelKey(p.expires_at, p.status)

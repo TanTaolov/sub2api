@@ -238,6 +238,7 @@ export default {
         groups: 'Groups',
         usageWindows: 'Usage Windows',
         proxy: 'Proxy',
+        proxyConcurrencyUnit: 'concurrency',
         lastUsed: 'Last Used',
         createdAt: 'Created',
         expiresAt: 'Expires At',

@@ -114,6 +114,7 @@ export default {
         groups: '分组',
         usageWindows: '用量窗口',
         proxy: '代理',
+        proxyConcurrencyUnit: '并发',
         lastUsed: '最近使用',
         createdAt: '创建时间',
         expiresAt: '过期时间',

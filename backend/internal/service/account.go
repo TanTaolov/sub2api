@@ -2,10 +2,12 @@
 package service
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"hash/fnv"
 	"log/slog"
+	"math/big"
 	"net/url"
 	"reflect"
 	"sort"
@@ -19,6 +21,68 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/pkg/openai_compat"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/xai"
 )
+
+// ProxyPoolEntry 描述账号代理池中的一个代理及其并发额度。
+// 配置保存在 Account.Extra["proxy_pool"] 中，以兼容已有账号数据。
+type ProxyPoolEntry struct {
+	ProxyID     int64 `json:"proxy_id"`
+	Concurrency int   `json:"concurrency"`
+}
+
+const AccountProxyPoolExtraKey = "proxy_pool"
+
+// ProxyPool returns the valid proxy pool configuration for this account.
+func (a *Account) ProxyPool() []ProxyPoolEntry {
+	if a == nil || a.Extra == nil {
+		return nil
+	}
+	raw, ok := a.Extra[AccountProxyPoolExtraKey]
+	if !ok {
+		return nil
+	}
+	b, err := json.Marshal(raw)
+	if err != nil {
+		return nil
+	}
+	var entries []ProxyPoolEntry
+	if json.Unmarshal(b, &entries) != nil {
+		return nil
+	}
+	out := entries[:0]
+	for _, e := range entries {
+		if e.ProxyID > 0 && e.Concurrency > 0 {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+// SelectProxyPoolEntry randomly selects an entry, weighted by its concurrency.
+func (a *Account) SelectProxyPoolEntry() *ProxyPoolEntry {
+	entries := a.ProxyPool()
+	if len(entries) == 0 {
+		return nil
+	}
+	total := 0
+	for _, e := range entries {
+		total += e.Concurrency
+	}
+	if total <= 0 {
+		return nil
+	}
+	var buf [8]byte
+	if _, err := rand.Read(buf[:]); err != nil {
+		return &entries[0]
+	}
+	n := int(new(big.Int).SetBytes(buf[:]).Uint64() % uint64(total))
+	for i := range entries {
+		if n < entries[i].Concurrency {
+			return &entries[i]
+		}
+		n -= entries[i].Concurrency
+	}
+	return &entries[len(entries)-1]
+}
 
 type Account struct {
 	ID                      int64

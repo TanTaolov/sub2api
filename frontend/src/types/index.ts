@@ -1170,6 +1170,8 @@ export interface Account {
   ollama_cloud_usage?: OllamaCloudUsageState
   // Extra fields including Codex usage, OpenAI compact capability, and model-level rate limits.
   extra?: (CodexUsageSnapshot & OpenAICompactState & {
+    /** 账号代理池：同一账号可使用多个代理，每个代理独立限制并发。 */
+    proxy_pool?: ProxyPoolEntry[]
     model_rate_limits?: Record<string, { rate_limited_at: string; rate_limit_reset_at: string }>
     antigravity_credits_overages?: Record<string, { activated_at: string; active_until: string }>
     upstream_billing_probe_enabled?: boolean
@@ -1292,6 +1294,11 @@ export interface Account {
   parent_privacy_mode?: string
   parent_subscription_expires_at?: string
   parent_chatgpt_account_id?: string
+}
+
+export interface ProxyPoolEntry {
+  proxy_id: number
+  concurrency: number
 }
 
 // The admin account list may return this compact shape when lite=1. Detail

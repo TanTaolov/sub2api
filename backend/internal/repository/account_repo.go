@@ -3156,6 +3156,13 @@ func (r *accountRepository) accountsToService(ctx context.Context, accounts []*d
 		if acc.ProxyFallbackOriginID != nil {
 			proxyIDs = append(proxyIDs, *acc.ProxyFallbackOriginID)
 		}
+		// 代理池中的代理也需要预加载，账号转换时按配置随机选择。
+		poolAccount := accountEntityToService(acc)
+		if poolAccount != nil {
+			for _, entry := range poolAccount.ProxyPool() {
+				proxyIDs = append(proxyIDs, entry.ProxyID)
+			}
+		}
 	}
 
 	proxyMap, err := r.loadProxies(ctx, proxyIDs)
@@ -3176,6 +3183,13 @@ func (r *accountRepository) accountsToService(ctx context.Context, accounts []*d
 		if acc.ProxyID != nil {
 			if proxy, ok := proxyMap[*acc.ProxyID]; ok {
 				out.Proxy = proxy
+			}
+		}
+		if entry := out.SelectProxyPoolEntry(); entry != nil {
+			if proxy, ok := proxyMap[entry.ProxyID]; ok && proxy != nil {
+				out.Proxy = proxy
+				selected := entry.ProxyID
+				out.ProxyID = &selected
 			}
 		}
 		out.ProxyFallbackOriginID = acc.ProxyFallbackOriginID
