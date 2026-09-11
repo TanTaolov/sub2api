@@ -226,6 +226,7 @@ export default {
         platform: 'Platform',
         type: 'Type',
         capacity: 'Capacity',
+        proxyConcurrency: 'Proxy Concurrency',
         notes: 'Notes',
         priority: 'Priority',
         billingRateMultiplier: 'Billing Rate',

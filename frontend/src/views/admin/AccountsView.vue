@@ -286,18 +286,30 @@
           <template #cell-capacity="{ row }">
             <AccountCapacityCell :account="row" />
           </template>
-          <template #cell-status="{ row }">
-            <div class="flex flex-col items-start gap-1.5">
-              <AccountStatusIndicator :account="row" @show-temp-unsched="handleShowTempUnsched" />
-              <div v-if="row.proxy || row.extra?.proxy_pool?.length" class="flex flex-col items-start gap-1">
-                <span v-if="row.proxy" class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 font-mono text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200" :title="row.proxy.name">
-                  {{ row.current_concurrency ?? 0 }} / {{ row.concurrency }}
-                </span>
-                <span v-for="entry in (row.extra?.proxy_pool ?? [])" :key="`${row.id}-${entry.proxy_id}`" class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 font-mono text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200" :title="proxyPoolName(entry.proxy_id)">
-                  0 / {{ entry.concurrency }}
-                </span>
-              </div>
+          <template #cell-proxy_concurrency="{ row }">
+            <div v-if="row.proxy || row.extra?.proxy_pool?.length" class="flex flex-col items-start gap-1">
+              <span
+                v-if="row.proxy"
+                class="inline-flex max-w-full items-center gap-2 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+                :title="row.proxy.name"
+              >
+                <span class="min-w-0 max-w-40 truncate">{{ row.proxy.name }}</span>
+                <span class="shrink-0 tabular-nums">{{ row.concurrency }} {{ t('admin.accounts.columns.proxyConcurrencyUnit') }}</span>
+              </span>
+              <span
+                v-for="entry in (row.extra?.proxy_pool ?? [])"
+                :key="`${row.id}-${entry.proxy_id}`"
+                class="inline-flex max-w-full items-center gap-2 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+                :title="proxyPoolName(entry.proxy_id)"
+              >
+                <span class="min-w-0 max-w-40 truncate">{{ proxyPoolName(entry.proxy_id) }}</span>
+                <span class="shrink-0 tabular-nums">{{ entry.concurrency }} {{ t('admin.accounts.columns.proxyConcurrencyUnit') }}</span>
+              </span>
             </div>
+            <span v-else class="text-gray-400 dark:text-dark-500">-</span>
+          </template>
+          <template #cell-status="{ row }">
+            <AccountStatusIndicator :account="row" @show-temp-unsched="handleShowTempUnsched" />
           </template>
           <template #cell-schedulable="{ row }">
             <button @click="handleToggleSchedulable(row)" :disabled="togglingSchedulable === row.id" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-dark-800" :class="[row.schedulable ? 'bg-primary-500 hover:bg-primary-600' : 'bg-gray-200 hover:bg-gray-300 dark:bg-dark-600 dark:hover:bg-dark-500']" :title="row.schedulable ? t('admin.accounts.schedulableEnabled') : t('admin.accounts.schedulableDisabled')">
@@ -1794,6 +1806,7 @@ const allColumns = computed(() => {
     { key: 'id', label: t('admin.accounts.columns.id'), sortable: true },
     { key: 'platform_type', label: t('admin.accounts.columns.platformType'), sortable: false },
     { key: 'capacity', label: t('admin.accounts.columns.capacity'), sortable: false },
+    { key: 'proxy_concurrency', label: t('admin.accounts.columns.proxyConcurrency'), sortable: false },
     { key: 'status', label: t('admin.accounts.columns.status'), sortable: true },
     { key: 'schedulable', label: t('admin.accounts.columns.schedulable'), sortable: true },
     { key: 'today_stats', label: t('admin.accounts.columns.todayStats'), sortable: false }

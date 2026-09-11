@@ -4,6 +4,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 	"time"
@@ -31,9 +32,11 @@ type updateServiceGitHubClientStub struct {
 	release        *GitHubRelease
 	recentReleases []*GitHubRelease
 	recentErr      error
+	requestedRepo  string
 }
 
-func (s *updateServiceGitHubClientStub) FetchLatestRelease(context.Context, string) (*GitHubRelease, error) {
+func (s *updateServiceGitHubClientStub) FetchLatestRelease(_ context.Context, repo string) (*GitHubRelease, error) {
+	s.requestedRepo = repo
 	return s.release, nil
 }
 
@@ -67,6 +70,64 @@ func TestUpdateServicePerformUpdateNoUpdateReturnsSentinel(t *testing.T) {
 	require.Error(t, err)
 	require.True(t, errors.Is(err, ErrNoUpdateAvailable))
 	require.ErrorIs(t, err, ErrNoUpdateAvailable)
+}
+
+func TestCompareVersionsForkRevisions(t *testing.T) {
+	testCases := []struct {
+		current string
+		latest  string
+		want    int
+	}{
+		{current: "0.2.4_1", latest: "0.2.4_2", want: -1},
+		{current: "v0.2.4_2", latest: "0.2.4_2", want: 0},
+		{current: "0.2.4_10", latest: "0.2.4_2", want: 1},
+		{current: "0.2.4", latest: "0.2.4_1", want: -1},
+		{current: "0.2.4_2", latest: "0.2.5", want: -1},
+		{current: "0.2.4_2", latest: "0.2.3_99", want: 1},
+		{current: "0.2.4", latest: "0.2.5", want: -1},
+		{current: "0.2.4-rc1", latest: "0.2.4", want: 0},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.current+"/"+testCase.latest, func(t *testing.T) {
+			require.Equal(t, testCase.want, compareVersions(testCase.current, testCase.latest))
+		})
+	}
+}
+
+func TestUpdateServiceCheckUpdateReplacesForeignCache(t *testing.T) {
+	for _, repository := range []string{"", "Wei-Shaw/sub2api"} {
+		t.Run("repository="+repository, func(t *testing.T) {
+			cachedData, err := json.Marshal(map[string]any{
+				"repository": repository,
+				"latest":     "9.0.0",
+				"timestamp":  time.Now().Unix(),
+			})
+			require.NoError(t, err)
+			cache := &updateServiceCacheStub{data: string(cachedData)}
+			client := &updateServiceGitHubClientStub{release: &GitHubRelease{
+				TagName: "v0.2.4_2",
+				HTMLURL: "https://github.com/TanTaolov/sub2api/releases/tag/v0.2.4_2",
+			}}
+			svc := NewUpdateService(cache, client, "0.2.4_1", "release")
+
+			info, err := svc.CheckUpdate(context.Background(), false)
+
+			require.NoError(t, err)
+			require.Equal(t, "TanTaolov/sub2api", client.requestedRepo)
+			require.Equal(t, "0.2.4_2", info.LatestVersion)
+			require.True(t, info.HasUpdate)
+			require.False(t, info.Cached)
+			require.Equal(t, client.release.HTMLURL, info.ReleaseInfo.HTMLURL)
+
+			client.requestedRepo = ""
+			cachedInfo, err := svc.CheckUpdate(context.Background(), false)
+			require.NoError(t, err)
+			require.True(t, cachedInfo.Cached)
+			require.True(t, cachedInfo.HasUpdate)
+			require.Equal(t, "0.2.4_2", cachedInfo.LatestVersion)
+			require.Empty(t, client.requestedRepo)
+		})
+	}
 }
 
 func newRollbackTestService(current string, releases []*GitHubRelease) *UpdateService {
