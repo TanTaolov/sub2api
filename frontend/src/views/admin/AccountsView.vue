@@ -287,23 +287,17 @@
             <AccountCapacityCell :account="row" />
           </template>
           <template #cell-proxy_concurrency="{ row }">
-            <div v-if="row.proxy || row.extra?.proxy_pool?.length" class="flex flex-col items-start gap-1">
+            <div v-if="proxyConcurrencyEntries(row).length" class="flex flex-col items-start gap-0.5">
               <span
-                v-if="row.proxy"
-                class="inline-flex max-w-full items-center gap-2 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
-                :title="row.proxy.name"
+                v-for="entry in proxyConcurrencyEntries(row)"
+                :key="`${row.id}-${entry.proxyId}`"
+                class="inline-flex max-w-full items-center gap-1 rounded-md bg-gray-100 px-1.5 py-px text-[10px] font-medium leading-tight text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                :title="entry.name"
               >
-                <span class="min-w-0 max-w-40 truncate">{{ row.proxy.name }}</span>
-                <span class="shrink-0 tabular-nums">{{ row.concurrency }} {{ t('admin.accounts.columns.proxyConcurrencyUnit') }}</span>
-              </span>
-              <span
-                v-for="entry in (row.extra?.proxy_pool ?? [])"
-                :key="`${row.id}-${entry.proxy_id}`"
-                class="inline-flex max-w-full items-center gap-2 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
-                :title="proxyPoolName(entry.proxy_id)"
-              >
-                <span class="min-w-0 max-w-40 truncate">{{ proxyPoolName(entry.proxy_id) }}</span>
-                <span class="shrink-0 tabular-nums">{{ entry.concurrency }} {{ t('admin.accounts.columns.proxyConcurrencyUnit') }}</span>
+                <span class="min-w-0 max-w-40 truncate">{{ entry.name }}</span>
+                <span class="shrink-0 text-gray-400 dark:text-gray-500">/</span>
+                <span class="shrink-0 font-mono tabular-nums">{{ entry.concurrency }}</span>
+                <span class="shrink-0 text-gray-400 dark:text-gray-500">{{ t('admin.accounts.columns.proxyConcurrencyUnit') }}</span>
               </span>
             </div>
             <span v-else class="text-gray-400 dark:text-dark-500">-</span>
@@ -2509,12 +2503,47 @@ const isExpired = (value: number | null) => {
   if (!value) return false
   return value * 1000 <= Date.now()
 }
-// 所绑定代理的有效期(逻辑同 /admin/proxies,见 utils/proxyExpiry)
-const proxyPoolName = (proxyId: number): string => {
+type ProxyConcurrencyDisplayEntry = {
+  proxyId: number
+  name: string
+  concurrency: number
+}
+
+const proxyName = (proxyId: number): string => {
   const proxy = proxies.value.find((item) => item.id === proxyId)
   return proxy?.name ?? `#${proxyId}`
 }
 
+const proxyConcurrencyEntries = (account: Account): ProxyConcurrencyDisplayEntry[] => {
+  const pool = Array.isArray(account.extra?.proxy_pool) ? account.extra.proxy_pool : []
+  if (pool.length > 0) {
+    const seenProxyIds = new Set<number>()
+    return pool.flatMap((entry) => {
+      const proxyId = Number(entry.proxy_id)
+      const concurrency = Number(entry.concurrency)
+      if (
+        !Number.isInteger(proxyId) ||
+        proxyId <= 0 ||
+        !Number.isFinite(concurrency) ||
+        concurrency <= 0 ||
+        seenProxyIds.has(proxyId)
+      ) {
+        return []
+      }
+      seenProxyIds.add(proxyId)
+      return [{ proxyId, name: proxyName(proxyId), concurrency }]
+    })
+  }
+
+  if (!account.proxy || account.proxy.id <= 0 || account.concurrency <= 0) return []
+  return [{
+    proxyId: account.proxy.id,
+    name: account.proxy.name,
+    concurrency: account.concurrency
+  }]
+}
+
+// 所绑定代理的有效期(逻辑同 /admin/proxies,见 utils/proxyExpiry)
 const proxyExpiryBadge = (p: AccountProxy): string => proxyExpiryBadgeClass(p.expires_at, p.status)
 const proxyExpiryText = (p: AccountProxy): string => {
   const { key, params } = proxyExpiryLabelKey(p.expires_at, p.status)
