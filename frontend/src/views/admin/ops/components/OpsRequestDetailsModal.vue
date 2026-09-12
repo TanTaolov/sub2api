@@ -239,33 +239,33 @@ const kindBadgeClass = (kind: string) => {
               <ElTable v-else row-class-name="hover:bg-gray-50 dark:hover:bg-dark-700/50" :data="items" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.time') }}</div></template>
-    <template #default="{ row: row, $index: idx }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" >{{ formatDateTime(row.created_at) }}</div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" >{{ formatDateTime(row.created_at) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.kind') }}</div></template>
-    <template #default="{ row: row, $index: idx }"><div class="whitespace-nowrap px-4 py-3" ><span class="rounded-full px-2 py-1 text-[10px] font-bold" :class="kindBadgeClass(row.kind)">
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3" ><span class="rounded-full px-2 py-1 text-[10px] font-bold" :class="kindBadgeClass(row.kind)">
                       {{ row.kind === 'error' ? t('admin.ops.requestDetails.kind.error') : t('admin.ops.requestDetails.kind.success') }}
                     </span></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.platform') }}</div></template>
-    <template #default="{ row: row, $index: idx }"><div class="whitespace-nowrap px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-200" >{{ (row.platform || 'unknown').toUpperCase() }}</div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-200" >{{ (row.platform || 'unknown').toUpperCase() }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.model') }}</div></template>
-    <template #default="{ row: row, $index: idx }"><div class="max-w-[240px] truncate px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.model || ''" >{{ row.model || '-' }}</div></template>
+    <template #default="{ row: row }"><div class="max-w-[240px] truncate px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.model || ''" >{{ row.model || '-' }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ latencyLabel }}</div></template>
-    <template #default="{ row: row, $index: idx }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" >{{ formatLatency(row) }}</div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" >{{ formatLatency((row as OpsRequestDetail)) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.status') }}</div></template>
-    <template #default="{ row: row, $index: idx }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" >{{ row.status_code ?? '-' }}</div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" >{{ row.status_code ?? '-' }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.requestId') }}</div></template>
-    <template #default="{ row: row, $index: idx }"><div class="px-4 py-3" ><div v-if="row.request_id" class="flex items-center gap-2">
+    <template #default="{ row: row }"><div class="px-4 py-3" ><div v-if="row.request_id" class="flex items-center gap-2">
                       <span class="max-w-[220px] truncate font-mono text-[11px] text-gray-700 dark:text-gray-200" :title="row.request_id">
                         {{ row.request_id }}
                       </span>
@@ -279,7 +279,7 @@ const kindBadgeClass = (kind: string) => {
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.actions') }}</div></template>
-    <template #default="{ row: row, $index: idx }"><div class="whitespace-nowrap px-4 py-3 text-right" ><ElButton text
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-right" ><ElButton text
                       v-if="row.kind === 'error' && row.error_id"
                       class="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
                       @click="openErrorDetail(row.error_id)"

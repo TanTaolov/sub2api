@@ -58,7 +58,7 @@
           </div>
         </div>
 
-        <ElementCheckbox v-model="form.sync_proxies" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-dark-300&quot;,&quot;&quot;]">
+        <ElementCheckbox v-model="form.sync_proxies" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-dark-300','']">
           {{ t('admin.accounts.syncProxies') }}</ElementCheckbox>
       </div>
     </ElForm>
@@ -111,7 +111,7 @@
         <div
           class="max-h-48 overflow-auto rounded-lg border border-gray-200 p-2 dark:border-dark-600"
         >
-          <ElementCheckbox v-for="acc in previewResult.new_accounts" :key="acc.crs_account_id" :checked="selectedIds.has(acc.crs_account_id)" @change="toggleSelect(acc.crs_account_id)" :class="[&quot;flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-dark-700/40&quot;,&quot;&quot;]"><span
+          <ElementCheckbox v-for="acc in previewResult.new_accounts" :key="acc.crs_account_id" :checked="selectedIds.has(acc.crs_account_id)" @change="toggleSelect(acc.crs_account_id)" :class="['flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-dark-700/40','']"><span
               class="inline-block rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
             >{{ acc.platform }} / {{ acc.type }}</span><span class="truncate text-sm text-gray-700 dark:text-dark-300">{{ acc.name }}</span></ElementCheckbox>
         </div>

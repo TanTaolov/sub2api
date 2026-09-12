@@ -268,7 +268,7 @@ onMounted(() => {
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('common.enabled') }}</div>
-            <ElementCheckbox v-model="draft.alert.enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ draft.alert.enabled ? t('common.enabled') : t('common.disabled') }}</span></ElementCheckbox>
+            <ElementCheckbox v-model="draft.alert.enabled" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"><span>{{ draft.alert.enabled ? t('common.enabled') : t('common.disabled') }}</span></ElementCheckbox>
           </div>
 
           <div>
@@ -322,7 +322,7 @@ onMounted(() => {
 
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.includeResolved') }}</div>
-            <ElementCheckbox v-model="draft.alert.include_resolved_alerts" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ draft.alert.include_resolved_alerts ? t('common.enabled') : t('common.disabled') }}</span></ElementCheckbox>
+            <ElementCheckbox v-model="draft.alert.include_resolved_alerts" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"><span>{{ draft.alert.include_resolved_alerts ? t('common.enabled') : t('common.disabled') }}</span></ElementCheckbox>
           </div>
         </div>
       </div>
@@ -332,7 +332,7 @@ onMounted(() => {
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('common.enabled') }}</div>
-            <ElementCheckbox v-model="draft.report.enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ draft.report.enabled ? t('common.enabled') : t('common.disabled') }}</span></ElementCheckbox>
+            <ElementCheckbox v-model="draft.report.enabled" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"><span>{{ draft.report.enabled ? t('common.enabled') : t('common.disabled') }}</span></ElementCheckbox>
           </div>
 
           <div class="md:col-span-2">
@@ -373,21 +373,21 @@ onMounted(() => {
               <div>
                 <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.dailySummary') }}</div>
                 <div class="flex items-center gap-2">
-                  <ElementCheckbox v-model="draft.report.daily_summary_enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"></ElementCheckbox>
+                  <ElementCheckbox v-model="draft.report.daily_summary_enabled" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"></ElementCheckbox>
                   <ElementInput v-model="draft.report.daily_summary_schedule" type="text" class="input" :placeholder="t('admin.ops.email.cronPlaceholder')" />
                 </div>
               </div>
               <div>
                 <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.weeklySummary') }}</div>
                 <div class="flex items-center gap-2">
-                  <ElementCheckbox v-model="draft.report.weekly_summary_enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"></ElementCheckbox>
+                  <ElementCheckbox v-model="draft.report.weekly_summary_enabled" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"></ElementCheckbox>
                   <ElementInput v-model="draft.report.weekly_summary_schedule" type="text" class="input" :placeholder="t('admin.ops.email.cronPlaceholder')" />
                 </div>
               </div>
               <div>
                 <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.errorDigest') }}</div>
                 <div class="flex items-center gap-2">
-                  <ElementCheckbox v-model="draft.report.error_digest_enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"></ElementCheckbox>
+                  <ElementCheckbox v-model="draft.report.error_digest_enabled" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"></ElementCheckbox>
                   <ElementInput v-model="draft.report.error_digest_schedule" type="text" class="input" :placeholder="t('admin.ops.email.cronPlaceholder')" />
                 </div>
               </div>
@@ -398,7 +398,7 @@ onMounted(() => {
               <div>
                 <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.accountHealth') }}</div>
                 <div class="flex items-center gap-2">
-                  <ElementCheckbox v-model="draft.report.account_health_enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"></ElementCheckbox>
+                  <ElementCheckbox v-model="draft.report.account_health_enabled" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"></ElementCheckbox>
                   <ElementInput v-model="draft.report.account_health_schedule" type="text" class="input" :placeholder="t('admin.ops.email.cronPlaceholder')" />
                 </div>
               </div>

@@ -1,6 +1,6 @@
 <template>
   <div class="plaza-pricing-table overflow-x-auto" :style="accentStyle">
-    <ElTable :data="rows" row-key="key" class="element-data-table" :span-method="({row, columnIndex}) => billingMode(row.model) !== BILLING_MODE_TOKEN &amp;&amp; columnIndex === 1 ? [1, 3] : billingMode(row.model) !== BILLING_MODE_TOKEN &amp;&amp; (columnIndex === 2 || columnIndex === 3) ? [0, 0] : [1, 1]"><ElTableColumn :min-width="120" :width="250" align="left"><template #header>{{ t('modelPlaza.table.model') }}</template><template #default="{ row: { model: m, period, key } }"><div class="border-r border-gray-100 py-2.5 pl-5 pr-4 align-middle dark:border-dark-700/60"><div class="flex flex-wrap items-center gap-1.5">
+    <ElTable :data="rows" row-key="key" class="element-data-table" :span-method="({row, columnIndex}) => billingMode(row.model) !== BILLING_MODE_TOKEN && columnIndex === 1 ? [1, 3] : billingMode(row.model) !== BILLING_MODE_TOKEN && (columnIndex === 2 || columnIndex === 3) ? [0, 0] : [1, 1]"><ElTableColumn :min-width="120" :width="250" align="left"><template #header>{{ t('modelPlaza.table.model') }}</template><template #default="{ row: { model: m, period } }"><div class="border-r border-gray-100 py-2.5 pl-5 pr-4 align-middle dark:border-dark-700/60"><div class="flex flex-wrap items-center gap-1.5">
               <span class="font-medium text-gray-900 dark:text-white">{{ m.name }}</span>
               <!-- 时段徽章紧跟模型名,其余徽章排在后面,空间不足时先换行的是它们 -->
               <span
@@ -45,7 +45,7 @@
             </div></div></template></ElTableColumn><ElTableColumn align="center"><template #header><div class="pz-title border-b pb-2 font-semibold">
               {{ t('modelPlaza.table.paidPrice') }}
               <span class="pz-unit ml-1 normal-case font-normal">{{ t('modelPlaza.table.unitPerMillion') }}</span>
-            </div></template><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('modelPlaza.table.input') }}</template><template #default="{ row: { model: m, period, key } }"><div class="pz-cell px-3 py-2.5 align-middle font-mono font-semibold text-gray-900 dark:text-gray-50"><template v-if="billingMode(m) === BILLING_MODE_TOKEN"><template v-if="tokenIntervals(m).length">
+            </div></template><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('modelPlaza.table.input') }}</template><template #default="{ row: { model: m, period } }"><div class="pz-cell px-3 py-2.5 align-middle font-mono font-semibold text-gray-900 dark:text-gray-50"><template v-if="billingMode(m) === BILLING_MODE_TOKEN"><template v-if="tokenIntervals(m).length">
                 <div
                   v-for="(iv, idx) in tokenIntervals(m)"
                   :key="idx"
@@ -72,7 +72,7 @@
                   {{ paidRequestPrice(m, m.pricing.per_request_price) }}
                 </span>
                 <span class="ml-1 text-xs text-gray-400 dark:text-dark-500">{{ perUnitSuffix(m) }}</span>
-              </template><span v-else class="text-gray-400 dark:text-dark-500">-</span></template></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('modelPlaza.table.output') }}</template><template #default="{ row: { model: m, period, key } }"><div class="pz-cell px-3 py-2.5 align-middle font-mono font-semibold text-gray-900 dark:text-gray-50"><template v-if="tokenIntervals(m).length">
+              </template><span v-else class="text-gray-400 dark:text-dark-500">-</span></template></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('modelPlaza.table.output') }}</template><template #default="{ row: { model: m, period } }"><div class="pz-cell px-3 py-2.5 align-middle font-mono font-semibold text-gray-900 dark:text-gray-50"><template v-if="tokenIntervals(m).length">
                 <div
                   v-for="(iv, idx) in tokenIntervals(m)"
                   :key="idx"
@@ -81,7 +81,7 @@
                 >
                   {{ paidPerMillion(iv.output_price, period) }}
                 </div>
-              </template><template v-else>{{ paidPerMillion(m.pricing?.output_price, period) }}</template></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('modelPlaza.table.cache') }}</template><template #default="{ row: { model: m, period, key } }"><div class="pz-cell px-3 py-2.5 align-middle"><template v-if="hasTierCachePricing(tokenIntervals(m))">
+              </template><template v-else>{{ paidPerMillion(m.pricing?.output_price, period) }}</template></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('modelPlaza.table.cache') }}</template><template #default="{ row: { model: m, period } }"><div class="pz-cell px-3 py-2.5 align-middle"><template v-if="hasTierCachePricing(tokenIntervals(m))">
                 <div
                   v-for="(iv, idx) in tokenIntervals(m)"
                   :key="idx"
@@ -119,7 +119,7 @@
               </div><span v-else class="text-gray-400 dark:text-dark-500">-</span></div></template></ElTableColumn></ElTableColumn><ElTableColumn align="center"><template #header><div class="border-b border-gray-200 pb-2 text-gray-400 dark:border-dark-600 dark:text-dark-500">
               {{ t('modelPlaza.table.officialPrice') }}
               <span class="ml-1 normal-case font-normal text-gray-400 dark:text-dark-500">{{ t('modelPlaza.table.unitPerMillion') }}</span>
-            </div></template><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('modelPlaza.table.input') }}</template><template #default="{ row: { model: m, period, key } }"><div class="border-l border-gray-100 px-3 py-2.5 align-middle font-mono text-xs text-gray-500 dark:border-dark-700/60 dark:text-dark-400"><template v-if="officialIntervals(m).length">
+            </div></template><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('modelPlaza.table.input') }}</template><template #default="{ row: { model: m } }"><div class="border-l border-gray-100 px-3 py-2.5 align-middle font-mono text-xs text-gray-500 dark:border-dark-700/60 dark:text-dark-400"><template v-if="officialIntervals(m).length">
               <div
                 v-for="(iv, idx) in officialIntervals(m)"
                 :key="idx"
@@ -128,7 +128,7 @@
                 <span class="mr-1 font-sans text-gray-400 dark:text-dark-500" :title="t('modelPlaza.table.tierHint')">{{ tierLabel(iv) }}</span>
                 {{ official(iv.input_price) }}
               </div>
-            </template><template v-else>{{ official(m.official_pricing?.input_price) }}</template></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('modelPlaza.table.output') }}</template><template #default="{ row: { model: m, period, key } }"><div class="px-3 py-2.5 align-middle font-mono text-xs text-gray-500 dark:text-dark-400"><template v-if="officialIntervals(m).length">
+            </template><template v-else>{{ official(m.official_pricing?.input_price) }}</template></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('modelPlaza.table.output') }}</template><template #default="{ row: { model: m } }"><div class="px-3 py-2.5 align-middle font-mono text-xs text-gray-500 dark:text-dark-400"><template v-if="officialIntervals(m).length">
               <div
                 v-for="(iv, idx) in officialIntervals(m)"
                 :key="idx"
@@ -137,7 +137,7 @@
               >
                 {{ official(iv.output_price) }}
               </div>
-            </template><template v-else>{{ official(m.official_pricing?.output_price) }}</template></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('modelPlaza.table.cache') }}</template><template #default="{ row: { model: m, period, key } }"><div class="px-3 py-2.5 align-middle"><template v-if="hasTierCachePricing(officialIntervals(m))">
+            </template><template v-else>{{ official(m.official_pricing?.output_price) }}</template></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('modelPlaza.table.cache') }}</template><template #default="{ row: { model: m } }"><div class="px-3 py-2.5 align-middle"><template v-if="hasTierCachePricing(officialIntervals(m))">
               <div
                 v-for="(iv, idx) in officialIntervals(m)"
                 :key="idx"
@@ -172,7 +172,7 @@
                 <span class="mr-1 font-sans font-normal text-gray-400 dark:text-dark-500">{{ t('modelPlaza.table.cacheRead') }}</span>
                 {{ official(m.official_pricing.cache_read_price) }}
               </div>
-            </div><span v-else class="text-gray-400 dark:text-dark-500">-</span></div></template></ElTableColumn></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('modelPlaza.table.rate') }}</template><template #default="{ row: { model: m, period, key } }"><div class="border-l border-gray-100 py-2.5 pl-3 pr-5 text-right align-middle font-mono text-xs dark:border-dark-700/60"><span
+            </div><span v-else class="text-gray-400 dark:text-dark-500">-</span></div></template></ElTableColumn></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('modelPlaza.table.rate') }}</template><template #default="{ row: { model: m, period } }"><div class="border-l border-gray-100 py-2.5 pl-3 pr-5 text-right align-middle font-mono text-xs dark:border-dark-700/60"><span
               v-if="period"
               class="font-bold text-primary-600 dark:text-primary-400"
               :title="t('modelPlaza.table.timePricingRateHint', { rate: effectiveRate, multiplier: period.multiplier })"

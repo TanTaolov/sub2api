@@ -107,7 +107,7 @@
         <Doughnut :data="chartData" :options="doughnutOptions" />
       </div>
       <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-        <ElTable :data="displayModelStats" :row-key="(model) => `model-${model.model}`" :expand-row-keys="expandedKey === null ? [] : [expandedKey]" size="small" class="element-data-table" @row-click="(model) => { enableBreakdown &amp;&amp; toggleBreakdown('model', model.model) }" @expand-change="(model, expandedRows) => { if (expandedRows.includes(model) !== (expandedKey === `model-${model.model}`)) { enableBreakdown &amp;&amp; toggleBreakdown('model', model.model) } }"><ElTableColumn v-if="enableBreakdown" type="expand"><template #default="{row: model}"><UserBreakdownSubTable
+        <ElTable :data="displayModelStats" :row-key="(model) => `model-${model.model}`" :expand-row-keys="expandedKey === null ? [] : [expandedKey]" size="small" class="element-data-table" @row-click="(model) => { enableBreakdown && toggleBreakdown('model', model.model) }" @expand-change="(model, expandedRows) => { if ((expandedRows as unknown[]).includes(model) !== (expandedKey === `model-${model.model}`)) { enableBreakdown && toggleBreakdown('model', model.model) } }"><ElTableColumn v-if="enableBreakdown" type="expand"><template #default><UserBreakdownSubTable
                     :items="breakdownItems"
                     :loading="breakdownLoading"
                     :show-account-cost="showAccountCost"
@@ -142,7 +142,7 @@
         <Doughnut :data="rankingChartData" :options="rankingDoughnutOptions" />
       </div>
       <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-        <ElTable  @row-click="(item) => { item.isOther ? undefined : emit('ranking-click', item) }" :row-class-name="({ row: item }) => &quot;border-t border-gray-100 transition-colors dark:border-dark-700&quot; + ' ' + (item.isOther
+        <ElTable  @row-click="(item) => { item.isOther ? undefined : emit('ranking-click', item) }" :row-class-name="({ row: item }) => 'border-t border-gray-100 transition-colors dark:border-dark-700' + ' ' + (item.isOther
                 ? 'bg-gray-50/70 dark:bg-dark-700/20'
                 : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-700/40')" :data="rankingDisplayItems" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
@@ -153,23 +153,23 @@
                   </span>
                   <span
                     class="block max-w-[140px] truncate font-medium text-gray-900 dark:text-white"
-                    :title="getRankingRowLabel(item)"
+                    :title="getRankingRowLabel((item as RankingDisplayItem))"
                   >
-                    {{ getRankingRowLabel(item) }}
+                    {{ getRankingRowLabel((item as RankingDisplayItem)) }}
                   </span>
                 </div></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="pb-2 text-right">{{ t('admin.dashboard.spendingRankingRequests') }}</div></template>
-    <template #default="{ row: item, $index: index }"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400" >{{ formatNumber(item.requests) }}</div></template>
+    <template #default="{ row: item }"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400" >{{ formatNumber(item.requests) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="pb-2 text-right">{{ t('admin.dashboard.spendingRankingTokens') }}</div></template>
-    <template #default="{ row: item, $index: index }"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400" >{{ formatTokens(item.tokens) }}</div></template>
+    <template #default="{ row: item }"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400" >{{ formatTokens(item.tokens) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="pb-2 text-right">{{ t('admin.dashboard.spendingRankingSpend') }}</div></template>
-    <template #default="{ row: item, $index: index }"><div class="py-1.5 text-right text-green-600 dark:text-green-400" >
+    <template #default="{ row: item }"><div class="py-1.5 text-right text-green-600 dark:text-green-400" >
                 ${{ formatCost(item.actual_cost) }}</div></template>
   </ElTableColumn>
 </ElTable>

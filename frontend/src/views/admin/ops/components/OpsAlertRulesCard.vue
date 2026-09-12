@@ -458,7 +458,7 @@ function cancelDelete() {
         <ElTable v-else row-key="id" row-class-name="hover:bg-gray-50 dark:hover:bg-dark-700/50" :data="sortedRules" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertRules.table.name') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-4 py-3" ><div class="text-xs font-bold text-gray-900 dark:text-white">{{ row.name }}</div><div v-if="row.description" class="mt-0.5 line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">
+    <template #default="{ row: row }"><div class="px-4 py-3" ><div class="text-xs font-bold text-gray-900 dark:text-white">{{ row.name }}</div><div v-if="row.description" class="mt-0.5 line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">
                   {{ row.description }}
                 </div><div v-if="row.updated_at" class="mt-1 text-[10px] text-gray-400">
                   {{ formatDateTime(row.updated_at) }}
@@ -466,19 +466,19 @@ function cancelDelete() {
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertRules.table.metric') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-700 dark:text-gray-200" ><span class="font-mono">{{ row.metric_type }}</span><span class="mx-1 text-gray-400">{{ row.operator }}</span><span class="font-mono">{{ row.threshold }}</span></div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-700 dark:text-gray-200" ><span class="font-mono">{{ row.metric_type }}</span><span class="mx-1 text-gray-400">{{ row.operator }}</span><span class="font-mono">{{ row.threshold }}</span></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertRules.table.severity') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs font-bold text-gray-700 dark:text-gray-200" >{{ row.severity }}</div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-xs font-bold text-gray-700 dark:text-gray-200" >{{ row.severity }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertRules.table.enabled') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-700 dark:text-gray-200" >{{ row.enabled ? t('common.enabled') : t('common.disabled') }}</div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-700 dark:text-gray-200" >{{ row.enabled ? t('common.enabled') : t('common.disabled') }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertRules.table.actions') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-right text-xs" ><ElButton size="small" class="" @click="openEdit(row)">{{ t('common.edit') }}</ElButton><ElButton type="danger" size="small" class="ml-2" @click="requestDelete(row)">{{ t('common.delete') }}</ElButton></div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-right text-xs" ><ElButton size="small" class="" @click="openEdit((row as AlertRule))">{{ t('common.edit') }}</ElButton><ElButton type="danger" size="small" class="ml-2" @click="requestDelete((row as AlertRule))">{{ t('common.delete') }}</ElButton></div></template>
   </ElTableColumn>
 </ElTable>
       </div>

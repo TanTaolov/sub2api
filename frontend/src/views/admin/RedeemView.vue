@@ -405,7 +405,7 @@
             {{ t('admin.redeem.selectedCount', { count: selectedCount }) }}
           </p><ElForm data-test="batch-update-form" class="space-y-4" @submit.prevent="handleBatchUpdate">
             <div class="space-y-2">
-              <ElementCheckbox data-test="batch-field-status" v-model="batchUpdateForm.update_status" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              <ElementCheckbox data-test="batch-field-status" v-model="batchUpdateForm.update_status" :class="['flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300','']">
                 {{ t('admin.redeem.batchFields.status') }}</ElementCheckbox>
               <Select
                 v-if="batchUpdateForm.update_status"
@@ -416,7 +416,7 @@
             </div>
 
             <div class="space-y-2">
-              <ElementCheckbox v-model="batchUpdateForm.update_expires_at" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              <ElementCheckbox v-model="batchUpdateForm.update_expires_at" :class="['flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300','']">
                 {{ t('admin.redeem.batchFields.expiresAt') }}</ElementCheckbox>
               <template v-if="batchUpdateForm.update_expires_at">
                 <Select v-model="batchUpdateForm.expires_mode" :options="batchExpiryModeOptions" />
@@ -433,7 +433,7 @@
             </div>
 
             <div class="space-y-2">
-              <ElementCheckbox data-test="batch-field-notes" v-model="batchUpdateForm.update_notes" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              <ElementCheckbox data-test="batch-field-notes" v-model="batchUpdateForm.update_notes" :class="['flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300','']">
                 {{ t('admin.redeem.batchFields.notes') }}</ElementCheckbox>
               <ElementInput type="textarea"
                 v-if="batchUpdateForm.update_notes"
@@ -446,7 +446,7 @@
             </div>
 
             <div class="space-y-2">
-              <ElementCheckbox v-model="batchUpdateForm.update_group_id" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              <ElementCheckbox v-model="batchUpdateForm.update_group_id" :class="['flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300','']">
                 {{ t('admin.redeem.batchFields.group') }}</ElementCheckbox>
               <Select
                 v-if="batchUpdateForm.update_group_id"

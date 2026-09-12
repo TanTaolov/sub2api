@@ -1168,7 +1168,7 @@
 
         <!-- Shared: Force Global -->
         <div>
-          <ElementCheckbox v-model="editBedrockForceGlobal" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.bedrockForceGlobal') }}</span></ElementCheckbox>
+          <ElementCheckbox v-model="editBedrockForceGlobal" :class="['flex items-center gap-2 cursor-pointer','']"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.bedrockForceGlobal') }}</span></ElementCheckbox>
           <p class="input-hint mt-1">{{ t('admin.accounts.bedrockForceGlobalHint') }}</p>
         </div>
 
@@ -1729,7 +1729,7 @@
           <label class="input-label">{{ t('admin.accounts.loadFactor') }}</label>
           <ElementInput v-model.number="form.load_factor" type="number" min="1"
             class="input" :placeholder="String(form.concurrency || 1)"
-            @input="form.load_factor = (form.load_factor &amp;&amp; form.load_factor >= 1) ? form.load_factor : null" />
+            @input="form.load_factor = (form.load_factor && form.load_factor >= 1) ? form.load_factor : null" />
           <p class="input-hint">{{ t('admin.accounts.loadFactorHint') }}</p>
         </div>
         <div>
@@ -1980,7 +1980,7 @@
         <div>
           <label class="input-label mb-2 block">{{ t('admin.accounts.openai.endpointCapabilities') }}</label>
           <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <ElementCheckbox v-for="option in openAIEndpointCapabilityOptions" :key="option.value" :data-testid="`openai-endpoint-capability-${option.value}`" :checked="openAIEndpointCapabilities.includes(option.value)" @change="toggleOpenAIEndpointCapability(option.value, $event)" :class="[&quot;flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-dark-600&quot;,&quot;&quot;]"><span class="text-gray-700 dark:text-gray-200">{{ option.label }}</span></ElementCheckbox>
+            <ElementCheckbox v-for="option in openAIEndpointCapabilityOptions" :key="option.value" :data-testid="`openai-endpoint-capability-${option.value}`" :checked="openAIEndpointCapabilities.includes(option.value)" @change="toggleOpenAIEndpointCapability(option.value, $event)" :class="['flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-dark-600','']"><span class="text-gray-700 dark:text-gray-200">{{ option.label }}</span></ElementCheckbox>
           </div>
           <p class="input-hint">{{ t('admin.accounts.openai.endpointCapabilitiesDesc') }}</p>
         </div>
@@ -2796,7 +2796,8 @@
           <!-- Profile selector -->
           <div v-if="tlsFingerprintEnabled" class="mt-3">
             <ElementSelect v-model="tlsFingerprintProfileId" class="input">
-              <ElOption :label="(t('admin.accounts.quotaControl.tlsFingerprint.defaultProfile'))" :value="null">{{ t('admin.accounts.quotaControl.tlsFingerprint.defaultProfile') }}</ElOption>
+              <!-- ElOption 的值类型不含 null，而「默认配置」项需要保留 null 语义（与 model 的初值一致） -->
+              <ElOption :label="(t('admin.accounts.quotaControl.tlsFingerprint.defaultProfile'))" :value="(null as any)">{{ t('admin.accounts.quotaControl.tlsFingerprint.defaultProfile') }}</ElOption>
               <ElOption :label="(t('admin.accounts.quotaControl.tlsFingerprint.randomProfile'))" v-if="tlsFingerprintProfiles.length > 0" :value="-1">{{ t('admin.accounts.quotaControl.tlsFingerprint.randomProfile') }}</ElOption>
               <ElOption :label="(p.name)" v-for="p in tlsFingerprintProfiles" :key="p.id" :value="p.id">{{ p.name }}</ElOption>
             </ElementSelect>
@@ -2861,8 +2862,8 @@
               v-model="cacheTTLOverrideTarget"
               class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-dark-500 dark:bg-dark-700 dark:text-white"
             >
-              <ElOption :label="&quot;5m&quot;" value="5m">5m</ElOption>
-              <ElOption :label="&quot;1h&quot;" value="1h">1h</ElOption>
+              <ElOption :label="'5m'" value="5m">5m</ElOption>
+              <ElOption :label="'1h'" value="1h">1h</ElOption>
             </ElementSelect>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {{ t('admin.accounts.quotaControl.cacheTTLOverride.targetHint') }}
@@ -2914,7 +2915,7 @@
 
         <!-- Mixed Scheduling (only for antigravity accounts, read-only in edit mode) -->
         <div v-if="account?.platform === 'antigravity'" class="flex items-center gap-2">
-          <ElementCheckbox v-model="mixedScheduling" disabled :class="[&quot;flex cursor-not-allowed items-center gap-2 opacity-60&quot;,&quot;cursor-not-allowed&quot;]"><span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <ElementCheckbox v-model="mixedScheduling" disabled :class="['flex cursor-not-allowed items-center gap-2 opacity-60','cursor-not-allowed']"><span class="text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ t('admin.accounts.mixedScheduling') }}
             </span></ElementCheckbox>
           <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative" tabindex="0"><span
@@ -2927,7 +2928,7 @@
               ></div></div></ElPopover>
         </div>
         <div v-if="account?.platform === 'antigravity'" class="mt-3 flex items-center gap-2">
-          <ElementCheckbox v-model="allowOverages" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <ElementCheckbox v-model="allowOverages" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ t('admin.accounts.allowOverages') }}
             </span></ElementCheckbox>
           <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative" tabindex="0"><span

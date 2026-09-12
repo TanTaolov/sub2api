@@ -61,7 +61,7 @@
 
       <!-- Multi-Select (Checkboxes) -->
       <div v-else-if="attr.type === 'multi_select'" class="space-y-2">
-        <ElementCheckbox v-for="opt in attr.options" :key="opt.value" :value="opt.value" :checked="isOptionSelected(attr.id, opt.value)" @change="toggleMultiSelectOption(attr.id, opt.value)" :class="[&quot;flex items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{ opt.label }}</span></ElementCheckbox>
+        <ElementCheckbox v-for="opt in attr.options" :key="opt.value" :value="opt.value" :checked="isOptionSelected(attr.id, opt.value)" @change="toggleMultiSelectOption(attr.id, opt.value)" :class="['flex items-center gap-2','']"><span class="text-sm text-gray-700 dark:text-gray-300">{{ opt.label }}</span></ElementCheckbox>
       </div>
 
       <!-- Description -->

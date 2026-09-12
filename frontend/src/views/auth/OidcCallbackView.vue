@@ -40,7 +40,7 @@
                 </p>
               </div>
 
-              <ElementCheckbox v-if="suggestedDisplayName" v-model="adoptDisplayName" :class="[&quot;flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3 text-sm dark:border-dark-600 dark:bg-dark-900/50&quot;,&quot;mt-1&quot;]"><span class="space-y-1">
+              <ElementCheckbox v-if="suggestedDisplayName" v-model="adoptDisplayName" :class="['flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3 text-sm dark:border-dark-600 dark:bg-dark-900/50','mt-1']"><span class="space-y-1">
                   <span class="block font-medium text-gray-900 dark:text-white">
                     {{ t('auth.oauthFlow.useDisplayName') }}
                   </span>
@@ -49,7 +49,7 @@
                   </span>
                 </span></ElementCheckbox>
 
-              <ElementCheckbox v-if="suggestedAvatarUrl" v-model="adoptAvatar" :class="[&quot;flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3 text-sm dark:border-dark-600 dark:bg-dark-900/50&quot;,&quot;mt-1&quot;]"><img
+              <ElementCheckbox v-if="suggestedAvatarUrl" v-model="adoptAvatar" :class="['flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3 text-sm dark:border-dark-600 dark:bg-dark-900/50','mt-1']"><img
                   :src="suggestedAvatarUrl"
                   :alt="t('auth.oauthFlow.avatarAlt', { providerName })"
                   class="h-10 w-10 rounded-full border border-gray-200 object-cover dark:border-dark-600"

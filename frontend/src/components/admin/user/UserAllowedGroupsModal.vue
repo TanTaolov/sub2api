@@ -89,7 +89,7 @@
               {{ restrictPublicGroups ? t('admin.users.publicGroupsRestricted') : t('admin.users.publicGroups') }}
             </h4>
             <span class="text-xs text-gray-400">({{ publicGroupConfigs.length }})</span>
-            <ElementCheckbox :checked="restrictPublicGroups" @change="toggleRestrictPublicGroups" :class="[&quot;ml-auto flex cursor-pointer items-center gap-2 text-sm text-gray-600 dark:text-gray-400&quot;,&quot;cursor-pointer&quot;]">
+            <ElementCheckbox :checked="restrictPublicGroups" @change="toggleRestrictPublicGroups" :class="['ml-auto flex cursor-pointer items-center gap-2 text-sm text-gray-600 dark:text-gray-400','cursor-pointer']">
               {{ t('admin.users.restrictPublicGroups') }}</ElementCheckbox>
           </div>
           <p class="mb-3 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.users.restrictPublicGroupsHint') }}</p>

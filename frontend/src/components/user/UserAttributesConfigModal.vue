@@ -196,8 +196,8 @@
 
       <!-- Required & Enabled -->
       <div class="flex items-center gap-6">
-        <ElementCheckbox v-model="form.required" :class="[&quot;flex items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.users.attributes.required') }}</span></ElementCheckbox>
-        <ElementCheckbox v-model="form.enabled" :class="[&quot;flex items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.users.attributes.enabled') }}</span></ElementCheckbox>
+        <ElementCheckbox v-model="form.required" :class="['flex items-center gap-2','']"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.users.attributes.required') }}</span></ElementCheckbox>
+        <ElementCheckbox v-model="form.enabled" :class="['flex items-center gap-2','']"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.users.attributes.enabled') }}</span></ElementCheckbox>
       </div>
     </ElForm>
 

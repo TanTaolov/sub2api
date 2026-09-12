@@ -475,7 +475,7 @@
     <ConfirmDialog :show="showDeleteDialog" :title="t('admin.accounts.deleteAccount')" :message="t('admin.accounts.deleteConfirm', { name: deletingAcc?.name })" :confirm-text="t('common.delete')" :cancel-text="t('common.cancel')" :danger="true" @confirm="confirmDelete" @cancel="showDeleteDialog = false" />
     <ConfirmDialog :show="showCreateShadowDialog" :title="t('admin.accounts.createSparkShadow')" :message="t('admin.accounts.createSparkShadowConfirm', { name: creatingShadowAcc?.name })" @confirm="confirmCreateSparkShadow" @cancel="showCreateShadowDialog = false" />
     <ConfirmDialog :show="showExportDataDialog" :title="t('admin.accounts.dataExport')" :message="t('admin.accounts.dataExportConfirmMessage')" :confirm-text="t('admin.accounts.dataExportConfirm')" :cancel-text="t('common.cancel')" @confirm="handleExportData" @cancel="showExportDataDialog = false">
-      <ElementCheckbox v-model="includeProxyOnExport" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t('admin.accounts.dataExportIncludeProxies') }}</span></ElementCheckbox>
+      <ElementCheckbox v-model="includeProxyOnExport" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"><span>{{ t('admin.accounts.dataExportIncludeProxies') }}</span></ElementCheckbox>
     </ConfirmDialog>
     <ErrorPassthroughRulesModal :show="showErrorPassthrough" @close="showErrorPassthrough = false" />
     <TLSFingerprintProfilesModal :show="showTLSFingerprintProfiles" @close="showTLSFingerprintProfiles = false" />
@@ -493,6 +493,7 @@ import { useAuthStore } from '@/stores/auth'
 import { adminAPI } from '@/api/admin'
 import { useTableLoader } from '@/composables/useTableLoader'
 import { useSwipeSelect, type SwipeSelectVirtualContext } from '@/composables/useSwipeSelect'
+import type { Virtualizer } from '@tanstack/vue-virtual'
 import { useTableSelection } from '@/composables/useTableSelection'
 import { useStepUp, isStepUpBlocked, isStepUpCancelled, stepUpBlockReason } from '@/composables/useStepUp'
 import TotpStepUpDialog from '@/components/auth/TotpStepUpDialog.vue'
@@ -1126,7 +1127,9 @@ const selectPage = () => {
 }
 
 const swipeVirtualContext: SwipeSelectVirtualContext = {
-  getVirtualizer: () => dataTableRef.value?.virtualizer ?? null,
+  // DataTable 暴露的是 ElTableV2 实例（内部持虚拟滚动），并非 @tanstack/vue-virtual 的 Virtualizer；
+  // 这里保持既有运行时引用不变，仅按上下文声明的类型做断言。
+  getVirtualizer: () => (dataTableRef.value?.virtualizer ?? null) as unknown as Virtualizer<HTMLElement, Element> | null,
   getSortedData: () => dataTableRef.value?.sortedData ?? accounts.value,
   getRowId: (row: any) => row.id,
 }

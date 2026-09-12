@@ -358,12 +358,12 @@
         </div>
 
         <div v-if="items.length" class="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-dark-700 dark:bg-dark-900">
-          <ElTable  :row-key="(item) => itemPreviewKey(item)" :row-class-name="({ row: item }) => &quot;align-middle&quot; + ' ' + (detailItemRowClass(item))" :data="items" table-layout="auto" class="element-data-table">
+          <ElTable  :row-key="(item) => itemPreviewKey(item)" :row-class-name="({ row: item }) => 'align-middle' + ' ' + (detailItemRowClass(item))" :data="items" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="center">
     <template #header><div class="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">Custom ID</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-2.5 text-center" ><span
+    <template #default="{ row: item }"><div class="px-3 py-2.5 text-center" ><span
                     class="block min-w-0 truncate font-mono text-sm"
-                    :class="isRecoveredOriginalFailure(item) ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'"
+                    :class="isRecoveredOriginalFailure((item as BatchImageDetailItem)) ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'"
                     :title="item.custom_id"
                   >
                     {{ item.custom_id }}
@@ -371,7 +371,7 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Prompt</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-2.5 text-left" :class="isRecoveredOriginalFailure(item) ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'" ><div
+    <template #default="{ row: item }"><div class="px-3 py-2.5 text-left" :class="isRecoveredOriginalFailure((item as BatchImageDetailItem)) ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'" ><div
                     class="batch-prompt-trigger cursor-default truncate rounded px-1 text-sm leading-6 focus:outline-none"
                     tabindex="0"
                     @pointerenter="schedulePromptPopoverOpen($event, item.prompt_preview || '-')"
@@ -388,36 +388,36 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="center">
     <template #header><div class="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('common.status') }}</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-2.5 text-center" ><span :class="itemDisplayStatusBadgeClass(item)" class="badge max-w-full truncate whitespace-nowrap" :title="itemDisplayStatusLabel(item)">
-                    {{ itemDisplayStatusLabel(item) }}
+    <template #default="{ row: item }"><div class="px-3 py-2.5 text-center" ><span :class="itemDisplayStatusBadgeClass((item as BatchImageDetailItem))" class="badge max-w-full truncate whitespace-nowrap" :title="itemDisplayStatusLabel((item as BatchImageDetailItem))">
+                    {{ itemDisplayStatusLabel((item as BatchImageDetailItem)) }}
                   </span></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="center">
     <template #header><div class="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('batchImage.detail.preview') }}</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-2.5 text-center" ><div class="mx-auto h-12 w-12 overflow-hidden rounded-md border border-gray-200 bg-gray-50 dark:border-dark-700 dark:bg-dark-800">
+    <template #default="{ row: item }"><div class="px-3 py-2.5 text-center" ><div class="mx-auto h-12 w-12 overflow-hidden rounded-md border border-gray-200 bg-gray-50 dark:border-dark-700 dark:bg-dark-800">
                     <ElButton text
-                      v-if="itemPreviewUrls[itemPreviewKey(item)] && !previewErrorIds.has(itemPreviewKey(item))"
+                      v-if="itemPreviewUrls[itemPreviewKey((item as Pick<BatchImageItem, 'batch_id' | 'custom_id'>))] && !previewErrorIds.has(itemPreviewKey((item as Pick<BatchImageItem, 'batch_id' | 'custom_id'>)))"
                       native-type="button"
                       class="block h-full w-full overflow-hidden"
                       :title="t('batchImage.detail.previewZoom', { id: item.custom_id })"
-                      @click="openImagePreview(item)"
+                      @click="openImagePreview((item as BatchImageItem))"
                     >
                       <img
-                        :src="itemPreviewUrls[itemPreviewKey(item)]"
+                        :src="itemPreviewUrls[itemPreviewKey((item as Pick<BatchImageItem, 'batch_id' | 'custom_id'>))]"
                         class="h-full w-full object-cover"
                         alt=""
-                        @error="handlePreviewError(itemPreviewKey(item))"
+                        @error="handlePreviewError(itemPreviewKey((item as Pick<BatchImageItem, 'batch_id' | 'custom_id'>)))"
                       />
                     </ElButton>
                     <ElButton text
-                      v-else-if="canLoadItemPreview(item)"
+                      v-else-if="canLoadItemPreview((item as BatchImageItem))"
                       native-type="button"
                       class="flex h-full w-full items-center justify-center text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary-600 disabled:cursor-wait disabled:opacity-70 dark:text-gray-400 dark:hover:bg-dark-700"
-                      :disabled="previewLoadingIds.has(itemPreviewKey(item))"
-                      :title="previewErrorIds.has(itemPreviewKey(item)) ? t('batchImage.detail.previewReload') : t('batchImage.detail.previewLoad')"
-                      @click="loadItemPreview(item)"
+                      :disabled="previewLoadingIds.has(itemPreviewKey((item as Pick<BatchImageItem, 'batch_id' | 'custom_id'>)))"
+                      :title="previewErrorIds.has(itemPreviewKey((item as Pick<BatchImageItem, 'batch_id' | 'custom_id'>))) ? t('batchImage.detail.previewReload') : t('batchImage.detail.previewLoad')"
+                      @click="loadItemPreview((item as BatchImageItem))"
                     >
-                      <Icon :name="previewLoadingIds.has(itemPreviewKey(item)) ? 'refresh' : 'eye'" size="sm" :class="previewLoadingIds.has(itemPreviewKey(item)) ? 'animate-spin' : ''" />
+                      <Icon :name="previewLoadingIds.has(itemPreviewKey((item as Pick<BatchImageItem, 'batch_id' | 'custom_id'>))) ? 'refresh' : 'eye'" size="sm" :class="previewLoadingIds.has(itemPreviewKey((item as Pick<BatchImageItem, 'batch_id' | 'custom_id'>))) ? 'animate-spin' : ''" />
                     </ElButton>
                     <div v-else class="flex h-full w-full items-center justify-center text-gray-400" :title="item.image_count > 0 ? t('batchImage.detail.previewUnavailable') : t('batchImage.detail.noImage')">
                       <Icon name="document" size="sm" />
@@ -426,12 +426,12 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="center">
     <template #header><div class="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('batchImage.detail.result') }}</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-2.5 text-center" ><span
+    <template #default="{ row: item }"><div class="px-3 py-2.5 text-center" ><span
                     class="inline-flex max-w-full items-center justify-center truncate rounded-md px-2.5 py-1 text-xs font-medium leading-5 ring-1 ring-inset"
-                    :class="itemResultClass(item)"
-                    :title="itemResultLabel(item)"
+                    :class="itemResultClass((item as BatchImageDetailItem))"
+                    :title="itemResultLabel((item as BatchImageDetailItem))"
                   >
-                    {{ itemResultLabel(item) }}
+                    {{ itemResultLabel((item as BatchImageDetailItem)) }}
                   </span></div></template>
   </ElTableColumn>
 </ElTable>
@@ -515,7 +515,7 @@
             <label class="input-label">API Key</label>
             <ElementSelect v-model.number="form.apiKeyId" class="input" :disabled="loadingKeys">
               <ElOption :label="(loadingKeys ? t('batchImage.create.loadingKeys') : t('batchImage.create.selectKeyPlaceholder'))" :value="0">{{ loadingKeys ? t('batchImage.create.loadingKeys') : t('batchImage.create.selectKeyPlaceholder') }}</ElOption>
-              <ElOption :label="(key.name) + &quot;·&quot; + (key.group?.name || 'Gemini')" v-for="key in geminiApiKeys" :key="key.id" :value="key.id">
+              <ElOption :label="(key.name) + '·' + (key.group?.name || 'Gemini')" v-for="key in geminiApiKeys" :key="key.id" :value="key.id">
                 {{ key.name }} · {{ key.group?.name || 'Gemini' }}
               </ElOption>
             </ElementSelect>
@@ -552,9 +552,9 @@
           <div>
             <label class="input-label">{{ t('batchImage.create.outputFormat') }}</label>
             <ElementSelect v-model="form.responseMimeType" class="input">
-              <ElOption :label="&quot;PNG&quot;" value="image/png">PNG</ElOption>
-              <ElOption :label="&quot;JPEG&quot;" value="image/jpeg">JPEG</ElOption>
-              <ElOption :label="&quot;WebP&quot;" value="image/webp">WebP</ElOption>
+              <ElOption :label="'PNG'" value="image/png">PNG</ElOption>
+              <ElOption :label="'JPEG'" value="image/jpeg">JPEG</ElOption>
+              <ElOption :label="'WebP'" value="image/webp">WebP</ElOption>
             </ElementSelect>
           </div>
 

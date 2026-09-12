@@ -24,7 +24,7 @@
           : 'rounded-lg border border-gray-200 bg-gray-50 dark:border-dark-600 dark:bg-dark-800'
       ]"
     >
-      <ElementCheckbox v-for="group in filteredGroups" :key="group.id" :title="group.rate_multiplier == null ? group.name : t('admin.groups.rateAndAccounts', { rate: group.rate_multiplier, count: group.account_count || 0 })" :value="group.id" :checked="modelValue.includes(group.id)" @change="handleChange(group.id, ($event.target as HTMLInputElement).checked)" :class="[&quot;flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 transition-colors hover:bg-white dark:hover:bg-dark-700&quot;,&quot;shrink-0&quot;]"><GroupBadge
+      <ElementCheckbox v-for="group in filteredGroups" :key="group.id" :title="group.rate_multiplier == null ? group.name : t('admin.groups.rateAndAccounts', { rate: group.rate_multiplier, count: group.account_count || 0 })" :value="group.id" :checked="modelValue.includes(group.id)" @change="handleChange(group.id, ($event.target as HTMLInputElement).checked)" :class="['flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 transition-colors hover:bg-white dark:hover:bg-dark-700','shrink-0']"><GroupBadge
           :name="group.name"
           :platform="group.platform"
           :subscription-type="group.subscription_type || undefined"

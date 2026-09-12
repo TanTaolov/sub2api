@@ -314,31 +314,31 @@
               <ElTable  row-key="date" row-class-name="border-b border-gray-100 last:border-b-0 dark:border-dark-800" :data="dailyUsageRows" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.date') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900 dark:text-white" >{{ row.date }}</div></template>
+    <template #default="{ row: row }"><div class="px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900 dark:text-white" >{{ row.date }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.requests') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(row.requests) }}</div></template>
+    <template #default="{ row: row }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(row.requests) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.inputTokens') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(row.input_tokens) }}</div></template>
+    <template #default="{ row: row }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(row.input_tokens) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.outputTokens') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(row.output_tokens) }}</div></template>
+    <template #default="{ row: row }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(row.output_tokens) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.cacheReadTokens') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(row.cache_read_tokens) }}</div></template>
+    <template #default="{ row: row }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(row.cache_read_tokens) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.cacheWriteTokens') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(row.cache_write_tokens) }}</div></template>
+    <template #default="{ row: row }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(row.cache_write_tokens) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.cost') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-4 py-3 text-sm tabular-nums text-right font-medium text-gray-900 dark:text-white" >{{ usd(row.actual_cost != null ? row.actual_cost : row.cost) }}</div></template>
+    <template #default="{ row: row }"><div class="px-4 py-3 text-sm tabular-nums text-right font-medium text-gray-900 dark:text-white" >{{ usd(row.actual_cost != null ? row.actual_cost : row.cost) }}</div></template>
   </ElTableColumn>
 </ElTable>
             </div>
@@ -359,35 +359,35 @@
               <ElTable  row-class-name="border-b border-gray-100 last:border-b-0 dark:border-dark-800" :data="modelStats" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.model') }}</div></template>
-    <template #default="{ row: m, $index: i }"><div class="px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900 dark:text-white" >{{ m.model || '-' }}</div></template>
+    <template #default="{ row: m }"><div class="px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900 dark:text-white" >{{ m.model || '-' }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.requests') }}</div></template>
-    <template #default="{ row: m, $index: i }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(m.requests) }}</div></template>
+    <template #default="{ row: m }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(m.requests) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.inputTokens') }}</div></template>
-    <template #default="{ row: m, $index: i }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(m.input_tokens) }}</div></template>
+    <template #default="{ row: m }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(m.input_tokens) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.outputTokens') }}</div></template>
-    <template #default="{ row: m, $index: i }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(m.output_tokens) }}</div></template>
+    <template #default="{ row: m }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(m.output_tokens) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.cacheCreationTokens') }}</div></template>
-    <template #default="{ row: m, $index: i }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(m.cache_creation_tokens) }}</div></template>
+    <template #default="{ row: m }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(m.cache_creation_tokens) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.cacheReadTokens') }}</div></template>
-    <template #default="{ row: m, $index: i }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(m.cache_read_tokens) }}</div></template>
+    <template #default="{ row: m }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(m.cache_read_tokens) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.totalTokens') }}</div></template>
-    <template #default="{ row: m, $index: i }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(m.total_tokens) }}</div></template>
+    <template #default="{ row: m }"><div class="px-4 py-3 text-sm tabular-nums text-right text-gray-700 dark:text-dark-200" >{{ fmtNum(m.total_tokens) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-dark-400">{{ t('keyUsage.cost') }}</div></template>
-    <template #default="{ row: m, $index: i }"><div class="px-4 py-3 text-sm tabular-nums text-right font-medium text-gray-900 dark:text-white" >{{ usd(m.actual_cost != null ? m.actual_cost : m.cost) }}</div></template>
+    <template #default="{ row: m }"><div class="px-4 py-3 text-sm tabular-nums text-right font-medium text-gray-900 dark:text-white" >{{ usd(m.actual_cost != null ? m.actual_cost : m.cost) }}</div></template>
   </ElTableColumn>
 </ElTable>
             </div>

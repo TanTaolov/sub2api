@@ -683,10 +683,10 @@
               <div class="ml-8 overflow-hidden rounded-lg border border-gray-200 dark:border-dark-600">
                 <ElTable  row-class-name="border-b border-gray-100 dark:border-dark-700 last:border-0" :data="guideActionRows" :show-header="false" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
-    <template #default="{ row: row, $index: i }"><div class="whitespace-nowrap bg-gray-50 px-3 py-2 font-medium text-gray-700 dark:bg-dark-700 dark:text-gray-300" >{{ row.action }}</div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap bg-gray-50 px-3 py-2 font-medium text-gray-700 dark:bg-dark-700 dark:text-gray-300" >{{ row.action }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
-    <template #default="{ row: row, $index: i }"><div class="px-3 py-2 text-gray-600 dark:text-gray-400" >{{ row.desc }}</div></template>
+    <template #default="{ row: row }"><div class="px-3 py-2 text-gray-600 dark:text-gray-400" >{{ row.desc }}</div></template>
   </ElTableColumn>
 </ElTable>
               </div>

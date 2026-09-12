@@ -76,7 +76,7 @@
         <Doughnut :data="chartData" :options="doughnutOptions" />
       </div>
       <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-        <ElTable :data="displayEndpointStats" row-key="endpoint" :expand-row-keys="expandedKey === null ? [] : [expandedKey]" size="small" class="element-data-table" @row-click="(item) => { enableBreakdown &amp;&amp; toggleBreakdown(item.endpoint) }" @expand-change="(item, expandedRows) => { if (expandedRows.includes(item) !== (expandedKey === item.endpoint)) { enableBreakdown &amp;&amp; toggleBreakdown(item.endpoint) } }"><ElTableColumn v-if="enableBreakdown" type="expand"><template #default="{row: item}"><UserBreakdownSubTable
+        <ElTable :data="displayEndpointStats" row-key="endpoint" :expand-row-keys="expandedKey === null ? [] : [expandedKey]" size="small" class="element-data-table" @row-click="(item) => { enableBreakdown && toggleBreakdown(item.endpoint) }" @expand-change="(item, expandedRows) => { if ((expandedRows as unknown[]).includes(item) !== (expandedKey === item.endpoint)) { enableBreakdown && toggleBreakdown(item.endpoint) } }"><ElTableColumn v-if="enableBreakdown" type="expand"><template #default><UserBreakdownSubTable
                     :items="breakdownItems"
                     :loading="breakdownLoading"
                   /></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('usage.endpoint') }}</template><template #default="{row: item}"><div class="max-w-[180px] truncate py-1.5 font-medium" :class="enableBreakdown ? 'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300' : 'text-gray-900 dark:text-white'" :title="item.endpoint"><span class="inline-flex items-center gap-1">

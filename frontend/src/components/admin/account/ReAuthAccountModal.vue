@@ -52,10 +52,10 @@
       <fieldset v-if="isAnthropic" class="border-0 p-0">
         <legend class="input-label">{{ t('admin.accounts.oauth.authMethod') }}</legend>
         <div class="mt-2 flex gap-4">
-          <ElementRadio v-model="addMethod" value="oauth" :class="[&quot;flex cursor-pointer items-center&quot;,&quot;mr-2&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
+          <ElementRadio v-model="addMethod" value="oauth" :class="['flex cursor-pointer items-center','mr-2']"><span class="text-sm text-gray-700 dark:text-gray-300">{{
               t('admin.accounts.types.oauth')
             }}</span></ElementRadio>
-          <ElementRadio v-model="addMethod" value="setup-token" :class="[&quot;flex cursor-pointer items-center&quot;,&quot;mr-2&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
+          <ElementRadio v-model="addMethod" value="setup-token" :class="['flex cursor-pointer items-center','mr-2']"><span class="text-sm text-gray-700 dark:text-gray-300">{{
               t('admin.accounts.setupTokenLongLived')
             }}</span></ElementRadio>
         </div>

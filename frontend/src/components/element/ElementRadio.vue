@@ -17,7 +17,7 @@ function handleChange(event: Event) {
 </script>
 
 <template>
-  <ElRadio v-bind="$attrs" :model-value="selectedValue" :value="radioValue" class="element-radio" @change.capture="handleChange">
+  <ElRadio v-bind="$attrs" :model-value="selectedValue" :value="radioValue" class="element-radio" @change.capture="handleChange($event as unknown as Event)">
     <slot />
   </ElRadio>
 </template>

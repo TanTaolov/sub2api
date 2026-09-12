@@ -23,7 +23,7 @@
       <div v-if="availableGroups.length > 0" class="max-h-64 space-y-2 overflow-y-auto">
         <ElRadio v-for="group in availableGroups" :key="group.id" class="flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 transition-all" :class="selectedGroupId === group.id
             ? 'border-primary-400 bg-primary-50/50 dark:border-primary-500 dark:bg-primary-900/20'
-            : 'border-gray-200 hover:border-gray-300 dark:border-dark-600 dark:hover:border-dark-500'" :value="group.id" v-model="selectedGroupId"><div class="flex-1">
+            : 'border-gray-200 hover:border-gray-300 dark:border-dark-600 dark:hover:border-dark-500'" :value="(group.id as number)" v-model="selectedGroupId"><div class="flex-1">
             <span class="font-medium text-gray-900 dark:text-white">{{ group.name }}</span>
             <span class="ml-2 text-xs text-gray-400">{{ group.platform }}</span>
           </div></ElRadio>
@@ -75,7 +75,7 @@ const emit = defineEmits(['close', 'success'])
 const { t } = useI18n()
 const appStore = useAppStore()
 
-const selectedGroupId = ref<number | null>(null)
+const selectedGroupId = ref<number | undefined>(undefined)
 const submitting = ref(false)
 
 // 可选的专属标准分组（排除当前 oldGroup）
@@ -88,7 +88,7 @@ const availableGroups = computed(() => {
 
 watch(() => props.show, (v) => {
   if (v) {
-    selectedGroupId.value = null
+    selectedGroupId.value = undefined
   }
 })
 

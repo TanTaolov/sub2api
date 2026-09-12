@@ -444,11 +444,11 @@ const empty = computed(() => events.value.length === 0 && !loading.value)
         <ElTable v-else row-key="id" @row-click="(row) => { openDetail(row) }" row-class-name="cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-700/50" :data="events" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.time') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.title || ''">{{ formatDateTime(row.fired_at || row.created_at) }}</div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.title || ''">{{ formatDateTime(row.fired_at || row.created_at) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.severity') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3" :title="row.title || ''"><div class="flex items-center gap-2">
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3" :title="row.title || ''"><div class="flex items-center gap-2">
                   <span class="rounded-full px-2 py-1 text-[10px] font-bold" :class="severityBadgeClass(String(row.severity || ''))">
                     {{ row.severity || '-' }}
                   </span>
@@ -459,29 +459,29 @@ const empty = computed(() => events.value.length === 0 && !loading.value)
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.platform') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.title || ''">{{ getDimensionString(row, 'platform') || '-' }}</div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.title || ''">{{ getDimensionString((row as AlertEvent), 'platform') || '-' }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.ruleId') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.title || ''"><span class="font-mono">#{{ row.rule_id }}</span></div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.title || ''"><span class="font-mono">#{{ row.rule_id }}</span></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.title') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="min-w-[260px] px-4 py-3 text-xs text-gray-700 dark:text-gray-200" :title="row.title || ''"><div class="font-semibold truncate max-w-[360px]">{{ row.title || '-' }}</div><div v-if="row.description" class="mt-0.5 line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">
+    <template #default="{ row: row }"><div class="min-w-[260px] px-4 py-3 text-xs text-gray-700 dark:text-gray-200" :title="row.title || ''"><div class="font-semibold truncate max-w-[360px]">{{ row.title || '-' }}</div><div v-if="row.description" class="mt-0.5 line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">
                   {{ row.description }}
                 </div></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.duration') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.title || ''">{{ formatDurationLabel(row) }}</div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.title || ''">{{ formatDurationLabel((row as AlertEvent)) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.dimensions') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-[11px] text-gray-500 dark:text-gray-400" :title="row.title || ''">{{ formatDimensionsSummary(row) }}</div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-[11px] text-gray-500 dark:text-gray-400" :title="row.title || ''">{{ formatDimensionsSummary((row as AlertEvent)) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.email') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-right text-xs" :title="row.title || ''"><span
+    <template #default="{ row: row }"><div class="whitespace-nowrap px-4 py-3 text-right text-xs" :title="row.title || ''"><span
                   class="inline-flex items-center justify-end gap-1.5"
                   :title="row.email_sent ? t('admin.ops.alertEvents.table.emailSent') : t('admin.ops.alertEvents.table.emailIgnored')"
                 >
@@ -633,17 +633,17 @@ const empty = computed(() => events.value.length === 0 && !loading.value)
             <ElTable  row-key="id" row-class-name="hover:bg-gray-50 dark:hover:bg-dark-700/50" :data="history" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.time') }}</div></template>
-    <template #default="{ row: it, $index: rowIndex }"><div class="px-3 py-2 text-xs text-gray-600 dark:text-gray-300" >{{ formatDateTime(it.fired_at || it.created_at) }}</div></template>
+    <template #default="{ row: it }"><div class="px-3 py-2 text-xs text-gray-600 dark:text-gray-300" >{{ formatDateTime(it.fired_at || it.created_at) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.status') }}</div></template>
-    <template #default="{ row: it, $index: rowIndex }"><div class="px-3 py-2 text-xs" ><span class="inline-flex items-center rounded-full px-2 py-1 text-[10px] font-bold ring-1 ring-inset" :class="statusBadgeClass(it.status)">
+    <template #default="{ row: it }"><div class="px-3 py-2 text-xs" ><span class="inline-flex items-center rounded-full px-2 py-1 text-[10px] font-bold ring-1 ring-inset" :class="statusBadgeClass(it.status)">
                       {{ formatStatusLabel(it.status) }}
                     </span></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.metric') }}</div></template>
-    <template #default="{ row: it, $index: rowIndex }"><div class="px-3 py-2 text-xs text-gray-600 dark:text-gray-300" ><span v-if="typeof it.metric_value === 'number' && typeof it.threshold_value === 'number'">
+    <template #default="{ row: it }"><div class="px-3 py-2 text-xs text-gray-600 dark:text-gray-300" ><span v-if="typeof it.metric_value === 'number' && typeof it.threshold_value === 'number'">
                       {{ it.metric_value.toFixed(2) }} / {{ it.threshold_value.toFixed(2) }}
                     </span><span v-else>-</span></div></template>
   </ElTableColumn>

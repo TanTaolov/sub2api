@@ -8,24 +8,24 @@
     </div>
     <ElTable v-else row-key="user_id" row-class-name="border-t border-gray-100/50 dark:border-dark-700/50" :data="items" :show-header="false" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
-    <template #default="{ row: user, $index: rowIndex }"><div class="max-w-[120px] truncate py-1 pl-6 text-gray-600 dark:text-gray-300" :title="user.email" >{{ user.email || `User #${user.user_id}` }}</div></template>
+    <template #default="{ row: user }"><div class="max-w-[120px] truncate py-1 pl-6 text-gray-600 dark:text-gray-300" :title="user.email" >{{ user.email || `User #${user.user_id}` }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
-    <template #default="{ row: user, $index: rowIndex }"><div class="py-1 text-right text-gray-500 dark:text-gray-400" >{{ user.requests.toLocaleString() }}</div></template>
+    <template #default="{ row: user }"><div class="py-1 text-right text-gray-500 dark:text-gray-400" >{{ user.requests.toLocaleString() }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
-    <template #default="{ row: user, $index: rowIndex }"><div class="py-1 text-right text-gray-500 dark:text-gray-400" >{{ formatTokens(user.total_tokens) }}</div></template>
+    <template #default="{ row: user }"><div class="py-1 text-right text-gray-500 dark:text-gray-400" >{{ formatTokens(user.total_tokens) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
-    <template #default="{ row: user, $index: rowIndex }"><div class="py-1 text-right text-green-600 dark:text-green-400" >
+    <template #default="{ row: user }"><div class="py-1 text-right text-green-600 dark:text-green-400" >
             ${{ formatCost(user.actual_cost) }}</div></template>
   </ElTableColumn>
   <ElTableColumn v-if="showAccountCost" :min-width="120" align="right">
-    <template #default="{ row: user, $index: rowIndex }"><div class="py-1 text-right text-orange-500 dark:text-orange-400" >
+    <template #default="{ row: user }"><div class="py-1 text-right text-orange-500 dark:text-orange-400" >
             ${{ formatCost(user.account_cost) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
-    <template #default="{ row: user, $index: rowIndex }"><div class="py-1 pr-1 text-right text-gray-400 dark:text-gray-500" >
+    <template #default="{ row: user }"><div class="py-1 pr-1 text-right text-gray-400 dark:text-gray-500" >
             ${{ formatCost(user.cost) }}</div></template>
   </ElTableColumn>
 </ElTable>

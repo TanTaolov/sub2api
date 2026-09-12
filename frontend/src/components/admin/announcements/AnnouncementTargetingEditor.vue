@@ -11,9 +11,9 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <ElementRadio name="announcement-targeting-mode" value="all" :checked="mode === 'all'" @change="setMode('all')" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+        <ElementRadio name="announcement-targeting-mode" value="all" :checked="mode === 'all'" @change="setMode('all')" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']">
           {{ t('admin.announcements.form.targetingAll') }}</ElementRadio>
-        <ElementRadio name="announcement-targeting-mode" value="custom" :checked="mode === 'custom'" @change="setMode('custom')" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+        <ElementRadio name="announcement-targeting-mode" value="custom" :checked="mode === 'custom'" @change="setMode('custom')" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']">
           {{ t('admin.announcements.form.targetingCustom') }}</ElementRadio>
       </div>
     </div>

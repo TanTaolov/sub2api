@@ -39,7 +39,7 @@
             <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('admin.backup.s3.secretAccessKey') }}</label>
             <ElementInput v-model="s3Form.secret_access_key" type="password" class="input w-full" :placeholder="s3SecretConfigured ? t('admin.backup.s3.secretConfigured') : ''" />
           </div>
-          <ElementCheckbox v-model="s3Form.force_path_style" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 md:col-span-2&quot;]"><span>{{ t('admin.backup.s3.forcePathStyle') }}</span></ElementCheckbox>
+          <ElementCheckbox v-model="s3Form.force_path_style" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 md:col-span-2']"><span>{{ t('admin.backup.s3.forcePathStyle') }}</span></ElementCheckbox>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
           <ElButton size="small" native-type="button" class="" :disabled="testingS3" @click="testS3">
@@ -62,10 +62,10 @@
               {{ t('admin.backup.imageStorage.description') }}
             </p>
           </div>
-          <ElementCheckbox v-model="imageStorageForm.enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;]"><span>{{ t('admin.backup.imageStorage.enabled') }}</span></ElementCheckbox>
+          <ElementCheckbox v-model="imageStorageForm.enabled" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300']"><span>{{ t('admin.backup.imageStorage.enabled') }}</span></ElementCheckbox>
         </div>
 
-        <ElementCheckbox v-model="imageStorageForm.reuse_backup_s3" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;]"><span>{{ t('admin.backup.imageStorage.reuseBackupS3') }}</span></ElementCheckbox>
+        <ElementCheckbox v-model="imageStorageForm.reuse_backup_s3" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300']"><span>{{ t('admin.backup.imageStorage.reuseBackupS3') }}</span></ElementCheckbox>
 
         <div class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
           <div>
@@ -94,7 +94,7 @@
               <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('admin.backup.s3.secretAccessKey') }}</label>
               <ElementInput v-model="imageStorageForm.secret_access_key" type="password" class="input w-full" :placeholder="imageStorageSecretConfigured ? t('admin.backup.s3.secretConfigured') : ''" />
             </div>
-            <ElementCheckbox v-model="imageStorageForm.force_path_style" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 md:col-span-2&quot;]"><span>{{ t('admin.backup.s3.forcePathStyle') }}</span></ElementCheckbox>
+            <ElementCheckbox v-model="imageStorageForm.force_path_style" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 md:col-span-2']"><span>{{ t('admin.backup.s3.forcePathStyle') }}</span></ElementCheckbox>
           </template>
 
           <div>
@@ -128,7 +128,7 @@
           </p>
         </div>
         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <ElementCheckbox v-model="scheduleForm.enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 md:col-span-2&quot;]"><span>{{ t('admin.backup.schedule.enabled') }}</span></ElementCheckbox>
+          <ElementCheckbox v-model="scheduleForm.enabled" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 md:col-span-2']"><span>{{ t('admin.backup.schedule.enabled') }}</span></ElementCheckbox>
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('admin.backup.schedule.cronExpr') }}</label>
             <ElementInput v-model="scheduleForm.cron_expr" class="input w-full" placeholder="0 2 * * *" />
@@ -181,11 +181,11 @@
           <ElTable  row-key="id" row-class-name="border-b border-gray-100 align-top dark:border-dark-800" :data="backups" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="py-2 pr-4">ID</div></template>
-    <template #default="{ row: record, $index: rowIndex }"><div class="py-3 pr-4 font-mono text-xs" >{{ record.id }}</div></template>
+    <template #default="{ row: record }"><div class="py-3 pr-4 font-mono text-xs" >{{ record.id }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="py-2 pr-4">{{ t('admin.backup.columns.status') }}</div></template>
-    <template #default="{ row: record, $index: rowIndex }"><div class="py-3 pr-4" ><span
+    <template #default="{ row: record }"><div class="py-3 pr-4" ><span
                     class="rounded px-2 py-0.5 text-xs"
                     :class="statusClass(record.status)"
                   >
@@ -196,31 +196,31 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="py-2 pr-4">{{ t('admin.backup.columns.fileName') }}</div></template>
-    <template #default="{ row: record, $index: rowIndex }"><div class="py-3 pr-4 text-xs" >{{ record.file_name }}</div></template>
+    <template #default="{ row: record }"><div class="py-3 pr-4 text-xs" >{{ record.file_name }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="py-2 pr-4">{{ t('admin.backup.columns.size') }}</div></template>
-    <template #default="{ row: record, $index: rowIndex }"><div class="py-3 pr-4 text-xs" >{{ formatSize(record.size_bytes) }}</div></template>
+    <template #default="{ row: record }"><div class="py-3 pr-4 text-xs" >{{ formatSize(record.size_bytes) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="py-2 pr-4">{{ t('admin.backup.columns.parts') }}</div></template>
-    <template #default="{ row: record, $index: rowIndex }"><div class="py-3 pr-4 text-xs" >{{ record.parts?.length || (record.status === 'running' ? '-' : 1) }}</div></template>
+    <template #default="{ row: record }"><div class="py-3 pr-4 text-xs" >{{ record.parts?.length || (record.status === 'running' ? '-' : 1) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="py-2 pr-4">{{ t('admin.backup.columns.expiresAt') }}</div></template>
-    <template #default="{ row: record, $index: rowIndex }"><div class="py-3 pr-4 text-xs" >{{ record.expires_at ? formatDate(record.expires_at) : t('admin.backup.neverExpire') }}</div></template>
+    <template #default="{ row: record }"><div class="py-3 pr-4 text-xs" >{{ record.expires_at ? formatDate(record.expires_at) : t('admin.backup.neverExpire') }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="py-2 pr-4">{{ t('admin.backup.columns.triggeredBy') }}</div></template>
-    <template #default="{ row: record, $index: rowIndex }"><div class="py-3 pr-4 text-xs" >{{ record.triggered_by === 'scheduled' ? t('admin.backup.trigger.scheduled') : t('admin.backup.trigger.manual') }}</div></template>
+    <template #default="{ row: record }"><div class="py-3 pr-4 text-xs" >{{ record.triggered_by === 'scheduled' ? t('admin.backup.trigger.scheduled') : t('admin.backup.trigger.manual') }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="py-2 pr-4">{{ t('admin.backup.columns.startedAt') }}</div></template>
-    <template #default="{ row: record, $index: rowIndex }"><div class="py-3 pr-4 text-xs" >{{ formatDate(record.started_at) }}</div></template>
+    <template #default="{ row: record }"><div class="py-3 pr-4 text-xs" >{{ formatDate(record.started_at) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="py-2">{{ t('admin.backup.columns.actions') }}</div></template>
-    <template #default="{ row: record, $index: rowIndex }"><div class="py-3 text-xs" ><div class="flex flex-wrap gap-1">
+    <template #default="{ row: record }"><div class="py-3 text-xs" ><div class="flex flex-wrap gap-1">
                     <ElButton
                       v-if="record.status === 'completed'"
                       native-type="button"
@@ -296,10 +296,10 @@
               <div class="ml-8 overflow-hidden rounded-lg border border-gray-200 dark:border-dark-600">
                 <ElTable  row-class-name="border-b border-gray-100 dark:border-dark-700 last:border-0" :data="r2ConfigRows" :show-header="false" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
-    <template #default="{ row: row, $index: i }"><div class="whitespace-nowrap bg-gray-50 px-3 py-2 font-medium text-gray-700 dark:bg-dark-700 dark:text-gray-300" >{{ row.field }}</div></template>
+    <template #default="{ row: row }"><div class="whitespace-nowrap bg-gray-50 px-3 py-2 font-medium text-gray-700 dark:bg-dark-700 dark:text-gray-300" >{{ row.field }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
-    <template #default="{ row: row, $index: i }"><div class="px-3 py-2 text-gray-600 dark:text-gray-400" ><code class="text-xs">{{ row.value }}</code></div></template>
+    <template #default="{ row: row }"><div class="px-3 py-2 text-gray-600 dark:text-gray-400" ><code class="text-xs">{{ row.value }}</code></div></template>
   </ElTableColumn>
 </ElTable>
               </div>

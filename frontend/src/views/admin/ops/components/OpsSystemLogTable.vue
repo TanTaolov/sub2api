@@ -428,11 +428,11 @@ onMounted(async () => {
         <div class="md:col-span-2 xl:col-span-6">
           <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <ElementCheckbox v-model="runtimeConfig.caller" :class="[&quot;inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300&quot;]">
+              <ElementCheckbox v-model="runtimeConfig.caller" :class="['inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300']">
                 {{ t('admin.ops.systemLogs.caller') }}</ElementCheckbox>
-              <ElementCheckbox v-model="runtimeConfig.enable_sampling" :class="[&quot;inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300&quot;]">
+              <ElementCheckbox v-model="runtimeConfig.enable_sampling" :class="['inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300']">
                 {{ t('admin.ops.systemLogs.sampling') }}</ElementCheckbox>
-              <ElementCheckbox v-model="runtimeConfig.persist_access_logs" :class="[&quot;inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300&quot;]">
+              <ElementCheckbox v-model="runtimeConfig.persist_access_logs" :class="['inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300']">
                 {{ t('admin.ops.systemLogs.persistAccessLogs') }}</ElementCheckbox>
             </div>
             <div class="flex flex-wrap items-center gap-2 lg:justify-end">
@@ -539,21 +539,21 @@ onMounted(async () => {
         <ElTable  row-key="id" row-class-name="align-top" :data="logs" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="w-[170px] px-3 py-2 text-left text-[11px] font-semibold text-gray-500">{{ t('admin.ops.systemLogs.time') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300" >{{ formatTime(row.created_at) }}</div></template>
+    <template #default="{ row: row }"><div class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300" >{{ formatTime(row.created_at) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="w-[160px] px-3 py-2 text-left text-[11px] font-semibold text-gray-500">{{ t('admin.ops.systemLogs.host') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300" ><span class="block truncate" :title="row.host || '-'">{{ row.host || '-' }}</span></div></template>
+    <template #default="{ row: row }"><div class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300" ><span class="block truncate" :title="row.host || '-'">{{ row.host || '-' }}</span></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="w-[80px] px-3 py-2 text-left text-[11px] font-semibold text-gray-500">{{ t('admin.ops.systemLogs.level') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2 text-xs" ><span class="inline-flex rounded-full px-2 py-0.5 font-semibold" :class="levelBadgeClass(row.level)">
+    <template #default="{ row: row }"><div class="px-3 py-2 text-xs" ><span class="inline-flex rounded-full px-2 py-0.5 font-semibold" :class="levelBadgeClass(row.level)">
                   {{ row.level }}
                 </span></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500">{{ t('admin.ops.systemLogs.logDetails') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300 whitespace-normal break-all" >{{ formatSystemLogDetail(row) }}</div></template>
+    <template #default="{ row: row }"><div class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300 whitespace-normal break-all" >{{ formatSystemLogDetail((row as OpsSystemLog)) }}</div></template>
   </ElTableColumn>
 </ElTable>
       </div>

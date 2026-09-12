@@ -390,7 +390,7 @@ onMounted(() => {
       <div class="rounded-2xl bg-gray-50 p-4 dark:bg-dark-700/50">
         <div class="mb-2 text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.ops.runtime.silencing.title') }}</div>
 
-        <ElementCheckbox v-model="draftAlert.silencing.enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t('admin.ops.runtime.silencing.enabled') }}</span></ElementCheckbox>
+        <ElementCheckbox v-model="draftAlert.silencing.enabled" :class="['inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"><span>{{ t('admin.ops.runtime.silencing.enabled') }}</span></ElementCheckbox>
 
         <div v-if="draftAlert.silencing.enabled" class="mt-4 space-y-4">
           <div>
@@ -493,7 +493,7 @@ onMounted(() => {
 
       <ElCollapse class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-dark-600 dark:bg-dark-800" ><ElCollapseItem name="content"><template #title>{{ t('admin.ops.runtime.advancedSettingsSummary') }}</template><div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <ElementCheckbox v-model="draftAlert.distributed_lock.enabled" :class="[&quot;inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t('admin.ops.runtime.lockEnabled') }}</span></ElementCheckbox>
+            <ElementCheckbox v-model="draftAlert.distributed_lock.enabled" :class="['inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300','']"><span>{{ t('admin.ops.runtime.lockEnabled') }}</span></ElementCheckbox>
           </div>
           <div class="md:col-span-2">
             <div class="mb-1 text-xs font-medium text-gray-500">{{ t('admin.ops.runtime.lockKey') }}</div>

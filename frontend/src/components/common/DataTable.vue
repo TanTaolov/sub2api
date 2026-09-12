@@ -33,7 +33,7 @@
 
     <template v-else>
       <div v-if="selectable" class="flex items-center justify-end gap-2 px-1">
-        <ElementCheckbox :checked="allVisibleSelected" :indeterminate="someVisibleSelected" data-test="select-all-mobile" @change="toggleAllVisible(($event.target as HTMLInputElement).checked)" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t('common.selectAll') }}</span></ElementCheckbox>
+        <ElementCheckbox :checked="allVisibleSelected" :indeterminate="someVisibleSelected" data-test="select-all-mobile" @change="toggleAllVisible(($event.target as HTMLInputElement).checked)" :class="['flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300','']"><span>{{ t('common.selectAll') }}</span></ElementCheckbox>
       </div>
       <div
         v-for="(row, index) in sortedData"
@@ -80,7 +80,7 @@
     </template>
   </div>
 <div v-else ref="tableWrapperRef" class="table-wrapper element-table-wrapper" :class="{ 'actions-expanded': actionsExpanded }">
-<ElTable v-if="!shouldVirtualize" :data="loading ? [] : sortedData" :row-key="(row: any) => resolveRowKey(row, sortedData.indexOf(row))"
+<ElTable v-if="!shouldVirtualize" :data="loading ? [] : sortedData" :row-key="(row: any) => String(resolveRowKey(row, sortedData.indexOf(row)))"
       class="element-data-table" table-layout="auto" :class="{ 'cursor-pointer': clickableRows }"
       @row-click="(row: any) => clickableRows && emit('rowClick', row)">
       <ElTableColumn v-if="selectable" :width="48" fixed="left">
@@ -101,10 +101,10 @@
           <div class="flex items-center gap-1">
             <ElButton v-if="column.sortable" text size="small" :aria-label="column.label"
               :aria-sort="getColumnAriaSort(column.key)" @click="handleSort(column.key)">
-              <slot :name="'header-' + column.key" :column="column" :sort-key="sortKey" :sort-order="sortOrder">{{ column.label }}</slot>
+              <slot :name="`header-${column.key}`" :column="column" :sort-key="sortKey" :sort-order="sortOrder">{{ column.label }}</slot>
               <Icon v-if="sortKey === column.key" name="arrowUp" size="xs" :class="{ 'rotate-180': sortOrder === 'desc' }" />
             </ElButton>
-            <slot v-else :name="'header-' + column.key" :column="column" :sort-key="sortKey" :sort-order="sortOrder">{{ column.label }}</slot>
+            <slot v-else :name="`header-${column.key}`" :column="column" :sort-key="sortKey" :sort-order="sortOrder">{{ column.label }}</slot>
             <ElButton v-if="column.key === 'actions' && expandableActions" text size="small" :aria-label="column.label"
               :aria-expanded="actionsExpanded" @click="actionsExpanded = !actionsExpanded">
               <Icon :name="actionsExpanded ? 'chevronLeft' : 'chevronRight'" size="xs" />
@@ -112,7 +112,7 @@
           </div>
         </template>
         <template #default="{ row }">
-          <slot :name="'cell-' + column.key" :row="row" :value="row[column.key]" :expanded="actionsExpanded">
+          <slot :name="`cell-${column.key}`" :row="row" :value="row[column.key]" :expanded="actionsExpanded">
             {{ column.formatter ? column.formatter(row[column.key], row) : row[column.key] }}
           </slot>
         </template>
@@ -122,7 +122,7 @@
         <slot v-else name="empty"><ElEmpty :description="t('empty.noData')" :image-size="80" /></slot>
       </template>
     </ElTable>
-<div v-else class="element-virtual-table"><ElAutoResizer><template #default="{ width, height }"><ElTableV2 ref="virtualTable" :key="virtualTableRevision" :columns="virtualColumns" :data="virtualRows" row-key="key" :width="width" :height="height" :row-height="estimateRowHeight ?? 56" :estimated-row-height="estimateRowHeight ?? 56" :cache="overscan ?? 5" :row-event-handlers="{ onClick: ({ rowData }: { rowData: { data: any } }) => clickableRows && emit('rowClick', rowData.data) }" /></template></ElAutoResizer></div>
+<div v-else class="element-virtual-table"><ElAutoResizer><template #default="{ width, height }"><ElTableV2 ref="virtualTable" :key="virtualTableRevision" :columns="virtualColumns" :data="virtualRows" row-key="key" :width="width" :height="height" :row-height="estimateRowHeight ?? 56" :estimated-row-height="estimateRowHeight ?? 56" :cache="overscan ?? 5" :row-event-handlers="{ onClick: handleVirtualRowClick }" /></template></ElAutoResizer></div>
 </div>
 </template>
 <script setup lang="ts">
@@ -138,6 +138,16 @@ const isDesktopViewport = useMediaQuery('(min-width: 768px)')
 const emit = defineEmits<{
   sort: [key: string, order: 'asc' | 'desc']; rowClick: [row: any];
   'update:selectedKeys': [keys: Array<string | number>]; selectionChange: [keys: Array<string | number>]
+}>()
+
+/**
+ * 表格插槽名是动态拼接的（`header-<key>` / `cell-<key>`），Element Plus 侧推断不出载荷，
+ * 这里显式声明，调用方解构 `column` / `row` 时才能获得类型。
+ */
+defineSlots<{
+  empty?: () => any
+  [name: `header-${string}`]: (props: { column: Column; sortKey: string; sortOrder: 'asc' | 'desc' }) => any
+  [name: `cell-${string}`]: (props: { row: any; value: any; expanded: boolean }) => any
 }>()
 const tableWrapperRef = ref<HTMLElement | null>(null)
 const virtualTable = ref<InstanceType<typeof ElTableV2>>()
@@ -402,6 +412,11 @@ const emitSelection = (next: Set<string | number>) => {
   const keys = Array.from(next)
   emit('update:selectedKeys', keys)
   emit('selectionChange', keys)
+}
+
+/** 虚拟表格的行事件只提供 rowData，这里还原成与 rowClick 一致的载荷。 */
+const handleVirtualRowClick = ({ rowData }: { rowData: { data: any } }) => {
+  if (props.clickableRows) emit('rowClick', rowData.data)
 }
 
 const isRowSelected = (row: any, index: number) =>

@@ -35,12 +35,15 @@ function updateValue(value: string, phase: 'input' | 'change') {
 }
 
 // 保留现有业务处理器的原生事件契约，值更新仍由 Element Plus 控件负责。
+// `.capture` 修饰符在组件上会落到根元素的原生捕获监听，实参是原生 DOM 事件；
+// 而 ElInput 自身声明的 input/change 载荷是值，这里的断言用于对齐真实运行时契约。
 function handleNativeEvent(event: Event, phase: 'input' | 'change') {
   const input = event.target as HTMLInputElement | HTMLTextAreaElement
   if (!(event instanceof InputEvent && event.isComposing)) {
     updateValue(input.value, phase)
   }
-  emit(phase, event)
+  if (phase === 'input') emit('input', event)
+  else emit('change', event)
 }
 
 defineExpose({
@@ -66,8 +69,8 @@ defineExpose({
     :type="type"
     :model-value="currentValue"
     class="element-field"
-    @input.capture="handleNativeEvent($event, 'input')"
-    @change.capture="handleNativeEvent($event, 'change')"
+    @input.capture="handleNativeEvent($event as unknown as Event, 'input')"
+    @change.capture="handleNativeEvent($event as unknown as Event, 'change')"
     @compositionend="updateValue(($event.target as HTMLInputElement).value, 'input')"
   >
     <template v-for="(_, name) in $slots" #[name]="slotProps">

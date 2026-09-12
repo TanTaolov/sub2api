@@ -38,7 +38,7 @@
         <Doughnut :data="chartData" :options="doughnutOptions" />
       </div>
       <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-        <ElTable :data="displayGroupStats" :row-key="(group) => `group-${group.group_id}`" :expand-row-keys="expandedKey === null ? [] : [expandedKey]" size="small" class="element-data-table" @row-click="(group) => { enableBreakdown &amp;&amp; group.group_id > 0 &amp;&amp; toggleBreakdown('group', group.group_id) }" @expand-change="(group, expandedRows) => { if (expandedRows.includes(group) !== (expandedKey === `group-${group.group_id}`)) { enableBreakdown &amp;&amp; group.group_id > 0 &amp;&amp; toggleBreakdown('group', group.group_id) } }"><ElTableColumn v-if="enableBreakdown" type="expand"><template #default="{row: group}"><UserBreakdownSubTable
+        <ElTable :data="displayGroupStats" :row-key="(group) => `group-${group.group_id}`" :expand-row-keys="expandedKey === null ? [] : [expandedKey]" size="small" class="element-data-table" @row-click="(group) => { enableBreakdown && group.group_id > 0 && toggleBreakdown('group', group.group_id) }" @expand-change="(group, expandedRows) => { if ((expandedRows as unknown[]).includes(group) !== (expandedKey === `group-${group.group_id}`)) { enableBreakdown && group.group_id > 0 && toggleBreakdown('group', group.group_id) } }"><ElTableColumn v-if="enableBreakdown" type="expand"><template #default><UserBreakdownSubTable
                     :items="breakdownItems"
                     :loading="breakdownLoading"
                     :show-account-cost="showAccountCost"

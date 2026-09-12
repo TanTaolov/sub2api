@@ -126,7 +126,7 @@
         </div>
         <div class="max-h-[min(40vh,280px)] overflow-y-auto px-3 py-2 sm:px-4">
           <div class="grid grid-cols-1 gap-1 sm:grid-cols-2">
-            <ElementCheckbox v-for="group in groups" :key="group.id" :checked="draft.group_ids.includes(group.id)" @change="toggleGroup(group.id)" :class="[&quot;flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-gray-50 dark:hover:bg-dark-800/60&quot;,&quot;&quot;]"><span class="min-w-0 flex-1 truncate font-medium text-gray-800 dark:text-gray-100">{{ group.name }}</span><small class="shrink-0 text-xs text-gray-400">{{ platformLabel(group.platform) }} · #{{ group.id }}</small></ElementCheckbox>
+            <ElementCheckbox v-for="group in groups" :key="group.id" :checked="draft.group_ids.includes(group.id)" @change="toggleGroup(group.id)" :class="['flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-gray-50 dark:hover:bg-dark-800/60','']"><span class="min-w-0 flex-1 truncate font-medium text-gray-800 dark:text-gray-100">{{ group.name }}</span><small class="shrink-0 text-xs text-gray-400">{{ platformLabel(group.platform) }} · #{{ group.id }}</small></ElementCheckbox>
           </div>
           <p v-if="groups.length === 0" class="empty-state py-8 text-sm text-gray-400">{{ t('channelMonitorV2.settings.groupsEmpty') }}</p>
         </div>
@@ -141,7 +141,7 @@
         </div>
         <div class="max-h-[min(40vh,320px)] overflow-y-auto px-3 py-2 sm:px-4">
           <div class="grid grid-cols-1 gap-1 sm:grid-cols-2">
-            <ElementCheckbox v-for="category in errorCategories" :key="category" :checked="isCategoryIgnored(category)" @change="toggleIgnoredCategory(category)" :class="[&quot;flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-gray-50 dark:hover:bg-dark-800/60&quot;,&quot;&quot;]"><span class="min-w-0 flex-1 truncate font-medium text-gray-800 dark:text-gray-100">
+            <ElementCheckbox v-for="category in errorCategories" :key="category" :checked="isCategoryIgnored(category)" @change="toggleIgnoredCategory(category)" :class="['flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-gray-50 dark:hover:bg-dark-800/60','']"><span class="min-w-0 flex-1 truncate font-medium text-gray-800 dark:text-gray-100">
                 {{ categoryLabel(category) }}
               </span><small class="shrink-0 font-mono text-[10px] text-gray-400">{{ category }}</small></ElementCheckbox>
           </div>

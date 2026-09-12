@@ -98,23 +98,23 @@
               <ElTable  row-key="user_id" row-class-name="hover:bg-gray-50 dark:hover:bg-dark-700/50" :data="paginatedLocalEntries" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.groups.columns.userEmail') }}</div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2 text-gray-600 dark:text-gray-400" >{{ entry.user_email }}</div></template>
+    <template #default="{ row: entry }"><div class="px-3 py-2 text-gray-600 dark:text-gray-400" >{{ entry.user_email }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">ID</div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2 text-gray-400 dark:text-gray-500" >{{ entry.user_id }}</div></template>
+    <template #default="{ row: entry }"><div class="whitespace-nowrap px-3 py-2 text-gray-400 dark:text-gray-500" >{{ entry.user_id }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.groups.columns.userName') }}</div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-white" >{{ entry.user_name || '-' }}</div></template>
+    <template #default="{ row: entry }"><div class="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-white" >{{ entry.user_name || '-' }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.groups.columns.userNotes') }}</div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="max-w-[160px] truncate px-3 py-2 text-gray-500 dark:text-gray-400" :title="entry.user_notes" >{{ entry.user_notes || '-' }}</div></template>
+    <template #default="{ row: entry }"><div class="max-w-[160px] truncate px-3 py-2 text-gray-500 dark:text-gray-400" :title="entry.user_notes" >{{ entry.user_notes || '-' }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.groups.columns.userStatus') }}</div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2" ><span
+    <template #default="{ row: entry }"><div class="whitespace-nowrap px-3 py-2" ><span
                         :class="[
                           'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
                           entry.user_status === 'active'
@@ -127,7 +127,7 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400" :title="t('admin.groups.columns.rpmOverrideHint')">{{ t('admin.groups.columns.rpmOverride') }}</div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2" ><ElementInput
+    <template #default="{ row: entry }"><div class="whitespace-nowrap px-3 py-2" ><ElementInput
                         type="number"
                         step="1"
                         min="0"
@@ -139,7 +139,7 @@
   </ElTableColumn>
   <ElTableColumn :width="40" align="left">
     <template #header><div class="w-10 px-2 py-2"></div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="px-2 py-2" ><ElButton text
+    <template #default="{ row: entry }"><div class="px-2 py-2" ><ElButton text
                         native-type="button"
                         class="rounded p-1 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                         @click="removeLocal(entry.user_id)"

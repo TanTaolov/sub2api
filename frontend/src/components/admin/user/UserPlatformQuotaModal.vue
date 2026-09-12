@@ -20,11 +20,11 @@
         <ElTable  row-key="platform" row-class-name="border-b border-gray-100 dark:border-dark-800" :data="quotas" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left font-medium">{{ t('admin.users.platformQuota.columns.platform') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2 font-mono text-gray-900 dark:text-white" >{{ row.platform }}</div></template>
+    <template #default="{ row: row }"><div class="px-3 py-2 font-mono text-gray-900 dark:text-white" >{{ row.platform }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left font-medium">{{ t('admin.users.platformQuota.columns.daily') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2" ><div class="flex items-center gap-1">
+    <template #default="{ row: row }"><div class="px-3 py-2" ><div class="flex items-center gap-1">
                   <ElementInput
                     v-model.number="row.daily_limit_usd"
                     type="number"
@@ -44,7 +44,7 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left font-medium">{{ t('admin.users.platformQuota.columns.weekly') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2" ><div class="flex items-center gap-1">
+    <template #default="{ row: row }"><div class="px-3 py-2" ><div class="flex items-center gap-1">
                   <ElementInput
                     v-model.number="row.weekly_limit_usd"
                     type="number"
@@ -64,7 +64,7 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left font-medium">{{ t('admin.users.platformQuota.columns.monthly') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2" ><div class="flex items-center gap-1">
+    <template #default="{ row: row }"><div class="px-3 py-2" ><div class="flex items-center gap-1">
                   <ElementInput
                     v-model.number="row.monthly_limit_usd"
                     type="number"
@@ -84,7 +84,7 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left font-medium">{{ t('admin.users.platformQuota.columns.usage') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400" >{{ formatUsage(row.daily_usage_usd) }} / {{ formatUsage(row.weekly_usage_usd) }} / {{ formatUsage(row.monthly_usage_usd) }}</div></template>
+    <template #default="{ row: row }"><div class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400" >{{ formatUsage(row.daily_usage_usd) }} / {{ formatUsage(row.weekly_usage_usd) }} / {{ formatUsage(row.monthly_usage_usd) }}</div></template>
   </ElTableColumn>
 </ElTable>
         <p class="mt-3 text-xs text-gray-500">{{ t('admin.users.platformQuota.hint') }}</p>

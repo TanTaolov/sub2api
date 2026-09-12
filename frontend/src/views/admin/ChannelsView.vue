@@ -185,7 +185,7 @@
 
             <!-- Model Restriction -->
             <div>
-              <ElementCheckbox v-model="form.restrict_models" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="input-label mb-0">{{ t('admin.channels.form.restrictModels', 'Restrict Models') }}</span></ElementCheckbox>
+              <ElementCheckbox v-model="form.restrict_models" :class="['flex items-center gap-2 cursor-pointer','']"><span class="input-label mb-0">{{ t('admin.channels.form.restrictModels', 'Restrict Models') }}</span></ElementCheckbox>
               <p class="mt-1 ml-6 text-xs text-gray-400">
                 {{ t('admin.channels.form.restrictModelsHint', 'When enabled, only models in the pricing list are allowed. Others will be rejected.') }}
               </p>
@@ -204,9 +204,9 @@
             <div class="space-y-3">
               <label class="input-label mb-0">{{ t('admin.channels.form.platformConfig') }}</label>
               <div class="flex flex-wrap gap-2">
-                <ElementCheckbox v-for="p in platformOrder" :key="p" :checked="activePlatforms.includes(p)" @change="togglePlatform(p)" :class="[&quot;inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors&quot;,activePlatforms.includes(p)
+                <ElementCheckbox v-for="p in platformOrder" :key="p" :checked="activePlatforms.includes(p)" @change="togglePlatform(p)" :class="['inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors',activePlatforms.includes(p)
                     ? 'bg-primary-50 border-primary-300 dark:bg-primary-900/20 dark:border-primary-700'
-                    : 'border-gray-200 hover:bg-gray-50 dark:border-dark-600 dark:hover:bg-dark-700',&quot;&quot;]"><PlatformIcon :platform="p" size="xs" :class="platformTextClass(p)" /><span :class="platformTextClass(p)">{{ t('admin.groups.platforms.' + p, p) }}</span></ElementCheckbox>
+                    : 'border-gray-200 hover:bg-gray-50 dark:border-dark-600 dark:hover:bg-dark-700','']"><PlatformIcon :platform="p" size="xs" :class="platformTextClass(p)" /><span :class="platformTextClass(p)">{{ t('admin.groups.platforms.' + p, p) }}</span></ElementCheckbox>
               </div>
             </div>
 
@@ -252,10 +252,10 @@
                   {{ t('admin.channels.form.noGroupsAvailable', 'No groups available') }}
                 </div>
                 <div v-else class="flex flex-wrap gap-1">
-                  <ElementCheckbox v-for="group in getGroupsForPlatform(section.platform)" :key="group.id" :checked="section.group_ids.includes(group.id)" :disabled="isGroupInOtherChannel(group.id, section.platform)" @change="toggleGroupInSection(sIdx, group.id)" :class="[&quot;inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 px-2 py-1 text-xs transition-colors hover:bg-gray-50 dark:border-dark-600 dark:hover:bg-dark-700&quot;,[
+                  <ElementCheckbox v-for="group in getGroupsForPlatform(section.platform)" :key="group.id" :checked="section.group_ids.includes(group.id)" :disabled="isGroupInOtherChannel(group.id, section.platform)" @change="toggleGroupInSection(sIdx, group.id)" :class="['inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 px-2 py-1 text-xs transition-colors hover:bg-gray-50 dark:border-dark-600 dark:hover:bg-dark-700',[
                       section.group_ids.includes(group.id) ? 'bg-primary-50 border-primary-300 dark:bg-primary-900/20 dark:border-primary-700' : '',
                       isGroupInOtherChannel(group.id, section.platform) ? 'opacity-40' : ''
-                    ],&quot;&quot;]"><span :class="['font-medium', platformTextClass(group.platform)]">{{ group.name }}</span><span
+                    ],'']"><span :class="['font-medium', platformTextClass(group.platform)]">{{ group.name }}</span><span
                       :class="['rounded-full px-1 py-0 text-[10px]', platformBadgeLightClass(group.platform)]"
                     >{{ group.rate_multiplier }}x</span><span class="text-[10px] text-gray-400">{{ group.account_count || 0 }}</span><span
                       v-if="isGroupInOtherChannel(group.id, section.platform)"
@@ -438,9 +438,9 @@
                 <div>
                   <label class="text-xs text-gray-500 dark:text-gray-400">{{ t('admin.channels.form.ruleGroups') }}</label>
                   <div class="mt-1 flex flex-wrap gap-1">
-                    <ElementCheckbox v-for="gid in section.group_ids" :key="gid" :checked="rule.group_ids.includes(gid)" @change="rule.group_ids.includes(gid) ? rule.group_ids.splice(rule.group_ids.indexOf(gid), 1) : rule.group_ids.push(gid)" :class="[&quot;inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-1 text-xs transition-colors&quot;,rule.group_ids.includes(gid)
+                    <ElementCheckbox v-for="gid in section.group_ids" :key="gid" :checked="rule.group_ids.includes(gid)" @change="rule.group_ids.includes(gid) ? rule.group_ids.splice(rule.group_ids.indexOf(gid), 1) : rule.group_ids.push(gid)" :class="['inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-1 text-xs transition-colors',rule.group_ids.includes(gid)
                         ? 'border-primary-300 bg-primary-50 dark:border-primary-700 dark:bg-primary-900/20'
-                        : 'border-gray-200 hover:bg-gray-50 dark:border-dark-600 dark:hover:bg-dark-700',&quot;&quot;]"><span :class="['font-medium', platformTextClass(section.platform)]">{{ getGroupNameById(gid) }}</span></ElementCheckbox>
+                        : 'border-gray-200 hover:bg-gray-50 dark:border-dark-600 dark:hover:bg-dark-700','']"><span :class="['font-medium', platformTextClass(section.platform)]">{{ getGroupNameById(gid) }}</span></ElementCheckbox>
                   </div>
                   <p v-if="section.group_ids.length === 0" class="mt-1 text-xs text-gray-400">
                     {{ t('admin.channels.form.noGroupsInChannel') }}

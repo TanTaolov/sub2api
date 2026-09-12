@@ -98,7 +98,7 @@
           <ElementInput v-model="editing.token" class="input w-full" type="password" autocomplete="new-password" :placeholder="editing.has_token ? (editing.token_status === 'invalid' ? t('admin.promptAudit.pool.reenterSecret') : t('admin.promptAudit.pool.keepSecret')) : ''" :aria-label="t('admin.promptAudit.pool.apiKey')" />
           <span class="block text-xs text-gray-500 dark:text-dark-400">{{ t('admin.promptAudit.pool.secretHint') }}</span>
         </label>
-        <ElementCheckbox v-if="editing.has_token" v-model="editing.clear_token" :aria-label="t('admin.promptAudit.pool.clearSecret')" :class="[&quot;flex items-center gap-2 text-sm text-red-600 dark:text-red-300 sm:col-span-2&quot;]">
+        <ElementCheckbox v-if="editing.has_token" v-model="editing.clear_token" :aria-label="t('admin.promptAudit.pool.clearSecret')" :class="['flex items-center gap-2 text-sm text-red-600 dark:text-red-300 sm:col-span-2']">
           {{ t('admin.promptAudit.pool.clearSecret') }}</ElementCheckbox>
         <label class="space-y-1 text-sm text-gray-700 dark:text-dark-200 sm:col-span-2">
           <span>{{ t('admin.promptAudit.pool.model') }}</span>

@@ -46,8 +46,8 @@ const emit = defineEmits<{
         @change="emit('update:thresholdType', ($event.target as HTMLSelectElement).value as QuotaThresholdType)"
         class="input py-1 text-xs w-[4.5rem] flex-shrink-0 text-center"
       >
-        <ElOption :label="&quot;$&quot;" :value="QUOTA_THRESHOLD_TYPE_FIXED">$</ElOption>
-        <ElOption :label="&quot;%&quot;" :value="QUOTA_THRESHOLD_TYPE_PERCENTAGE">%</ElOption>
+        <ElOption :label="'$'" :value="QUOTA_THRESHOLD_TYPE_FIXED">$</ElOption>
+        <ElOption :label="'%'" :value="QUOTA_THRESHOLD_TYPE_PERCENTAGE">%</ElOption>
       </ElementSelect>
     </template>
   </div>

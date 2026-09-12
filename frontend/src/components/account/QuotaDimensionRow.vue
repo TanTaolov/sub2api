@@ -106,11 +106,11 @@ function getTimezoneOffsetLabel(tz: string): string {
         </template>
         <label class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ t('admin.accounts.quotaResetHour') }}</label>
         <ElementSelect :value="resetHour ?? 0" @change="emit('update:resetHour', Number(($event.target as HTMLSelectElement).value))" class="input py-1 text-xs w-24">
-          <ElOption :label="(String(h).padStart(2, '0')) + &quot;:00&quot;" v-for="h in hourOptions" :key="h" :value="h">{{ String(h).padStart(2, '0') }}:00</ElOption>
+          <ElOption :label="(String(h).padStart(2, '0')) + ':00'" v-for="h in hourOptions" :key="h" :value="h">{{ String(h).padStart(2, '0') }}:00</ElOption>
         </ElementSelect>
         <template v-if="timezoneOptions && timezoneOptions.length > 0">
           <ElementSelect :value="resetTimezone || 'UTC'" @change="emit('update:resetTimezone', ($event.target as HTMLSelectElement).value)" class="input py-1 text-xs w-auto">
-            <ElOption :label="(tz) + &quot;(&quot; + (getTimezoneOffsetLabel(tz)) + &quot;)&quot;" v-for="tz in timezoneOptions" :key="tz" :value="tz">{{ tz }} ({{ getTimezoneOffsetLabel(tz) }})</ElOption>
+            <ElOption :label="(tz) + '(' + (getTimezoneOffsetLabel(tz)) + ')'" v-for="tz in timezoneOptions" :key="tz" :value="tz">{{ tz }} ({{ getTimezoneOffsetLabel(tz) }})</ElOption>
           </ElementSelect>
         </template>
       </template>

@@ -15,37 +15,37 @@
             {{ methodLabel }}
           </label>
           <div class="flex flex-wrap gap-4">
-            <ElementRadio v-if="showManualOption" v-model="inputMethod" value="manual" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
+            <ElementRadio v-if="showManualOption" v-model="inputMethod" value="manual" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.manualAuth')
               }}</span></ElementRadio>
-            <ElementRadio v-if="showCookieOption" v-model="inputMethod" value="cookie" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
+            <ElementRadio v-if="showCookieOption" v-model="inputMethod" value="cookie" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.cookieAutoAuth')
               }}</span></ElementRadio>
-            <ElementRadio v-if="showRefreshTokenOption" v-model="inputMethod" value="refresh_token" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
+            <ElementRadio v-if="showRefreshTokenOption" v-model="inputMethod" value="refresh_token" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t(getOAuthKey('refreshTokenAuth'))
               }}</span></ElementRadio>
-            <ElementRadio v-if="showSsoOption" v-model="inputMethod" value="sso_cookie" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
+            <ElementRadio v-if="showSsoOption" v-model="inputMethod" value="sso_cookie" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t(getOAuthKey('ssoCookieAuth'))
               }}</span></ElementRadio>
-            <ElementRadio v-if="emailPasswordOptionEnabled" v-model="inputMethod" value="email_password" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
+            <ElementRadio v-if="emailPasswordOptionEnabled" v-model="inputMethod" value="email_password" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t(getOAuthKey('emailPasswordAuth'))
               }}</span></ElementRadio>
-            <ElementRadio v-if="showMobileRefreshTokenOption" v-model="inputMethod" value="mobile_refresh_token" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
+            <ElementRadio v-if="showMobileRefreshTokenOption" v-model="inputMethod" value="mobile_refresh_token" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.openai.mobileRefreshTokenAuth')
               }}</span></ElementRadio>
-            <ElementRadio v-if="showSessionTokenOption" v-model="inputMethod" value="session_token" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
+            <ElementRadio v-if="showSessionTokenOption" v-model="inputMethod" value="session_token" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t(getOAuthKey('sessionTokenAuth'))
               }}</span></ElementRadio>
-            <ElementRadio v-if="showAccessTokenOption" v-model="inputMethod" value="access_token" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
+            <ElementRadio v-if="showAccessTokenOption" v-model="inputMethod" value="access_token" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.openai.accessTokenAuth')
               }}</span></ElementRadio>
-            <ElementRadio v-if="showCodexSessionImportOption" v-model="inputMethod" value="codex_session" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
+            <ElementRadio v-if="showCodexSessionImportOption" v-model="inputMethod" value="codex_session" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.openai.codexSessionAuth')
               }}</span></ElementRadio>
-            <ElementRadio v-if="showAgentIdentityOption" v-model="inputMethod" value="agent_identity" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
+            <ElementRadio v-if="showAgentIdentityOption" v-model="inputMethod" value="agent_identity" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.openai.agentIdentityAuth')
               }}</span></ElementRadio>
-            <ElementRadio v-if="showCodexPatOption" v-model="inputMethod" value="codex_pat" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
+            <ElementRadio v-if="showCodexPatOption" v-model="inputMethod" value="codex_pat" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.openai.codexPatAuth')
               }}</span></ElementRadio>
           </div>

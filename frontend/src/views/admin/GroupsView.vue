@@ -579,7 +579,7 @@
               }
             "
           >
-            <ElOption :label="(t(&quot;admin.groups.copyAccounts.selectPlaceholder&quot;))" value="">
+            <ElOption :label="(t('admin.groups.copyAccounts.selectPlaceholder'))" value="">
               {{ t("admin.groups.copyAccounts.selectPlaceholder") }}
             </ElOption>
             <ElOption :label="(opt.label)"
@@ -880,9 +880,9 @@
             {{ t(imagePricingI18nKey(createForm.platform, "description")) }}
           </p>
           <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <ElementCheckbox v-model="createForm.allow_image_generation" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+            <ElementCheckbox v-model="createForm.allow_image_generation" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']">
               {{ t(imagePricingI18nKey(createForm.platform, "allowImageGeneration")) }}</ElementCheckbox>
-            <ElementCheckbox v-model="createForm.image_rate_independent" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+            <ElementCheckbox v-model="createForm.image_rate_independent" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']">
               {{ t(imagePricingI18nKey(createForm.platform, "independentMultiplier")) }}</ElementCheckbox>
           </div>
           <div
@@ -953,7 +953,7 @@
             </div>
           </div>
           <div v-if="createForm.platform === 'gemini' && createForm.allow_image_generation" class="mt-4 border-t border-dashed border-gray-200 pt-4 dark:border-dark-700">
-            <ElementCheckbox v-model="createForm.allow_batch_image_generation" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+            <ElementCheckbox v-model="createForm.allow_batch_image_generation" :class="['flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300','']">
               {{ t("admin.groups.imagePricing.allowBatchImageGeneration") }}</ElementCheckbox>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
               {{ t("admin.groups.imagePricing.batchSectionHint") }}
@@ -1012,7 +1012,7 @@
             {{ t(videoPricingI18nKey("description")) }}
           </p>
           <div class="mb-4">
-            <ElementCheckbox v-model="createForm.video_rate_independent" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+            <ElementCheckbox v-model="createForm.video_rate_independent" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']">
               {{ t(videoPricingI18nKey("independentMultiplier")) }}</ElementCheckbox>
           </div>
           <div
@@ -1126,7 +1126,7 @@
         <!-- 高峰时段倍率配置（仅订阅类型分组） -->
         <div v-if="createForm.subscription_type === 'subscription'" class="border-t pt-4">
           <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <ElementCheckbox v-model="createForm.peak_rate_enabled" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t("admin.groups.peakRate.enable") }}</span></ElementCheckbox>
+            <ElementCheckbox v-model="createForm.peak_rate_enabled" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"><span>{{ t("admin.groups.peakRate.enable") }}</span></ElementCheckbox>
           </div>
           <div
             v-if="createForm.peak_rate_enabled"
@@ -1165,7 +1165,7 @@
 
         <!-- 分组利润控制（五个平台 token 请求） -->
         <div v-if="isProfitControlPlatform(createForm.platform)" class="border-t pt-4">
-          <ElementCheckbox v-model="createForm.profit_control_enabled" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t("admin.groups.profitControl.enable") }}</span></ElementCheckbox>
+          <ElementCheckbox v-model="createForm.profit_control_enabled" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"><span>{{ t("admin.groups.profitControl.enable") }}</span></ElementCheckbox>
           <p class="mb-3 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
             {{
               createForm.profit_control_enabled
@@ -1230,17 +1230,17 @@
                 </div></div></ElPopover>
           </div>
           <div class="space-y-2">
-            <ElementCheckbox :checked="createForm.supported_model_scopes.includes('claude')" @change="toggleCreateScope('claude')" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
+            <ElementCheckbox :checked="createForm.supported_model_scopes.includes('claude')" @change="toggleCreateScope('claude')" :class="['flex items-center gap-2 cursor-pointer','']"><span class="text-sm text-gray-700 dark:text-gray-300">{{
                 t("admin.groups.supportedScopes.claude")
               }}</span></ElementCheckbox>
             <ElementCheckbox :checked="
                   createForm.supported_model_scopes.includes('gemini_text')
-                " @change="toggleCreateScope('gemini_text')" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
+                " @change="toggleCreateScope('gemini_text')" :class="['flex items-center gap-2 cursor-pointer','']"><span class="text-sm text-gray-700 dark:text-gray-300">{{
                 t("admin.groups.supportedScopes.geminiText")
               }}</span></ElementCheckbox>
             <ElementCheckbox :checked="
                   createForm.supported_model_scopes.includes('gemini_image')
-                " @change="toggleCreateScope('gemini_image')" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
+                " @change="toggleCreateScope('gemini_image')" :class="['flex items-center gap-2 cursor-pointer','']"><span class="text-sm text-gray-700 dark:text-gray-300">{{
                 t("admin.groups.supportedScopes.geminiImage")
               }}</span></ElementCheckbox>
           </div>
@@ -1378,7 +1378,7 @@
               <Icon name="plus" size="sm" class="mr-1" />{{ t("admin.groups.modelPricing.add") }}
             </ElButton>
           </div>
-          <ElementCheckbox v-model="createForm.long_context_pricing_enabled" :class="[&quot;mt-3 flex items-start gap-2&quot;,&quot;mt-0.5&quot;]"><span><span class="block text-sm text-gray-700 dark:text-gray-300">{{ t("admin.groups.modelPricing.longContext") }}</span><span class="block text-xs text-gray-500">{{ t("admin.groups.modelPricing.longContextHint") }}</span></span></ElementCheckbox>
+          <ElementCheckbox v-model="createForm.long_context_pricing_enabled" :class="['mt-3 flex items-start gap-2','mt-0.5']"><span><span class="block text-sm text-gray-700 dark:text-gray-300">{{ t("admin.groups.modelPricing.longContext") }}</span><span class="block text-xs text-gray-500">{{ t("admin.groups.modelPricing.longContextHint") }}</span></span></ElementCheckbox>
           <div class="mt-3 space-y-2">
             <PricingEntryCard v-for="(entry, index) in createForm.model_pricing" :key="index" :entry="entry" :platform="createForm.platform" hide-token-intervals @update="createForm.model_pricing[index] = $event" @remove="createForm.model_pricing.splice(index, 1)" />
           </div>
@@ -2098,7 +2098,7 @@
               }
             "
           >
-            <ElOption :label="(t(&quot;admin.groups.copyAccounts.selectPlaceholder&quot;))" value="">
+            <ElOption :label="(t('admin.groups.copyAccounts.selectPlaceholder'))" value="">
               {{ t("admin.groups.copyAccounts.selectPlaceholder") }}
             </ElOption>
             <ElOption :label="(opt.label)"
@@ -2401,9 +2401,9 @@
             {{ t(imagePricingI18nKey(editForm.platform, "description")) }}
           </p>
           <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <ElementCheckbox v-model="editForm.allow_image_generation" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+            <ElementCheckbox v-model="editForm.allow_image_generation" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']">
               {{ t(imagePricingI18nKey(editForm.platform, "allowImageGeneration")) }}</ElementCheckbox>
-            <ElementCheckbox v-model="editForm.image_rate_independent" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+            <ElementCheckbox v-model="editForm.image_rate_independent" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']">
               {{ t(imagePricingI18nKey(editForm.platform, "independentMultiplier")) }}</ElementCheckbox>
           </div>
           <div
@@ -2474,7 +2474,7 @@
             </div>
           </div>
           <div v-if="editForm.platform === 'gemini' && editForm.allow_image_generation" class="mt-4 border-t border-dashed border-gray-200 pt-4 dark:border-dark-700">
-            <ElementCheckbox v-model="editForm.allow_batch_image_generation" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+            <ElementCheckbox v-model="editForm.allow_batch_image_generation" :class="['flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300','']">
               {{ t("admin.groups.imagePricing.allowBatchImageGeneration") }}</ElementCheckbox>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
               {{ t("admin.groups.imagePricing.batchSectionHint") }}
@@ -2533,7 +2533,7 @@
             {{ t(videoPricingI18nKey("description")) }}
           </p>
           <div class="mb-4">
-            <ElementCheckbox v-model="editForm.video_rate_independent" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+            <ElementCheckbox v-model="editForm.video_rate_independent" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']">
               {{ t(videoPricingI18nKey("independentMultiplier")) }}</ElementCheckbox>
           </div>
           <div
@@ -2647,7 +2647,7 @@
         <!-- 高峰时段倍率配置（仅订阅类型分组） -->
         <div v-if="editForm.subscription_type === 'subscription'" class="border-t pt-4">
           <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <ElementCheckbox v-model="editForm.peak_rate_enabled" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t("admin.groups.peakRate.enable") }}</span></ElementCheckbox>
+            <ElementCheckbox v-model="editForm.peak_rate_enabled" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"><span>{{ t("admin.groups.peakRate.enable") }}</span></ElementCheckbox>
           </div>
           <div
             v-if="editForm.peak_rate_enabled"
@@ -2686,7 +2686,7 @@
 
         <!-- 分组利润控制（五个平台 token 请求） -->
         <div v-if="isProfitControlPlatform(editForm.platform)" class="border-t pt-4">
-          <ElementCheckbox v-model="editForm.profit_control_enabled" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t("admin.groups.profitControl.enable") }}</span></ElementCheckbox>
+          <ElementCheckbox v-model="editForm.profit_control_enabled" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']"><span>{{ t("admin.groups.profitControl.enable") }}</span></ElementCheckbox>
           <p class="mb-3 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
             {{
               editForm.profit_control_enabled
@@ -2751,17 +2751,17 @@
                 </div></div></ElPopover>
           </div>
           <div class="space-y-2">
-            <ElementCheckbox :checked="editForm.supported_model_scopes.includes('claude')" @change="toggleEditScope('claude')" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
+            <ElementCheckbox :checked="editForm.supported_model_scopes.includes('claude')" @change="toggleEditScope('claude')" :class="['flex items-center gap-2 cursor-pointer','']"><span class="text-sm text-gray-700 dark:text-gray-300">{{
                 t("admin.groups.supportedScopes.claude")
               }}</span></ElementCheckbox>
             <ElementCheckbox :checked="
                   editForm.supported_model_scopes.includes('gemini_text')
-                " @change="toggleEditScope('gemini_text')" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
+                " @change="toggleEditScope('gemini_text')" :class="['flex items-center gap-2 cursor-pointer','']"><span class="text-sm text-gray-700 dark:text-gray-300">{{
                 t("admin.groups.supportedScopes.geminiText")
               }}</span></ElementCheckbox>
             <ElementCheckbox :checked="
                   editForm.supported_model_scopes.includes('gemini_image')
-                " @change="toggleEditScope('gemini_image')" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
+                " @change="toggleEditScope('gemini_image')" :class="['flex items-center gap-2 cursor-pointer','']"><span class="text-sm text-gray-700 dark:text-gray-300">{{
                 t("admin.groups.supportedScopes.geminiImage")
               }}</span></ElementCheckbox>
           </div>
@@ -2909,7 +2909,7 @@
               <Icon name="plus" size="sm" class="mr-1" />{{ t("admin.groups.modelPricing.add") }}
             </ElButton>
           </div>
-          <ElementCheckbox v-model="editForm.long_context_pricing_enabled" :class="[&quot;mt-3 flex items-start gap-2&quot;,&quot;mt-0.5&quot;]"><span><span class="block text-sm text-gray-700 dark:text-gray-300">{{ t("admin.groups.modelPricing.longContext") }}</span><span class="block text-xs text-gray-500">{{ t("admin.groups.modelPricing.longContextHint") }}</span></span></ElementCheckbox>
+          <ElementCheckbox v-model="editForm.long_context_pricing_enabled" :class="['mt-3 flex items-start gap-2','mt-0.5']"><span><span class="block text-sm text-gray-700 dark:text-gray-300">{{ t("admin.groups.modelPricing.longContext") }}</span><span class="block text-xs text-gray-500">{{ t("admin.groups.modelPricing.longContextHint") }}</span></span></ElementCheckbox>
           <div class="mt-3 space-y-2">
             <PricingEntryCard v-for="(entry, index) in editForm.model_pricing" :key="index" :entry="entry" :platform="editForm.platform" hide-token-intervals @update="editForm.model_pricing[index] = $event" @remove="editForm.model_pricing.splice(index, 1)" />
           </div>
@@ -3693,7 +3693,7 @@
               <ElTable  row-key="id" :row-class-name="({ row: route }) => '' + ' ' + (!route.enabled && 'opacity-60')" :data="compositeRoutes" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2">{{ t("admin.groups.compositeRoutes.publicModel") }}</div></template>
-    <template #default="{ row: route, $index: rowIndex }"><div class="max-w-[15rem] px-3 py-2" ><div class="break-all font-medium text-gray-900 dark:text-white">
+    <template #default="{ row: route }"><div class="max-w-[15rem] px-3 py-2" ><div class="break-all font-medium text-gray-900 dark:text-white">
                         {{ route.public_model }}
                       </div><div class="mt-1 flex flex-wrap items-center gap-1.5">
                         <span class="badge badge-gray">{{
@@ -3709,7 +3709,7 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2">{{ t("admin.groups.compositeRoutes.target") }}</div></template>
-    <template #default="{ row: route, $index: rowIndex }"><div class="px-3 py-2" ><div class="flex items-center gap-1.5 text-gray-900 dark:text-white">
+    <template #default="{ row: route }"><div class="px-3 py-2" ><div class="flex items-center gap-1.5 text-gray-900 dark:text-white">
                         <PlatformIcon :platform="route.target_platform" size="xs" />
                         <span>{{ formatCompositePlatform(route.target_platform) }}</span>
                       </div><div class="mt-1 break-all text-xs text-gray-500 dark:text-gray-400">
@@ -3718,7 +3718,7 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2">{{ t("admin.groups.compositeRoutes.scope") }}</div></template>
-    <template #default="{ row: route, $index: rowIndex }"><div class="px-3 py-2" ><div class="text-gray-700 dark:text-gray-300">
+    <template #default="{ row: route }"><div class="px-3 py-2" ><div class="text-gray-700 dark:text-gray-300">
                         {{ formatCompositeEndpoint(route.endpoint) }}
                       </div><div class="text-xs text-gray-500 dark:text-gray-400">
                         {{ t("admin.groups.compositeRoutes.priority") }}:
@@ -3727,12 +3727,12 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-3 py-2 text-right">{{ t("admin.groups.columns.actions") }}</div></template>
-    <template #default="{ row: route, $index: rowIndex }"><div class="px-3 py-2" ><div class="flex justify-end gap-1">
+    <template #default="{ row: route }"><div class="px-3 py-2" ><div class="flex justify-end gap-1">
                         <ElButton text
                           native-type="button"
                           class="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-primary-600 dark:hover:bg-dark-700 dark:hover:text-primary-400"
                           :title="t('common.edit')"
-                          @click="editCompositeRoute(route)"
+                          @click="editCompositeRoute((route as CompositeModelRoute))"
                         >
                           <Icon name="edit" size="sm" />
                         </ElButton>
@@ -3740,7 +3740,7 @@
                           native-type="button"
                           class="rounded p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                           :title="t('common.delete')"
-                          @click="deleteCompositeRoute(route)"
+                          @click="deleteCompositeRoute((route as CompositeModelRoute))"
                         >
                           <Icon name="trash" size="sm" />
                         </ElButton>
@@ -3856,7 +3856,7 @@
             </div>
 
             <div class="flex items-center justify-between gap-3">
-              <ElementCheckbox v-model="compositeRouteForm.enabled" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              <ElementCheckbox v-model="compositeRouteForm.enabled" :class="['flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300','']">
                 {{ t("admin.groups.compositeRoutes.enabled") }}</ElementCheckbox>
               <ElButton type="primary"
                 native-type="submit"

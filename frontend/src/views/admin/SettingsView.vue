@@ -440,15 +440,15 @@
                       v-model="streamTimeoutForm.action"
                       class="input w-64"
                     >
-                      <ElOption :label="(t(&quot;admin.settings.streamTimeout.actionTempUnsched&quot;))" value="temp_unsched">
+                      <ElOption :label="(t('admin.settings.streamTimeout.actionTempUnsched'))" value="temp_unsched">
                         {{
                           t("admin.settings.streamTimeout.actionTempUnsched")
                         }}
                       </ElOption>
-                      <ElOption :label="(t(&quot;admin.settings.streamTimeout.actionError&quot;))" value="error">
+                      <ElOption :label="(t('admin.settings.streamTimeout.actionError'))" value="error">
                         {{ t("admin.settings.streamTimeout.actionError") }}
                       </ElOption>
-                      <ElOption :label="(t(&quot;admin.settings.streamTimeout.actionNone&quot;))" value="none">
+                      <ElOption :label="(t('admin.settings.streamTimeout.actionNone'))" value="none">
                         {{ t("admin.settings.streamTimeout.actionNone") }}
                       </ElOption>
                     </ElementSelect>
@@ -3204,10 +3204,10 @@
                       {{ t("admin.settings.dingtalk.corpPolicy.hint") }}
                     </p>
                     <div class="space-y-2">
-                      <ElementRadio v-model="form.dingtalk_connect_corp_restriction_policy" value="none" :class="[&quot;flex cursor-pointer items-center gap-3&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">
+                      <ElementRadio v-model="form.dingtalk_connect_corp_restriction_policy" value="none" :class="['flex cursor-pointer items-center gap-3','']"><span class="text-sm text-gray-700 dark:text-gray-300">
                           {{ t("admin.settings.dingtalk.corpPolicy.none") }}
                         </span></ElementRadio>
-                      <ElementRadio v-model="form.dingtalk_connect_corp_restriction_policy" value="internal_only" :class="[&quot;flex cursor-pointer items-center gap-3&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">
+                      <ElementRadio v-model="form.dingtalk_connect_corp_restriction_policy" value="internal_only" :class="['flex cursor-pointer items-center gap-3','']"><span class="text-sm text-gray-700 dark:text-gray-300">
                           {{ t("admin.settings.dingtalk.corpPolicy.internalOnly") }}
                         </span></ElementRadio>
                     </div>
@@ -3641,13 +3641,13 @@
                       v-model="form.oidc_connect_token_auth_method"
                       class="input font-mono text-sm"
                     >
-                      <ElOption :label="&quot;client_secret_post&quot;" value="client_secret_post">
+                      <ElOption :label="'client_secret_post'" value="client_secret_post">
                         client_secret_post
                       </ElOption>
-                      <ElOption :label="&quot;client_secret_basic&quot;" value="client_secret_basic">
+                      <ElOption :label="'client_secret_basic'" value="client_secret_basic">
                         client_secret_basic
                       </ElOption>
-                      <ElOption :label="&quot;none&quot;" value="none">none</ElOption>
+                      <ElOption :label="'none'" value="none">none</ElOption>
                     </ElementSelect>
                   </div>
 
@@ -4004,15 +4004,15 @@
                   </p>
                 </div>
                 <div class="overflow-x-auto">
-                  <ElTable  :row-key="(p) => p" row-class-name="align-top" :data="(['anthropic', 'openai', 'gemini', 'antigravity', 'grok'] as const)" table-layout="auto" class="element-data-table">
+                  <ElTable  :row-key="(p) => quotaRowKey(p)" row-class-name="align-top" :data="platformQuotaRows" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.platform") }}</div></template>
-    <template #default="{ row: p, $index: rowIndex }"><div class="pr-4 py-1" ><span class="font-mono text-xs text-gray-700 dark:text-gray-300">{{ p }}</span></div></template>
+    <template #default="{ row: p }"><div class="pr-4 py-1" ><span class="font-mono text-xs text-gray-700 dark:text-gray-300">{{ p }}</span></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.daily") }}</div></template>
-    <template #default="{ row: p, $index: rowIndex }"><div class="pr-4 py-1" ><ElementInput
-                            v-model.number="form.default_platform_quotas[p]!.daily"
+    <template #default="{ row: p }"><div class="pr-4 py-1" ><ElementInput
+                            v-model.number="form.default_platform_quotas[quotaRowKey(p)]!.daily"
                             type="number"
                             step="0.01"
                             min="0"
@@ -4022,8 +4022,8 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.weekly") }}</div></template>
-    <template #default="{ row: p, $index: rowIndex }"><div class="pr-4 py-1" ><ElementInput
-                            v-model.number="form.default_platform_quotas[p]!.weekly"
+    <template #default="{ row: p }"><div class="pr-4 py-1" ><ElementInput
+                            v-model.number="form.default_platform_quotas[quotaRowKey(p)]!.weekly"
                             type="number"
                             step="0.01"
                             min="0"
@@ -4033,8 +4033,8 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="pb-2 font-medium">{{ t("admin.settings.platformQuota.monthly") }}</div></template>
-    <template #default="{ row: p, $index: rowIndex }"><div class="py-1" ><ElementInput
-                            v-model.number="form.default_platform_quotas[p]!.monthly"
+    <template #default="{ row: p }"><div class="py-1" ><ElementInput
+                            v-model.number="form.default_platform_quotas[quotaRowKey(p)]!.monthly"
                             type="number"
                             step="0.01"
                             min="0"
@@ -4331,15 +4331,15 @@
                         </p>
                       </div>
                       <div class="overflow-x-auto">
-                        <ElTable  :row-key="(p) => `${authSource.source}-pq-${p}`" row-class-name="align-top" :data="(['anthropic', 'openai', 'gemini', 'antigravity', 'grok'] as const)" table-layout="auto" class="element-data-table">
+                        <ElTable  :row-key="(p) => `${authSource.source}-pq-${p}`" row-class-name="align-top" :data="platformQuotaRows" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.platform") }}</div></template>
-    <template #default="{ row: p, $index: rowIndex }"><div class="pr-4 py-1" ><span class="font-mono text-xs text-gray-700 dark:text-gray-300">{{ p }}</span></div></template>
+    <template #default="{ row: p }"><div class="pr-4 py-1" ><span class="font-mono text-xs text-gray-700 dark:text-gray-300">{{ p }}</span></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.daily") }}</div></template>
-    <template #default="{ row: p, $index: rowIndex }"><div class="pr-4 py-1" ><ElementInput
-                                  v-model.number="authSourceDefaults[authSource.source].platform_quotas[p]!.daily"
+    <template #default="{ row: p }"><div class="pr-4 py-1" ><ElementInput
+                                  v-model.number="authSourceDefaults[authSource.source].platform_quotas[quotaRowKey(p)]!.daily"
                                   type="number"
                                   step="0.01"
                                   min="0"
@@ -4349,8 +4349,8 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.weekly") }}</div></template>
-    <template #default="{ row: p, $index: rowIndex }"><div class="pr-4 py-1" ><ElementInput
-                                  v-model.number="authSourceDefaults[authSource.source].platform_quotas[p]!.weekly"
+    <template #default="{ row: p }"><div class="pr-4 py-1" ><ElementInput
+                                  v-model.number="authSourceDefaults[authSource.source].platform_quotas[quotaRowKey(p)]!.weekly"
                                   type="number"
                                   step="0.01"
                                   min="0"
@@ -4360,8 +4360,8 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="pb-2 font-medium">{{ t("admin.settings.platformQuota.monthly") }}</div></template>
-    <template #default="{ row: p, $index: rowIndex }"><div class="py-1" ><ElementInput
-                                  v-model.number="authSourceDefaults[authSource.source].platform_quotas[p]!.monthly"
+    <template #default="{ row: p }"><div class="py-1" ><ElementInput
+                                  v-model.number="authSourceDefaults[authSource.source].platform_quotas[quotaRowKey(p)]!.monthly"
                                   type="number"
                                   step="0.01"
                                   min="0"
@@ -4506,9 +4506,9 @@
                     class="mb-2 flex items-center gap-2"
                   >
                     <ElementSelect v-model="row.type" class="input w-32 text-sm">
-                      <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.codexFpTypeHeaderExact&quot;))" value="header_exact">{{ t("admin.settings.gatewayForwarding.codexFpTypeHeaderExact") }}</ElOption>
-                      <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.codexFpTypeHeaderPrefix&quot;))" value="header_prefix">{{ t("admin.settings.gatewayForwarding.codexFpTypeHeaderPrefix") }}</ElOption>
-                      <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.codexFpTypeBodyPath&quot;))" value="body_path">{{ t("admin.settings.gatewayForwarding.codexFpTypeBodyPath") }}</ElOption>
+                      <ElOption :label="(t('admin.settings.gatewayForwarding.codexFpTypeHeaderExact'))" value="header_exact">{{ t("admin.settings.gatewayForwarding.codexFpTypeHeaderExact") }}</ElOption>
+                      <ElOption :label="(t('admin.settings.gatewayForwarding.codexFpTypeHeaderPrefix'))" value="header_prefix">{{ t("admin.settings.gatewayForwarding.codexFpTypeHeaderPrefix") }}</ElOption>
+                      <ElOption :label="(t('admin.settings.gatewayForwarding.codexFpTypeBodyPath'))" value="body_path">{{ t("admin.settings.gatewayForwarding.codexFpTypeBodyPath") }}</ElOption>
                     </ElementSelect>
                     <ElementInput
                       v-model="row.match"
@@ -4516,7 +4516,7 @@
                       class="input flex-1 font-mono text-sm"
                       :placeholder="t('admin.settings.gatewayForwarding.codexFpMatchPlaceholder')"
                     />
-                    <ElementCheckbox v-model="row.required" :class="[&quot;flex shrink-0 items-center gap-1 text-xs text-gray-600 dark:text-gray-400&quot;]">
+                    <ElementCheckbox v-model="row.required" :class="['flex shrink-0 items-center gap-1 text-xs text-gray-600 dark:text-gray-400']">
                       {{ t("admin.settings.gatewayForwarding.codexFpRequired") }}</ElementCheckbox>
                     <ElButton size="small"
                       native-type="button"
@@ -4648,7 +4648,7 @@
                         t(
                           'admin.settings.gatewayForwarding.codexWhitelistSkipFingerprintTooltip',
                         )
-                      " v-model="row.skipEngineFingerprint" :class="[&quot;flex shrink-0 items-center gap-1 text-xs text-gray-600 dark:text-gray-400&quot;]">
+                      " v-model="row.skipEngineFingerprint" :class="['flex shrink-0 items-center gap-1 text-xs text-gray-600 dark:text-gray-400']">
                       {{
                         t(
                           'admin.settings.gatewayForwarding.codexWhitelistSkipFingerprint',
@@ -5191,11 +5191,11 @@
                     class="input mt-2 w-full"
                     data-testid="grok-default-base-url-mode"
                   >
-                    <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.grokBaseURLModeCLI&quot;))" value="cli">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeCLI") }}</ElOption>
-                    <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.grokBaseURLModeAPI&quot;))" value="api">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeAPI") }}</ElOption>
-                    <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.grokBaseURLModeUSEast1&quot;))" value="us-east-1">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeUSEast1") }}</ElOption>
-                    <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.grokBaseURLModeUSWest2&quot;))" value="us-west-2">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeUSWest2") }}</ElOption>
-                    <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.grokBaseURLModeEUWest1&quot;))" value="eu-west-1">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeEUWest1") }}</ElOption>
+                    <ElOption :label="(t('admin.settings.gatewayForwarding.grokBaseURLModeCLI'))" value="cli">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeCLI") }}</ElOption>
+                    <ElOption :label="(t('admin.settings.gatewayForwarding.grokBaseURLModeAPI'))" value="api">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeAPI") }}</ElOption>
+                    <ElOption :label="(t('admin.settings.gatewayForwarding.grokBaseURLModeUSEast1'))" value="us-east-1">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeUSEast1") }}</ElOption>
+                    <ElOption :label="(t('admin.settings.gatewayForwarding.grokBaseURLModeUSWest2'))" value="us-west-2">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeUSWest2") }}</ElOption>
+                    <ElOption :label="(t('admin.settings.gatewayForwarding.grokBaseURLModeEUWest1'))" value="eu-west-1">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeEUWest1") }}</ElOption>
                   </ElementSelect>
                   <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                     {{ t("admin.settings.gatewayForwarding.grokDefaultBaseURLModeHint") }}
@@ -5216,10 +5216,10 @@
                   class="input mt-2 w-full"
                   data-testid="openai-ttft-mode"
                 >
-                  <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.openaiTTFTModeSemantic&quot;))" value="semantic">
+                  <ElOption :label="(t('admin.settings.gatewayForwarding.openaiTTFTModeSemantic'))" value="semantic">
                     {{ t("admin.settings.gatewayForwarding.openaiTTFTModeSemantic") }}
                   </ElOption>
-                  <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.openaiTTFTModeVisible&quot;))" value="visible">
+                  <ElOption :label="(t('admin.settings.gatewayForwarding.openaiTTFTModeVisible'))" value="visible">
                     {{ t("admin.settings.gatewayForwarding.openaiTTFTModeVisible") }}
                   </ElOption>
                 </ElementSelect>
@@ -6067,7 +6067,7 @@
           </ElCard>
 
           <!-- Web Search Test Dialog -->
-          <ElDialog :model-value="Boolean(wsTestDialogOpen)" :title="t(&quot;admin.settings.webSearchEmulation.testResultTitle&quot;)" width="512px" append-to-body align-center destroy-on-close class="element-dialog " :show-close="true" @update:model-value="visible => { if (!visible) { wsTestDialogOpen = false } }" ><template v-if="wsTestDialogOpen"><div class="flex items-center gap-2">
+          <ElDialog :model-value="Boolean(wsTestDialogOpen)" :title="t('admin.settings.webSearchEmulation.testResultTitle')" width="512px" append-to-body align-center destroy-on-close class="element-dialog " :show-close="true" @update:model-value="visible => { if (!visible) { wsTestDialogOpen = false } }" ><template v-if="wsTestDialogOpen"><div class="flex items-center gap-2">
                 <ElementInput
                   v-model="wsTestQuery"
                   type="text"
@@ -6152,7 +6152,7 @@
                   {{ t('admin.settings.user_error_view.description') }}
                 </p>
               </div>
-              <ElementCheckbox v-model="form.allow_user_view_error_requests" :class="[&quot;toggle&quot;]"><span class="toggle-slider"></span></ElementCheckbox>
+              <ElementCheckbox v-model="form.allow_user_view_error_requests" :class="['toggle']"><span class="toggle-slider"></span></ElementCheckbox>
             </div>
           </div>
         </ElCard>
@@ -6650,10 +6650,10 @@
                       {{ t("admin.settings.customMenu.visibility") }}
                     </label>
                     <ElementSelect v-model="item.visibility" class="input text-sm">
-                      <ElOption :label="(t(&quot;admin.settings.customMenu.visibilityUser&quot;))" value="user">
+                      <ElOption :label="(t('admin.settings.customMenu.visibilityUser'))" value="user">
                         {{ t("admin.settings.customMenu.visibilityUser") }}
                       </ElOption>
-                      <ElOption :label="(t(&quot;admin.settings.customMenu.visibilityAdmin&quot;))" value="admin">
+                      <ElOption :label="(t('admin.settings.customMenu.visibilityAdmin'))" value="admin">
                         {{ t("admin.settings.customMenu.visibilityAdmin") }}
                       </ElOption>
                     </ElementSelect>
@@ -6676,7 +6676,7 @@
                     />
                   </div>
 
-                  <ElementCheckbox v-model="item.hide_open_button" data-testid="custom-menu-hide-open-button" :class="[&quot;flex items-center gap-2 sm:col-span-2&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">
+                  <ElementCheckbox v-model="item.hide_open_button" data-testid="custom-menu-hide-open-button" :class="['flex items-center gap-2 sm:col-span-2']"><span class="text-sm text-gray-700 dark:text-gray-300">
                       {{ t("admin.settings.customMenu.hideOpenButton") }}
                     </span></ElementCheckbox>
 
@@ -7409,7 +7409,7 @@
                             :checked="affiliateState.entries.length > 0 && affiliateState.selected.length === affiliateState.entries.length"
                             @change="toggleAffiliateSelectAll"
                           /></div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2" ><ElementCheckbox
+    <template #default="{ row: entry }"><div class="px-3 py-2" ><ElementCheckbox
 
                             :checked="affiliateState.selected.includes(entry.user_id)"
                             @change="toggleAffiliateSelect(entry.user_id)"
@@ -7417,15 +7417,15 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.email') }}</div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2 text-sm text-gray-900 dark:text-white" >{{ entry.email }}</div></template>
+    <template #default="{ row: entry }"><div class="px-3 py-2 text-sm text-gray-900 dark:text-white" >{{ entry.email }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.username') }}</div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2 text-sm text-gray-600 dark:text-gray-300" >{{ entry.username }}</div></template>
+    <template #default="{ row: entry }"><div class="px-3 py-2 text-sm text-gray-600 dark:text-gray-300" >{{ entry.username }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.code') }}</div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2 text-sm font-mono" >{{ entry.aff_code }}
+    <template #default="{ row: entry }"><div class="px-3 py-2 text-sm font-mono" >{{ entry.aff_code }}
                           <span
                             v-if="entry.aff_code_custom"
                             class="ml-1 inline-block rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-300"
@@ -7433,18 +7433,18 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.rate') }}</div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2 text-sm" ><span v-if="entry.aff_rebate_rate_percent != null">{{ entry.aff_rebate_rate_percent }}%</span><span v-else class="text-gray-400">{{ t('admin.settings.features.affiliate.customUsers.useGlobal') }}</span></div></template>
+    <template #default="{ row: entry }"><div class="px-3 py-2 text-sm" ><span v-if="entry.aff_rebate_rate_percent != null">{{ entry.aff_rebate_rate_percent }}%</span><span v-else class="text-gray-400">{{ t('admin.settings.features.affiliate.customUsers.useGlobal') }}</span></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.actions') }}</div></template>
-    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2 text-sm" ><div class="flex items-center gap-2">
-                            <ElButton text native-type="button" class="text-primary-600 hover:underline" @click="openAffiliateModal(entry)">
+    <template #default="{ row: entry }"><div class="px-3 py-2 text-sm" ><div class="flex items-center gap-2">
+                            <ElButton text native-type="button" class="text-primary-600 hover:underline" @click="openAffiliateModal((entry as AffiliateAdminEntry))">
                               {{ t('common.edit') }}
                             </ElButton>
                             <ElButton text
                               native-type="button"
                               class="text-red-600 hover:underline"
-                              @click="askResetAffiliateUser(entry)"
+                              @click="askResetAffiliateUser((entry as AffiliateAdminEntry))"
                             >
                               {{ t('common.delete') }}
                             </ElButton>
@@ -8788,6 +8788,15 @@ type SettingsTab =
   | "email"
   | "backup";
 const activeTab = ref<SettingsTab>("general");
+
+/**
+ * 平台限额矩阵的行就是平台名本身，表格内直接把它当作配额 map 的键使用；
+ * Element Plus 表格要求行是对象、插槽把 row 标成 DefaultRow，这里只做类型适配，运行时仍是同一组平台名。
+ */
+const platformQuotaRows = ['anthropic', 'openai', 'gemini', 'antigravity', 'grok'] as any[]
+
+/** 取矩阵行键（平台名），供 row-key 与配额 map 取值使用。 */
+const quotaRowKey = (row: unknown) => row as keyof DefaultPlatformQuotasMap
 const settingsTabs = [
   { key: "general" as SettingsTab, icon: "home" as const },
   { key: "agreement" as SettingsTab, icon: "document" as const },
@@ -8799,15 +8808,6 @@ const settingsTabs = [
   { key: "email" as SettingsTab, icon: "mail" as const },
   { key: "backup" as SettingsTab, icon: "database" as const },
 ];
-
-const settingsTabKeyboardActions = {
-  ArrowLeft: -1,
-  ArrowUp: -1,
-  ArrowRight: 1,
-  ArrowDown: 1,
-  Home: "first",
-  End: "last",
-} as const;
 
 function selectSettingsTab(tab: SettingsTab): void {
   activeTab.value = tab;

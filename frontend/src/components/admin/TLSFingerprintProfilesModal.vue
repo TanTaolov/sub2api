@@ -38,17 +38,17 @@
         <ElTable  row-key="id" row-class-name="hover:bg-gray-50 dark:hover:bg-dark-700" :data="profiles" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('admin.tlsFingerprintProfiles.columns.name') }}</div></template>
-    <template #default="{ row: profile, $index: rowIndex }"><div class="px-3 py-2" ><div class="font-medium text-gray-900 dark:text-white text-sm">{{ profile.name }}</div></div></template>
+    <template #default="{ row: profile }"><div class="px-3 py-2" ><div class="font-medium text-gray-900 dark:text-white text-sm">{{ profile.name }}</div></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('admin.tlsFingerprintProfiles.columns.description') }}</div></template>
-    <template #default="{ row: profile, $index: rowIndex }"><div class="px-3 py-2" ><div v-if="profile.description" class="text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
+    <template #default="{ row: profile }"><div class="px-3 py-2" ><div v-if="profile.description" class="text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
                   {{ profile.description }}
                 </div><div v-else class="text-xs text-gray-400 dark:text-gray-600">—</div></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('admin.tlsFingerprintProfiles.columns.grease') }}</div></template>
-    <template #default="{ row: profile, $index: rowIndex }"><div class="px-3 py-2" ><Icon
+    <template #default="{ row: profile }"><div class="px-3 py-2" ><Icon
                   :name="profile.enable_grease ? 'check' : 'lock'"
                   size="sm"
                   :class="profile.enable_grease ? 'text-green-500' : 'text-gray-400'"
@@ -56,7 +56,7 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('admin.tlsFingerprintProfiles.columns.alpn') }}</div></template>
-    <template #default="{ row: profile, $index: rowIndex }"><div class="px-3 py-2" ><div v-if="profile.alpn_protocols?.length" class="flex flex-wrap gap-1">
+    <template #default="{ row: profile }"><div class="px-3 py-2" ><div v-if="profile.alpn_protocols?.length" class="flex flex-wrap gap-1">
                   <span
                     v-for="proto in profile.alpn_protocols.slice(0, 3)"
                     :key="proto"
@@ -71,16 +71,16 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('admin.tlsFingerprintProfiles.columns.actions') }}</div></template>
-    <template #default="{ row: profile, $index: rowIndex }"><div class="px-3 py-2" ><div class="flex items-center gap-1">
+    <template #default="{ row: profile }"><div class="px-3 py-2" ><div class="flex items-center gap-1">
                   <ElButton text
-                    @click="handleEdit(profile)"
+                    @click="handleEdit((profile as TLSFingerprintProfile))"
                     class="p-1 text-gray-500 hover:text-primary-600 dark:hover:text-primary-400"
                     :title="t('common.edit')"
                   >
                     <Icon name="edit" size="sm" />
                   </ElButton>
                   <ElButton text
-                    @click="handleDelete(profile)"
+                    @click="handleDelete((profile as TLSFingerprintProfile))"
                     class="p-1 text-gray-500 hover:text-red-600 dark:hover:text-red-400"
                     :title="t('common.delete')"
                   >

@@ -32,15 +32,15 @@
         <ElTable  row-key="id" @row-click="(k) => { $emit('pick', k) }" row-class-name="cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-700" :data="filteredKeys" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2">{{ t('common.name') }}</div></template>
-    <template #default="{ row: k, $index: rowIndex }"><div class="px-3 py-2 font-medium text-gray-900 dark:text-white" >{{ k.name }}</div></template>
+    <template #default="{ row: k }"><div class="px-3 py-2 font-medium text-gray-900 dark:text-white" >{{ k.name }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2">{{ t('keys.apiKey') }}</div></template>
-    <template #default="{ row: k, $index: rowIndex }"><div class="px-3 py-2 font-mono text-xs text-gray-500 dark:text-gray-400" >{{ maskApiKey(k.key) }}</div></template>
+    <template #default="{ row: k }"><div class="px-3 py-2 font-mono text-xs text-gray-500 dark:text-gray-400" >{{ maskApiKey(k.key) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2">{{ t('keys.group') }}</div></template>
-    <template #default="{ row: k, $index: rowIndex }"><div class="px-3 py-2" ><GroupBadge
+    <template #default="{ row: k }"><div class="px-3 py-2" ><GroupBadge
                   v-if="k.group"
                   :name="k.group.name"
                   :platform="k.group.platform"

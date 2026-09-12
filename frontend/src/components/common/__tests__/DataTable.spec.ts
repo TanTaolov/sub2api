@@ -13,7 +13,7 @@ function createTable(props: Record<string, unknown> = {}, slots = {}) {
   const wrapper = mount(DataTable, {
     props: { columns: [{ key: 'name', label: 'Name', sortable: true }], data: [{ id: 1, name: 'Beta' }, { id: 2, name: 'Alpha' }], ...props },
     slots,
-    global: { stubs: { ElAutoResizer: defineComponent({ setup: (_, { slots }) => () => h('div', slots.default?.({ width: 900, height: 500 })) }) }
+    global: { stubs: { ElAutoResizer: defineComponent({ setup: (_, { slots }) => () => h('div', slots.default?.({ width: 900, height: 500 })) }) } }
   })
   wrappers.push(wrapper)
   return wrapper

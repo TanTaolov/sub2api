@@ -38,19 +38,19 @@
         <ElTable  row-key="id" row-class-name="hover:bg-gray-50 dark:hover:bg-dark-700" :data="rules" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('admin.errorPassthrough.columns.priority') }}</div></template>
-    <template #default="{ row: rule, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2" ><span class="inline-flex h-5 w-5 items-center justify-center rounded bg-gray-100 text-xs font-medium text-gray-700 dark:bg-dark-600 dark:text-gray-300">
+    <template #default="{ row: rule }"><div class="whitespace-nowrap px-3 py-2" ><span class="inline-flex h-5 w-5 items-center justify-center rounded bg-gray-100 text-xs font-medium text-gray-700 dark:bg-dark-600 dark:text-gray-300">
                   {{ rule.priority }}
                 </span></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('admin.errorPassthrough.columns.name') }}</div></template>
-    <template #default="{ row: rule, $index: rowIndex }"><div class="px-3 py-2" ><div class="font-medium text-gray-900 dark:text-white text-sm">{{ rule.name }}</div><div v-if="rule.description" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400 max-w-xs truncate">
+    <template #default="{ row: rule }"><div class="px-3 py-2" ><div class="font-medium text-gray-900 dark:text-white text-sm">{{ rule.name }}</div><div v-if="rule.description" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400 max-w-xs truncate">
                   {{ rule.description }}
                 </div></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('admin.errorPassthrough.columns.conditions') }}</div></template>
-    <template #default="{ row: rule, $index: rowIndex }"><div class="px-3 py-2" ><div class="flex flex-wrap gap-1 max-w-48">
+    <template #default="{ row: rule }"><div class="px-3 py-2" ><div class="flex flex-wrap gap-1 max-w-48">
                   <span
                     v-for="code in rule.error_codes.slice(0, 3)"
                     :key="code"
@@ -83,7 +83,7 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('admin.errorPassthrough.columns.platforms') }}</div></template>
-    <template #default="{ row: rule, $index: rowIndex }"><div class="px-3 py-2" ><div v-if="rule.platforms.length === 0" class="text-xs text-gray-500 dark:text-gray-400">
+    <template #default="{ row: rule }"><div class="px-3 py-2" ><div v-if="rule.platforms.length === 0" class="text-xs text-gray-500 dark:text-gray-400">
                   {{ t('admin.errorPassthrough.allPlatforms') }}
                 </div><div v-else class="flex flex-wrap gap-1">
                   <span
@@ -100,7 +100,7 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('admin.errorPassthrough.columns.behavior') }}</div></template>
-    <template #default="{ row: rule, $index: rowIndex }"><div class="px-3 py-2" ><div class="text-xs space-y-0.5">
+    <template #default="{ row: rule }"><div class="px-3 py-2" ><div class="text-xs space-y-0.5">
                   <div class="flex items-center gap-1">
                     <Icon
                       :name="rule.passthrough_code ? 'checkCircle' : 'xCircle'"
@@ -137,8 +137,8 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('admin.errorPassthrough.columns.status') }}</div></template>
-    <template #default="{ row: rule, $index: rowIndex }"><div class="px-3 py-2" ><ElButton text
-                  @click="toggleEnabled(rule)"
+    <template #default="{ row: rule }"><div class="px-3 py-2" ><ElButton text
+                  @click="toggleEnabled((rule as ErrorPassthroughRule))"
                   :class="[
                     'relative inline-flex h-4 w-7 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
                     rule.enabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
@@ -154,16 +154,16 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">{{ t('admin.errorPassthrough.columns.actions') }}</div></template>
-    <template #default="{ row: rule, $index: rowIndex }"><div class="px-3 py-2" ><div class="flex items-center gap-1">
+    <template #default="{ row: rule }"><div class="px-3 py-2" ><div class="flex items-center gap-1">
                   <ElButton text
-                    @click="handleEdit(rule)"
+                    @click="handleEdit((rule as ErrorPassthroughRule))"
                     class="p-1 text-gray-500 hover:text-primary-600 dark:hover:text-primary-400"
                     :title="t('common.edit')"
                   >
                     <Icon name="edit" size="sm" />
                   </ElButton>
                   <ElButton text
-                    @click="handleDelete(rule)"
+                    @click="handleDelete((rule as ErrorPassthroughRule))"
                     class="p-1 text-gray-500 hover:text-red-600 dark:hover:text-red-400"
                     :title="t('common.delete')"
                   >
@@ -257,7 +257,7 @@
           <div class="mt-3">
             <label class="input-label text-xs">{{ t('admin.errorPassthrough.form.matchMode') }}</label>
             <div class="mt-1 space-y-2">
-              <ElementRadio v-for="option in matchModeOptions" :key="option.value" :value="option.value" v-model="form.match_mode" :class="[&quot;flex items-start gap-2 cursor-pointer&quot;,&quot;mt-0.5&quot;]"><div class="flex-1">
+              <ElementRadio v-for="option in matchModeOptions" :key="option.value" :value="option.value" v-model="form.match_mode" :class="['flex items-start gap-2 cursor-pointer','mt-0.5']"><div class="flex-1">
                   <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ option.label }}</span>
                   <p class="text-xs text-gray-500 dark:text-gray-400">{{ option.description }}</p>
                 </div></ElementRadio>
@@ -267,7 +267,7 @@
           <div class="mt-3">
             <label class="input-label text-xs">{{ t('admin.errorPassthrough.form.platforms') }}</label>
             <div class="flex flex-wrap gap-3">
-              <ElementCheckbox v-for="platform in platformOptions" :key="platform.value" :value="platform.value" v-model="form.platforms" :class="[&quot;inline-flex items-center gap-1.5&quot;,&quot;&quot;]"><span class="text-xs text-gray-700 dark:text-gray-300">{{ platform.label }}</span></ElementCheckbox>
+              <ElementCheckbox v-for="platform in platformOptions" :key="platform.value" :value="platform.value" v-model="form.platforms" :class="['inline-flex items-center gap-1.5','']"><span class="text-xs text-gray-700 dark:text-gray-300">{{ platform.label }}</span></ElementCheckbox>
             </div>
             <p class="input-hint text-xs mt-1">{{ t('admin.errorPassthrough.form.platformsHint') }}</p>
           </div>
@@ -281,7 +281,7 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <ElementCheckbox v-model="form.passthrough_code" :class="[&quot;flex items-center gap-1.5&quot;,&quot;&quot;]"><span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <ElementCheckbox v-model="form.passthrough_code" :class="['flex items-center gap-1.5','']"><span class="text-xs font-medium text-gray-700 dark:text-gray-300">
                   {{ t('admin.errorPassthrough.form.passthroughCode') }}
                 </span></ElementCheckbox>
               <div v-if="!form.passthrough_code" class="mt-2">
@@ -297,7 +297,7 @@
               </div>
             </div>
             <div>
-              <ElementCheckbox v-model="form.passthrough_body" :class="[&quot;flex items-center gap-1.5&quot;,&quot;&quot;]"><span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <ElementCheckbox v-model="form.passthrough_body" :class="['flex items-center gap-1.5','']"><span class="text-xs font-medium text-gray-700 dark:text-gray-300">
                   {{ t('admin.errorPassthrough.form.passthroughBody') }}
                 </span></ElementCheckbox>
               <div v-if="!form.passthrough_body" class="mt-2">

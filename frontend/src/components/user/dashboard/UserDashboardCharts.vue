@@ -36,23 +36,23 @@
             <ElTable  row-key="model" row-class-name="border-t border-gray-100 dark:border-dark-700" :data="models" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="pb-2 text-left">{{ t('dashboard.model') }}</div></template>
-    <template #default="{ row: model, $index: rowIndex }"><div class="max-w-[100px] truncate py-1.5 font-medium text-gray-900 dark:text-white" :title="model.model" >{{ model.model }}</div></template>
+    <template #default="{ row: model }"><div class="max-w-[100px] truncate py-1.5 font-medium text-gray-900 dark:text-white" :title="model.model" >{{ model.model }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="pb-2 text-right">{{ t('dashboard.requests') }}</div></template>
-    <template #default="{ row: model, $index: rowIndex }"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400" >{{ formatNumber(model.requests) }}</div></template>
+    <template #default="{ row: model }"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400" >{{ formatNumber(model.requests) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="pb-2 text-right">{{ t('dashboard.tokens') }}</div></template>
-    <template #default="{ row: model, $index: rowIndex }"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400" >{{ formatTokens(model.total_tokens) }}</div></template>
+    <template #default="{ row: model }"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400" >{{ formatTokens(model.total_tokens) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="pb-2 text-right">{{ t('dashboard.actual') }}</div></template>
-    <template #default="{ row: model, $index: rowIndex }"><div class="py-1.5 text-right text-green-600 dark:text-green-400" >${{ formatCost(model.actual_cost) }}</div></template>
+    <template #default="{ row: model }"><div class="py-1.5 text-right text-green-600 dark:text-green-400" >${{ formatCost(model.actual_cost) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="pb-2 text-right">{{ t('dashboard.standard') }}</div></template>
-    <template #default="{ row: model, $index: rowIndex }"><div class="py-1.5 text-right text-gray-400 dark:text-gray-500" >${{ formatCost(model.cost) }}</div></template>
+    <template #default="{ row: model }"><div class="py-1.5 text-right text-gray-400 dark:text-gray-500" >${{ formatCost(model.cost) }}</div></template>
   </ElTableColumn>
 </ElTable>
           </div>

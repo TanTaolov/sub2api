@@ -60,35 +60,35 @@
       <ElTable  row-key="id" row-class-name="align-top hover:bg-gray-50/70 dark:hover:bg-dark-800/70" :data="(loading) ? [] : (events)" table-layout="auto" class="element-data-table">
   <ElTableColumn :width="40" align="left">
     <template #header><div class="w-10 px-3 py-3"><ElementCheckbox  :checked="allSelected" :aria-label="t('admin.promptAudit.events.selectAll')" @change="toggleAll" /></div></template>
-    <template #default="{ row: event, $index: rowIndex }"><div class="px-3 py-3" :data-test="`event-${event.id}`"><ElementCheckbox  :checked="selectedIds.includes(event.id)" :aria-label="t('admin.promptAudit.events.selectEvent', { id: event.id })" @change="toggleOne(event.id)" /></div></template>
+    <template #default="{ row: event }"><div class="px-3 py-3" :data-test="`event-${event.id}`"><ElementCheckbox  :checked="selectedIds.includes(event.id)" :aria-label="t('admin.promptAudit.events.selectEvent', { id: event.id })" @change="toggleOne(event.id)" /></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.time') }}</div></template>
-    <template #default="{ row: event, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-3 text-xs text-gray-600 dark:text-dark-300" :data-test="`event-${event.id}`">{{ formatDate(event.created_at) }}</div></template>
+    <template #default="{ row: event }"><div class="whitespace-nowrap px-3 py-3 text-xs text-gray-600 dark:text-dark-300" :data-test="`event-${event.id}`">{{ formatDate(event.created_at) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.identity') }}</div></template>
-    <template #default="{ row: event, $index: rowIndex }"><div class="px-3 py-3" :data-test="`event-${event.id}`"><CopyLine :label="t('admin.promptAudit.events.user')" :value="event.snapshot.username" /><CopyLine :label="t('admin.promptAudit.events.email')" :value="event.snapshot.user_email" /><CopyLine :label="t('admin.promptAudit.events.apiKey')" :value="event.snapshot.api_key_name" /></div></template>
+    <template #default="{ row: event }"><div class="px-3 py-3" :data-test="`event-${event.id}`"><CopyLine :label="t('admin.promptAudit.events.user')" :value="event.snapshot.username" /><CopyLine :label="t('admin.promptAudit.events.email')" :value="event.snapshot.user_email" /><CopyLine :label="t('admin.promptAudit.events.apiKey')" :value="event.snapshot.api_key_name" /></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.group') }}</div></template>
-    <template #default="{ row: event, $index: rowIndex }"><div class="px-3 py-3 text-gray-700 dark:text-dark-200" :data-test="`event-${event.id}`">{{ event.snapshot.group_name || '—' }}</div></template>
+    <template #default="{ row: event }"><div class="px-3 py-3 text-gray-700 dark:text-dark-200" :data-test="`event-${event.id}`">{{ event.snapshot.group_name || '—' }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.route') }}</div></template>
-    <template #default="{ row: event, $index: rowIndex }"><div class="px-3 py-3" :data-test="`event-${event.id}`"><p class="font-medium text-gray-900 dark:text-white">{{ event.snapshot.endpoint }}</p><p class="mt-1 text-xs text-gray-500">{{ event.snapshot.model }} · {{ event.snapshot.protocol }} · {{ event.snapshot.stage || 'http' }}</p></div></template>
+    <template #default="{ row: event }"><div class="px-3 py-3" :data-test="`event-${event.id}`"><p class="font-medium text-gray-900 dark:text-white">{{ event.snapshot.endpoint }}</p><p class="mt-1 text-xs text-gray-500">{{ event.snapshot.model }} · {{ event.snapshot.protocol }} · {{ event.snapshot.stage || 'http' }}</p></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.result') }}</div></template>
-    <template #default="{ row: event, $index: rowIndex }"><div class="px-3 py-3" :data-test="`event-${event.id}`"><span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="decisionClass(event.decision)">{{ formatDecisionRisk(event.decision, event.risk_level) }}</span><p class="mt-2 max-w-48 truncate text-xs text-gray-500" :title="formatCategories(event.categories)">{{ formatCategories(event.categories) }}</p></div></template>
+    <template #default="{ row: event }"><div class="px-3 py-3" :data-test="`event-${event.id}`"><span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="decisionClass(event.decision)">{{ formatDecisionRisk(event.decision, event.risk_level) }}</span><p class="mt-2 max-w-48 truncate text-xs text-gray-500" :title="formatCategories(event.categories)">{{ formatCategories(event.categories) }}</p></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.preview') }}</div></template>
-    <template #default="{ row: event, $index: rowIndex }"><div class="max-w-xs px-3 py-3" :data-test="`event-${event.id}`"><p class="line-clamp-2 break-words text-gray-600 dark:text-dark-300">{{ event.snapshot.redacted_preview || '—' }}</p></div></template>
+    <template #default="{ row: event }"><div class="max-w-xs px-3 py-3" :data-test="`event-${event.id}`"><p class="line-clamp-2 break-words text-gray-600 dark:text-dark-300">{{ event.snapshot.redacted_preview || '—' }}</p></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-3 py-3 text-right font-medium">{{ t('admin.promptAudit.common.actions') }}</div></template>
-    <template #default="{ row: event, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-3 text-right" :data-test="`event-${event.id}`"><ElButton size="small" native-type="button" class="" @click="$emit('view', event.id)">{{ t('common.view') }}</ElButton><ElButton size="small" native-type="button" class="text-red-600" @click="$emit('delete', event.id)">{{ t('common.delete') }}</ElButton></div></template>
+    <template #default="{ row: event }"><div class="whitespace-nowrap px-3 py-3 text-right" :data-test="`event-${event.id}`"><ElButton size="small" native-type="button" class="" @click="$emit('view', event.id)">{{ t('common.view') }}</ElButton><ElButton size="small" native-type="button" class="text-red-600" @click="$emit('delete', event.id)">{{ t('common.delete') }}</ElButton></div></template>
   </ElTableColumn>
   <template #empty>
     <div v-if="loading">{{ t('common.loading') }}</div>

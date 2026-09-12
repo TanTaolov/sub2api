@@ -731,7 +731,7 @@
             class="input"
             :class="!enableLoadFactor && 'cursor-not-allowed opacity-50'"
             aria-labelledby="bulk-edit-load-factor-label"
-            @input="loadFactor = (loadFactor &amp;&amp; loadFactor >= 1) ? loadFactor : null"
+            @input="loadFactor = (loadFactor && loadFactor >= 1) ? loadFactor : null"
           />
           <p class="input-hint">{{ t('admin.accounts.loadFactorHint') }}</p>
         </div>
@@ -1043,7 +1043,7 @@
           aria-labelledby="bulk-edit-openai-endpoint-capabilities-label"
         >
           <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <ElementCheckbox v-for="option in openAIEndpointCapabilityOptions" :key="option.value" :disabled="!enableOpenAIEndpointCapabilities" :data-testid="`bulk-edit-openai-endpoint-capability-${option.value}`" :checked="openAIEndpointCapabilities.includes(option.value)" @change="toggleOpenAIEndpointCapability(option.value, $event)" :class="[&quot;flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-dark-600&quot;,&quot;&quot;]"><span class="text-gray-700 dark:text-gray-200">{{ option.label }}</span></ElementCheckbox>
+            <ElementCheckbox v-for="option in openAIEndpointCapabilityOptions" :key="option.value" :disabled="!enableOpenAIEndpointCapabilities" :data-testid="`bulk-edit-openai-endpoint-capability-${option.value}`" :checked="openAIEndpointCapabilities.includes(option.value)" @change="toggleOpenAIEndpointCapability(option.value, $event)" :class="['flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-dark-600','']"><span class="text-gray-700 dark:text-gray-200">{{ option.label }}</span></ElementCheckbox>
           </div>
         </div>
       </div>

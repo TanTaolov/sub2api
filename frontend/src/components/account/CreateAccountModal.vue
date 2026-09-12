@@ -1325,8 +1325,8 @@
       <div v-if="form.platform === 'anthropic' && isOAuthFlow">
         <label class="input-label">{{ t('admin.accounts.addMethod') }}</label>
         <div class="mt-2 flex gap-4">
-          <ElementRadio v-model="addMethod" value="oauth" :class="[&quot;flex cursor-pointer items-center&quot;,&quot;mr-2&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.types.oauth') }}</span></ElementRadio>
-          <ElementRadio v-model="addMethod" value="setup-token" :class="[&quot;flex cursor-pointer items-center&quot;,&quot;mr-2&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
+          <ElementRadio v-model="addMethod" value="oauth" :class="['flex cursor-pointer items-center','mr-2']"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.types.oauth') }}</span></ElementRadio>
+          <ElementRadio v-model="addMethod" value="setup-token" :class="['flex cursor-pointer items-center','mr-2']"><span class="text-sm text-gray-700 dark:text-gray-300">{{
               t('admin.accounts.setupTokenLongLived')
             }}</span></ElementRadio>
         </div>
@@ -1826,8 +1826,8 @@
         <div>
           <label class="input-label">{{ t('admin.accounts.bedrockAuthMode') }}</label>
           <div class="mt-2 flex gap-4">
-            <ElementRadio v-model="bedrockAuthMode" value="sigv4" :class="[&quot;flex cursor-pointer items-center&quot;,&quot;mr-2&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.bedrockAuthModeSigv4') }}</span></ElementRadio>
-            <ElementRadio v-model="bedrockAuthMode" value="apikey" :class="[&quot;flex cursor-pointer items-center&quot;,&quot;mr-2&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.bedrockAuthModeApikey') }}</span></ElementRadio>
+            <ElementRadio v-model="bedrockAuthMode" value="sigv4" :class="['flex cursor-pointer items-center','mr-2']"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.bedrockAuthModeSigv4') }}</span></ElementRadio>
+            <ElementRadio v-model="bedrockAuthMode" value="apikey" :class="['flex cursor-pointer items-center','mr-2']"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.bedrockAuthModeApikey') }}</span></ElementRadio>
           </div>
         </div>
 
@@ -1879,37 +1879,37 @@
           <label class="input-label">{{ t('admin.accounts.bedrockRegion') }}</label>
           <ElementSelect v-model="bedrockRegion" class="input">
             <ElOptionGroup label="US">
-              <ElOption :label="&quot;us-east-1 (N. Virginia)&quot;" value="us-east-1">us-east-1 (N. Virginia)</ElOption>
-              <ElOption :label="&quot;us-east-2 (Ohio)&quot;" value="us-east-2">us-east-2 (Ohio)</ElOption>
-              <ElOption :label="&quot;us-west-1 (N. California)&quot;" value="us-west-1">us-west-1 (N. California)</ElOption>
-              <ElOption :label="&quot;us-west-2 (Oregon)&quot;" value="us-west-2">us-west-2 (Oregon)</ElOption>
-              <ElOption :label="&quot;us-gov-east-1 (GovCloud US-East)&quot;" value="us-gov-east-1">us-gov-east-1 (GovCloud US-East)</ElOption>
-              <ElOption :label="&quot;us-gov-west-1 (GovCloud US-West)&quot;" value="us-gov-west-1">us-gov-west-1 (GovCloud US-West)</ElOption>
+              <ElOption :label="'us-east-1 (N. Virginia)'" value="us-east-1">us-east-1 (N. Virginia)</ElOption>
+              <ElOption :label="'us-east-2 (Ohio)'" value="us-east-2">us-east-2 (Ohio)</ElOption>
+              <ElOption :label="'us-west-1 (N. California)'" value="us-west-1">us-west-1 (N. California)</ElOption>
+              <ElOption :label="'us-west-2 (Oregon)'" value="us-west-2">us-west-2 (Oregon)</ElOption>
+              <ElOption :label="'us-gov-east-1 (GovCloud US-East)'" value="us-gov-east-1">us-gov-east-1 (GovCloud US-East)</ElOption>
+              <ElOption :label="'us-gov-west-1 (GovCloud US-West)'" value="us-gov-west-1">us-gov-west-1 (GovCloud US-West)</ElOption>
             </ElOptionGroup>
             <ElOptionGroup label="Europe">
-              <ElOption :label="&quot;eu-west-1 (Ireland)&quot;" value="eu-west-1">eu-west-1 (Ireland)</ElOption>
-              <ElOption :label="&quot;eu-west-2 (London)&quot;" value="eu-west-2">eu-west-2 (London)</ElOption>
-              <ElOption :label="&quot;eu-west-3 (Paris)&quot;" value="eu-west-3">eu-west-3 (Paris)</ElOption>
-              <ElOption :label="&quot;eu-central-1 (Frankfurt)&quot;" value="eu-central-1">eu-central-1 (Frankfurt)</ElOption>
-              <ElOption :label="&quot;eu-central-2 (Zurich)&quot;" value="eu-central-2">eu-central-2 (Zurich)</ElOption>
-              <ElOption :label="&quot;eu-south-1 (Milan)&quot;" value="eu-south-1">eu-south-1 (Milan)</ElOption>
-              <ElOption :label="&quot;eu-south-2 (Spain)&quot;" value="eu-south-2">eu-south-2 (Spain)</ElOption>
-              <ElOption :label="&quot;eu-north-1 (Stockholm)&quot;" value="eu-north-1">eu-north-1 (Stockholm)</ElOption>
+              <ElOption :label="'eu-west-1 (Ireland)'" value="eu-west-1">eu-west-1 (Ireland)</ElOption>
+              <ElOption :label="'eu-west-2 (London)'" value="eu-west-2">eu-west-2 (London)</ElOption>
+              <ElOption :label="'eu-west-3 (Paris)'" value="eu-west-3">eu-west-3 (Paris)</ElOption>
+              <ElOption :label="'eu-central-1 (Frankfurt)'" value="eu-central-1">eu-central-1 (Frankfurt)</ElOption>
+              <ElOption :label="'eu-central-2 (Zurich)'" value="eu-central-2">eu-central-2 (Zurich)</ElOption>
+              <ElOption :label="'eu-south-1 (Milan)'" value="eu-south-1">eu-south-1 (Milan)</ElOption>
+              <ElOption :label="'eu-south-2 (Spain)'" value="eu-south-2">eu-south-2 (Spain)</ElOption>
+              <ElOption :label="'eu-north-1 (Stockholm)'" value="eu-north-1">eu-north-1 (Stockholm)</ElOption>
             </ElOptionGroup>
             <ElOptionGroup label="Asia Pacific">
-              <ElOption :label="&quot;ap-northeast-1 (Tokyo)&quot;" value="ap-northeast-1">ap-northeast-1 (Tokyo)</ElOption>
-              <ElOption :label="&quot;ap-northeast-2 (Seoul)&quot;" value="ap-northeast-2">ap-northeast-2 (Seoul)</ElOption>
-              <ElOption :label="&quot;ap-northeast-3 (Osaka)&quot;" value="ap-northeast-3">ap-northeast-3 (Osaka)</ElOption>
-              <ElOption :label="&quot;ap-south-1 (Mumbai)&quot;" value="ap-south-1">ap-south-1 (Mumbai)</ElOption>
-              <ElOption :label="&quot;ap-south-2 (Hyderabad)&quot;" value="ap-south-2">ap-south-2 (Hyderabad)</ElOption>
-              <ElOption :label="&quot;ap-southeast-1 (Singapore)&quot;" value="ap-southeast-1">ap-southeast-1 (Singapore)</ElOption>
-              <ElOption :label="&quot;ap-southeast-2 (Sydney)&quot;" value="ap-southeast-2">ap-southeast-2 (Sydney)</ElOption>
+              <ElOption :label="'ap-northeast-1 (Tokyo)'" value="ap-northeast-1">ap-northeast-1 (Tokyo)</ElOption>
+              <ElOption :label="'ap-northeast-2 (Seoul)'" value="ap-northeast-2">ap-northeast-2 (Seoul)</ElOption>
+              <ElOption :label="'ap-northeast-3 (Osaka)'" value="ap-northeast-3">ap-northeast-3 (Osaka)</ElOption>
+              <ElOption :label="'ap-south-1 (Mumbai)'" value="ap-south-1">ap-south-1 (Mumbai)</ElOption>
+              <ElOption :label="'ap-south-2 (Hyderabad)'" value="ap-south-2">ap-south-2 (Hyderabad)</ElOption>
+              <ElOption :label="'ap-southeast-1 (Singapore)'" value="ap-southeast-1">ap-southeast-1 (Singapore)</ElOption>
+              <ElOption :label="'ap-southeast-2 (Sydney)'" value="ap-southeast-2">ap-southeast-2 (Sydney)</ElOption>
             </ElOptionGroup>
             <ElOptionGroup label="Canada">
-              <ElOption :label="&quot;ca-central-1 (Canada)&quot;" value="ca-central-1">ca-central-1 (Canada)</ElOption>
+              <ElOption :label="'ca-central-1 (Canada)'" value="ca-central-1">ca-central-1 (Canada)</ElOption>
             </ElOptionGroup>
             <ElOptionGroup label="South America">
-              <ElOption :label="&quot;sa-east-1 (São Paulo)&quot;" value="sa-east-1">sa-east-1 (São Paulo)</ElOption>
+              <ElOption :label="'sa-east-1 (São Paulo)'" value="sa-east-1">sa-east-1 (São Paulo)</ElOption>
             </ElOptionGroup>
           </ElementSelect>
           <p class="input-hint">{{ t('admin.accounts.bedrockRegionHint') }}</p>
@@ -1917,7 +1917,7 @@
 
         <!-- Shared: Force Global -->
         <div>
-          <ElementCheckbox v-model="bedrockForceGlobal" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.bedrockForceGlobal') }}</span></ElementCheckbox>
+          <ElementCheckbox v-model="bedrockForceGlobal" :class="['flex items-center gap-2 cursor-pointer','']"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.bedrockForceGlobal') }}</span></ElementCheckbox>
           <p class="input-hint mt-1">{{ t('admin.accounts.bedrockForceGlobalHint') }}</p>
         </div>
 
@@ -2840,7 +2840,8 @@
           <!-- Profile selector -->
           <div v-if="tlsFingerprintEnabled" class="mt-3">
             <ElementSelect v-model="tlsFingerprintProfileId" class="input">
-              <ElOption :label="(t('admin.accounts.quotaControl.tlsFingerprint.defaultProfile'))" :value="null">{{ t('admin.accounts.quotaControl.tlsFingerprint.defaultProfile') }}</ElOption>
+              <!-- ElOption 的值类型不含 null，而「默认配置」项需要保留 null 语义（与 model 的初值一致） -->
+              <ElOption :label="(t('admin.accounts.quotaControl.tlsFingerprint.defaultProfile'))" :value="(null as any)">{{ t('admin.accounts.quotaControl.tlsFingerprint.defaultProfile') }}</ElOption>
               <ElOption :label="(t('admin.accounts.quotaControl.tlsFingerprint.randomProfile'))" v-if="tlsFingerprintProfiles.length > 0" :value="-1">{{ t('admin.accounts.quotaControl.tlsFingerprint.randomProfile') }}</ElOption>
               <ElOption :label="(p.name)" v-for="p in tlsFingerprintProfiles" :key="p.id" :value="p.id">{{ p.name }}</ElOption>
             </ElementSelect>
@@ -2905,8 +2906,8 @@
               v-model="cacheTTLOverrideTarget"
               class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-dark-500 dark:bg-dark-700 dark:text-white"
             >
-              <ElOption :label="&quot;5m&quot;" value="5m">5m</ElOption>
-              <ElOption :label="&quot;1h&quot;" value="1h">1h</ElOption>
+              <ElOption :label="'5m'" value="5m">5m</ElOption>
+              <ElOption :label="'1h'" value="1h">1h</ElOption>
             </ElementSelect>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {{ t('admin.accounts.quotaControl.cacheTTLOverride.targetHint') }}
@@ -2973,7 +2974,7 @@
           <label class="input-label">{{ t('admin.accounts.loadFactor') }}</label>
           <ElementInput v-model.number="form.load_factor" type="number" min="1"
             class="input" :placeholder="String(form.concurrency || 1)"
-            @input="form.load_factor = (form.load_factor &amp;&amp; form.load_factor >= 1) ? form.load_factor : null" />
+            @input="form.load_factor = (form.load_factor && form.load_factor >= 1) ? form.load_factor : null" />
           <p class="input-hint">{{ t('admin.accounts.loadFactorHint') }}</p>
         </div>
         <div>
@@ -3320,7 +3321,7 @@
         <div>
           <label class="input-label mb-2 block">{{ t('admin.accounts.openai.endpointCapabilities') }}</label>
           <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <ElementCheckbox v-for="option in openAIEndpointCapabilityOptions" :key="option.value" :data-testid="`openai-endpoint-capability-${option.value}`" :checked="openAIEndpointCapabilities.includes(option.value)" @change="toggleOpenAIEndpointCapability(option.value, $event)" :class="[&quot;flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-dark-600&quot;,&quot;&quot;]"><span class="text-gray-700 dark:text-gray-200">{{ option.label }}</span></ElementCheckbox>
+            <ElementCheckbox v-for="option in openAIEndpointCapabilityOptions" :key="option.value" :data-testid="`openai-endpoint-capability-${option.value}`" :checked="openAIEndpointCapabilities.includes(option.value)" @change="toggleOpenAIEndpointCapability(option.value, $event)" :class="['flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-dark-600','']"><span class="text-gray-700 dark:text-gray-200">{{ option.label }}</span></ElementCheckbox>
           </div>
           <p class="input-hint">{{ t('admin.accounts.openai.endpointCapabilitiesDesc') }}</p>
         </div>
@@ -3371,7 +3372,7 @@
       <div class="border-t border-gray-200 pt-4 dark:border-dark-600">
         <!-- Mixed Scheduling (only for antigravity accounts) -->
         <div v-if="form.platform === 'antigravity'" class="flex items-center gap-2">
-          <ElementCheckbox v-model="mixedScheduling" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <ElementCheckbox v-model="mixedScheduling" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ t('admin.accounts.mixedScheduling') }}
             </span></ElementCheckbox>
           <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative" tabindex="0"><span
@@ -3384,7 +3385,7 @@
               ></div></div></ElPopover>
         </div>
         <div v-if="form.platform === 'antigravity'" class="mt-3 flex items-center gap-2">
-          <ElementCheckbox v-model="allowOverages" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <ElementCheckbox v-model="allowOverages" :class="['flex cursor-pointer items-center gap-2','']"><span class="text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ t('admin.accounts.allowOverages') }}
             </span></ElementCheckbox>
           <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative" tabindex="0"><span
@@ -3611,7 +3612,7 @@
           {{ t('admin.accounts.gemini.quotaPolicy.note') }}
         </p>
         <div class="overflow-x-auto">
-          <ElTable :data="[[(t('admin.accounts.gemini.quotaPolicy.rows.googleOne.channel')),&quot;Free&quot;,(t('admin.accounts.gemini.quotaPolicy.rows.googleOne.limitsFree'))],['',&quot;Pro&quot;,(t('admin.accounts.gemini.quotaPolicy.rows.googleOne.limitsPro'))],['',&quot;Ultra&quot;,(t('admin.accounts.gemini.quotaPolicy.rows.googleOne.limitsUltra'))],[(t('admin.accounts.gemini.quotaPolicy.rows.gcp.channel')),&quot;Standard&quot;,(t('admin.accounts.gemini.quotaPolicy.rows.gcp.limitsStandard'))],['',&quot;Enterprise&quot;,(t('admin.accounts.gemini.quotaPolicy.rows.gcp.limitsEnterprise'))],[(t('admin.accounts.gemini.quotaPolicy.rows.aiStudio.channel')),&quot;Free&quot;,(t('admin.accounts.gemini.quotaPolicy.rows.aiStudio.limitsFree'))],['',&quot;Paid&quot;,(t('admin.accounts.gemini.quotaPolicy.rows.aiStudio.limitsPaid'))]]" class="element-data-table" size="small"><ElTableColumn :min-width="120"><template #header>{{ t('admin.accounts.gemini.quotaPolicy.columns.channel') }}</template><template #default="{row}">{{ row[0] }}</template></ElTableColumn><ElTableColumn :min-width="120"><template #header>{{ t('admin.accounts.gemini.quotaPolicy.columns.account') }}</template><template #default="{row}">{{ row[1] }}</template></ElTableColumn><ElTableColumn :min-width="120"><template #header>{{ t('admin.accounts.gemini.quotaPolicy.columns.limits') }}</template><template #default="{row}">{{ row[2] }}</template></ElTableColumn></ElTable>
+          <ElTable :data="[[(t('admin.accounts.gemini.quotaPolicy.rows.googleOne.channel')),'Free',(t('admin.accounts.gemini.quotaPolicy.rows.googleOne.limitsFree'))],['','Pro',(t('admin.accounts.gemini.quotaPolicy.rows.googleOne.limitsPro'))],['','Ultra',(t('admin.accounts.gemini.quotaPolicy.rows.googleOne.limitsUltra'))],[(t('admin.accounts.gemini.quotaPolicy.rows.gcp.channel')),'Standard',(t('admin.accounts.gemini.quotaPolicy.rows.gcp.limitsStandard'))],['','Enterprise',(t('admin.accounts.gemini.quotaPolicy.rows.gcp.limitsEnterprise'))],[(t('admin.accounts.gemini.quotaPolicy.rows.aiStudio.channel')),'Free',(t('admin.accounts.gemini.quotaPolicy.rows.aiStudio.limitsFree'))],['','Paid',(t('admin.accounts.gemini.quotaPolicy.rows.aiStudio.limitsPaid'))]]" class="element-data-table" size="small"><ElTableColumn :min-width="120"><template #header>{{ t('admin.accounts.gemini.quotaPolicy.columns.channel') }}</template><template #default="{row}">{{ row[0] }}</template></ElTableColumn><ElTableColumn :min-width="120"><template #header>{{ t('admin.accounts.gemini.quotaPolicy.columns.account') }}</template><template #default="{row}">{{ row[1] }}</template></ElTableColumn><ElTableColumn :min-width="120"><template #header>{{ t('admin.accounts.gemini.quotaPolicy.columns.limits') }}</template><template #default="{row}">{{ row[2] }}</template></ElTableColumn></ElTable>
         </div>
         <div class="mt-4 flex flex-wrap gap-3">
           <a

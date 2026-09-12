@@ -2,7 +2,7 @@
   <!-- .table-wrapper 是 TablePageLayout 滚动链的挂载点：外层 .table-scroll-container
        负责卡片外观并 overflow-hidden，本层接收 overflow-y-auto 才能在内容超高时滚动。 -->
   <div class="table-wrapper">
-    <ElTable data-testid="desktop-channels" :data="loading ? [] : rows.flatMap((channel, channelIndex) => channel.platforms.map((section, secIdx) => ({ channel, section, secIdx, key: channelIndex + ':' + secIdx })))" row-key="key" class="!hidden lg:!block element-data-table" :span-method="({row, columnIndex}) => columnIndex < 2 ? row.secIdx === 0 ? [row.channel.platforms.length, 1] : [0, 0] : [1, 1]"><ElTableColumn :min-width="120"  align="left"><template #header>{{ columns.name }}</template><template #default="{ row: { channel, section, secIdx } }"><div class="px-4 py-3 text-center align-middle font-medium text-gray-900 dark:text-white">{{ channel.name }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ columns.description }}</template><template #default="{ row: { channel, section, secIdx } }"><div class="px-4 py-3 align-middle text-xs text-gray-500 dark:text-gray-400"><template v-if="channel.description">{{ channel.description }}</template><span v-else class="text-gray-400">-</span></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ columns.platform }}</template><template #default="{ row: { channel, section, secIdx } }"><div class="align-top px-4 py-3"><span
+    <ElTable data-testid="desktop-channels" :data="loading ? [] : rows.flatMap((channel, channelIndex) => channel.platforms.map((section, secIdx) => ({ channel, section, secIdx, key: channelIndex + ':' + secIdx })))" row-key="key" class="!hidden lg:!block element-data-table" :span-method="({row, columnIndex}) => columnIndex < 2 ? row.secIdx === 0 ? [row.channel.platforms.length, 1] : [0, 0] : [1, 1]"><ElTableColumn :min-width="120"  align="left"><template #header>{{ columns.name }}</template><template #default="{ row: { channel } }"><div class="px-4 py-3 text-center align-middle font-medium text-gray-900 dark:text-white">{{ channel.name }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ columns.description }}</template><template #default="{ row: { channel } }"><div class="px-4 py-3 align-middle text-xs text-gray-500 dark:text-gray-400"><template v-if="channel.description">{{ channel.description }}</template><span v-else class="text-gray-400">-</span></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ columns.platform }}</template><template #default="{ row: { section } }"><div class="align-top px-4 py-3"><span
               :class="[
                 'inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium uppercase',
                 platformBadgeClass(section.platform),
@@ -10,7 +10,7 @@
             >
               <PlatformIcon :platform="section.platform as GroupPlatform" size="xs" />
               {{ section.platform }}
-            </span></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ columns.groups }}</template><template #default="{ row: { channel, section, secIdx } }"><div class="align-top px-4 py-3"><div class="flex flex-col gap-1.5">
+            </span></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ columns.groups }}</template><template #default="{ row: { section } }"><div class="align-top px-4 py-3"><div class="flex flex-col gap-1.5">
               <div
                 v-if="exclusiveGroups(section).length > 0"
                 class="flex flex-wrap items-center gap-1.5"
@@ -80,7 +80,7 @@
                 </div>
               </div>
               <span v-if="section.groups.length === 0" class="text-xs text-gray-400">-</span>
-            </div></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ columns.supportedModels }}</template><template #default="{ row: { channel, section, secIdx } }"><div class="align-top px-4 py-3"><div class="flex flex-wrap gap-1">
+            </div></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ columns.supportedModels }}</template><template #default="{ row: { section } }"><div class="align-top px-4 py-3"><div class="flex flex-wrap gap-1">
               <SupportedModelChip
                 v-for="m in section.supported_models"
                 :key="`${section.platform}-${m.name}`"

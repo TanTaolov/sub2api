@@ -227,7 +227,7 @@
             <ElTable  :row-key="(row) => `${row.platform}:${row.model}`" @row-click="(row) => { drillModel(row) }" row-class-name="cursor-pointer" :data="modelRows" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div >{{ t('channelMonitorV2.table.platformModel') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div  ><div class="flex items-center gap-2">
+    <template #default="{ row: row }"><div  ><div class="flex items-center gap-2">
                       <span :class="statusDot(row.health)" aria-hidden="true"></span>
                       <div>
                         <span class="block text-xs text-gray-500 dark:text-dark-400">{{ row.platform }}</span>
@@ -239,23 +239,23 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div >{{ t('channelMonitorV2.metrics.successRate') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div  ><span class="block">{{ formatPercent(1 - row.metrics.error_rate) }}</span><small class="text-xs text-gray-400">{{ t('channelMonitorV2.metrics.errorRateValue', { value: formatPercent(row.metrics.error_rate) }) }}</small></div></template>
+    <template #default="{ row: row }"><div  ><span class="block">{{ formatPercent(1 - row.metrics.error_rate) }}</span><small class="text-xs text-gray-400">{{ t('channelMonitorV2.metrics.errorRateValue', { value: formatPercent(row.metrics.error_rate) }) }}</small></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div >{{ t('channelMonitorV2.metrics.ttftP50') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div  ><span class="block">{{ formatMs(row.metrics.ttft.p50_ms) }}</span><small class="text-xs text-gray-400">{{ latencyDetail(row.metrics.ttft) }}</small></div></template>
+    <template #default="{ row: row }"><div  ><span class="block">{{ formatMs(row.metrics.ttft.p50_ms) }}</span><small class="text-xs text-gray-400">{{ latencyDetail(row.metrics.ttft) }}</small></div></template>
   </ElTableColumn>
   <ElTableColumn v-if="showThroughput" :min-width="120" align="left">
     <template #header><div >{{ t('channelMonitorV2.metrics.tps') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div :title="exactTps(row.metrics.tpm)" >{{ formatTps(row.metrics.tpm) }}</div></template>
+    <template #default="{ row: row }"><div :title="exactTps(row.metrics.tpm)" >{{ formatTps(row.metrics.tpm) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div >{{ t('channelMonitorV2.metrics.cacheRate') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div  >{{ formatPercent(row.metrics.cache_rate) }}</div></template>
+    <template #default="{ row: row }"><div  >{{ formatPercent(row.metrics.cache_rate) }}</div></template>
   </ElTableColumn>
   <ElTableColumn v-if="showThroughput" :min-width="120" align="left">
     <template #header><div >{{ t('channelMonitorV2.metrics.rpm') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div  >{{ formatRate(row.metrics.rpm) }}</div></template>
+    <template #default="{ row: row }"><div  >{{ formatRate(row.metrics.rpm) }}</div></template>
   </ElTableColumn>
 </ElTable>
           </div>
@@ -312,16 +312,16 @@
           </div>
 
           <div v-else class="table-container border-0">
-            <ElTable  :row-key="(row) => row.user_id || row.display_label" :row-class-name="({ row: row }) => '' + ' ' + (row.is_self
+            <ElTable  :row-key="(row) => String(row.user_id || row.display_label)" :row-class-name="({ row: row }) => '' + ' ' + (row.is_self
                     ? 'bg-primary-50 ring-1 ring-inset ring-primary-200/80 dark:bg-primary-900/25 dark:ring-primary-700/50'
                     : '')" :data="userRows" table-layout="auto" class="element-data-table">
   <ElTableColumn :width="64" align="left">
     <template #header><div class="w-16">{{ t('channelMonitorV2.table.rank') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div  ><MonitorRankBadge :rank="row.rank" /></div></template>
+    <template #default="{ row: row }"><div  ><MonitorRankBadge :rank="row.rank" /></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div >{{ t('channelMonitorV2.table.user') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div  ><strong
+    <template #default="{ row: row }"><div  ><strong
                       class="font-semibold"
                       :class="row.is_self ? 'text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-white'"
                     >
@@ -334,23 +334,23 @@
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div >{{ t('channelMonitorV2.metrics.successRate') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div  ><span class="block">{{ formatPercent(1 - row.metrics.error_rate) }}</span><small class="text-xs text-gray-400">{{ t('channelMonitorV2.metrics.errorRateValue', { value: formatPercent(row.metrics.error_rate) }) }}</small></div></template>
+    <template #default="{ row: row }"><div  ><span class="block">{{ formatPercent(1 - row.metrics.error_rate) }}</span><small class="text-xs text-gray-400">{{ t('channelMonitorV2.metrics.errorRateValue', { value: formatPercent(row.metrics.error_rate) }) }}</small></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div >{{ t('channelMonitorV2.metrics.ttftP50') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div  ><span class="block">{{ formatMs(row.metrics.ttft.p50_ms) }}</span><small class="text-xs text-gray-400">{{ latencyDetail(row.metrics.ttft) }}</small></div></template>
+    <template #default="{ row: row }"><div  ><span class="block">{{ formatMs(row.metrics.ttft.p50_ms) }}</span><small class="text-xs text-gray-400">{{ latencyDetail(row.metrics.ttft) }}</small></div></template>
   </ElTableColumn>
   <ElTableColumn v-if="showThroughput" :min-width="120" align="left">
     <template #header><div >{{ t('channelMonitorV2.metrics.tps') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div :title="exactTps(row.metrics.tpm)" >{{ formatTps(row.metrics.tpm) }}</div></template>
+    <template #default="{ row: row }"><div :title="exactTps(row.metrics.tpm)" >{{ formatTps(row.metrics.tpm) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div >{{ t('channelMonitorV2.metrics.cacheRate') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div  >{{ formatPercent(row.metrics.cache_rate) }}</div></template>
+    <template #default="{ row: row }"><div  >{{ formatPercent(row.metrics.cache_rate) }}</div></template>
   </ElTableColumn>
   <ElTableColumn v-if="showThroughput" :min-width="120" align="left">
     <template #header><div >{{ t('channelMonitorV2.metrics.rpm') }}</div></template>
-    <template #default="{ row: row, $index: rowIndex }"><div  >{{ formatRate(row.metrics.rpm) }}</div></template>
+    <template #default="{ row: row }"><div  >{{ formatRate(row.metrics.rpm) }}</div></template>
   </ElTableColumn>
 </ElTable>
           </div>

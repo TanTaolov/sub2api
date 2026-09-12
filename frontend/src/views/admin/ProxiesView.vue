@@ -871,23 +871,23 @@
           <ElTable  row-key="target" row-class-name="" :data="qualityReport.items" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="whitespace-nowrap px-3 py-2 text-left">{{ t('admin.proxies.qualityTableTarget') }}</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-white" >{{ qualityTargetLabel(item.target) }}</div></template>
+    <template #default="{ row: item }"><div class="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-white" >{{ qualityTargetLabel(item.target) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="whitespace-nowrap px-3 py-2 text-left">{{ t('admin.proxies.qualityTableStatus') }}</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2" ><span class="badge whitespace-nowrap" :class="qualityStatusClass(item.status)">{{ qualityStatusLabel(item.status) }}</span></div></template>
+    <template #default="{ row: item }"><div class="whitespace-nowrap px-3 py-2" ><span class="badge whitespace-nowrap" :class="qualityStatusClass(item.status)">{{ qualityStatusLabel(item.status) }}</span></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="whitespace-nowrap px-3 py-2 text-left">HTTP</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-300" >{{ item.http_status ?? '-' }}</div></template>
+    <template #default="{ row: item }"><div class="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-300" >{{ item.http_status ?? '-' }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="whitespace-nowrap px-3 py-2 text-left">{{ t('admin.proxies.qualityTableLatency') }}</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-300" >{{ typeof item.latency_ms === 'number' ? `${item.latency_ms}ms` : '-' }}</div></template>
+    <template #default="{ row: item }"><div class="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-300" >{{ typeof item.latency_ms === 'number' ? `${item.latency_ms}ms` : '-' }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 text-left">{{ t('admin.proxies.qualityTableMessage') }}</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-2 text-gray-600 dark:text-gray-300" ><span>{{ item.message || '-' }}</span><span v-if="item.cf_ray" class="ml-1 text-xs text-gray-400">(cf-ray: {{ item.cf_ray }})</span></div></template>
+    <template #default="{ row: item }"><div class="px-3 py-2 text-gray-600 dark:text-gray-300" ><span>{{ item.message || '-' }}</span><span v-if="item.cf_ray" class="ml-1 text-xs text-gray-400">(cf-ray: {{ item.cf_ray }})</span></div></template>
   </ElTableColumn>
 </ElTable>
         </div>
@@ -919,15 +919,15 @@
         <ElTable  row-key="id" row-class-name="" :data="proxyAccounts" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-2 text-left">{{ t('admin.proxies.accountName') }}</div></template>
-    <template #default="{ row: account, $index: rowIndex }"><div class="px-4 py-2 font-medium text-gray-900 dark:text-white" >{{ account.name }}</div></template>
+    <template #default="{ row: account }"><div class="px-4 py-2 font-medium text-gray-900 dark:text-white" >{{ account.name }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-2 text-left">{{ t('admin.accounts.columns.platformType') }}</div></template>
-    <template #default="{ row: account, $index: rowIndex }"><div class="px-4 py-2" ><PlatformTypeBadge :platform="account.platform" :type="account.type" /></div></template>
+    <template #default="{ row: account }"><div class="px-4 py-2" ><PlatformTypeBadge :platform="account.platform" :type="account.type" /></div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-4 py-2 text-left">{{ t('admin.proxies.accountNotes') }}</div></template>
-    <template #default="{ row: account, $index: rowIndex }"><div class="px-4 py-2 text-gray-600 dark:text-gray-300" >{{ account.notes || '-' }}</div></template>
+    <template #default="{ row: account }"><div class="px-4 py-2 text-gray-600 dark:text-gray-300" >{{ account.notes || '-' }}</div></template>
   </ElTableColumn>
 </ElTable>
       </div>

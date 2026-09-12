@@ -10,9 +10,9 @@
         <fieldset>
           <legend class="text-sm font-medium text-gray-900 dark:text-white">{{ t('admin.promptAudit.policy.scope') }}</legend>
           <div class="mt-3 flex flex-wrap gap-5 text-sm text-gray-700 dark:text-dark-200">
-            <ElementRadio name="prompt-audit-scope" :checked="draft.all_groups" @change="patch({ all_groups: true, group_ids: [] })" :class="[&quot;flex items-center gap-2&quot;]">
+            <ElementRadio name="prompt-audit-scope" :checked="draft.all_groups" @change="patch({ all_groups: true, group_ids: [] })" :class="['flex items-center gap-2']">
               {{ t('admin.promptAudit.policy.allGroups') }}</ElementRadio>
-            <ElementRadio name="prompt-audit-scope" :checked="!draft.all_groups" @change="patch({ all_groups: false })" :class="[&quot;flex items-center gap-2&quot;]">
+            <ElementRadio name="prompt-audit-scope" :checked="!draft.all_groups" @change="patch({ all_groups: false })" :class="['flex items-center gap-2']">
               {{ t('admin.promptAudit.policy.selectedGroups') }}</ElementRadio>
           </div>
         </fieldset>
@@ -41,7 +41,7 @@
         <fieldset class="mt-5 border-t border-gray-100 pt-5 dark:border-dark-800">
           <legend class="text-sm font-medium text-gray-900 dark:text-white">{{ t('admin.promptAudit.policy.scanners') }}</legend>
           <div class="mt-3 grid gap-2 sm:grid-cols-2">
-            <ElementCheckbox v-for="scanner in SCANNER_CATALOG" :key="scanner.id" :checked="draft.scanners.includes(scanner.id)" :aria-label="scannerLabel(scanner.id)" @change="toggleScanner(scanner.id)" :class="[&quot;flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-dark-200 dark:hover:bg-dark-800&quot;]"><span>{{ scannerLabel(scanner.id) }}</span></ElementCheckbox>
+            <ElementCheckbox v-for="scanner in SCANNER_CATALOG" :key="scanner.id" :checked="draft.scanners.includes(scanner.id)" :aria-label="scannerLabel(scanner.id)" @change="toggleScanner(scanner.id)" :class="['flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-dark-200 dark:hover:bg-dark-800']"><span>{{ scannerLabel(scanner.id) }}</span></ElementCheckbox>
           </div>
         </fieldset>
       </div>

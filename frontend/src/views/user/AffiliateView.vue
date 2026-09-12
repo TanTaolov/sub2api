@@ -113,19 +113,19 @@
             <ElTable  row-key="user_id" row-class-name="border-b border-gray-100 last:border-b-0 dark:border-dark-800" :data="detail.invitees" table-layout="auto" class="element-data-table">
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 font-medium">{{ t('affiliate.invitees.columns.email') }}</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-3 text-gray-900 dark:text-white" >{{ item.email || '-' }}</div></template>
+    <template #default="{ row: item }"><div class="px-3 py-3 text-gray-900 dark:text-white" >{{ item.email || '-' }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 font-medium">{{ t('affiliate.invitees.columns.username') }}</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-3 text-gray-700 dark:text-gray-300" >{{ item.username || '-' }}</div></template>
+    <template #default="{ row: item }"><div class="px-3 py-3 text-gray-700 dark:text-gray-300" >{{ item.username || '-' }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="right">
     <template #header><div class="px-3 py-2 font-medium text-right">{{ t('affiliate.invitees.columns.rebate') }}</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-3 text-right font-medium text-emerald-600 dark:text-emerald-400" >{{ formatCurrency(item.total_rebate) }}</div></template>
+    <template #default="{ row: item }"><div class="px-3 py-3 text-right font-medium text-emerald-600 dark:text-emerald-400" >{{ formatCurrency(item.total_rebate) }}</div></template>
   </ElTableColumn>
   <ElTableColumn :min-width="120" align="left">
     <template #header><div class="px-3 py-2 font-medium">{{ t('affiliate.invitees.columns.joinedAt') }}</div></template>
-    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-3 text-gray-700 dark:text-gray-300" >{{ formatDateTime(item.created_at) || '-' }}</div></template>
+    <template #default="{ row: item }"><div class="px-3 py-3 text-gray-700 dark:text-gray-300" >{{ formatDateTime(item.created_at) || '-' }}</div></template>
   </ElTableColumn>
 </ElTable>
           </div>
