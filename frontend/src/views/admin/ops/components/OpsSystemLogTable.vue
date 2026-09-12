@@ -414,40 +414,34 @@ onMounted(async () => {
         </label>
         <label class="text-xs text-gray-600 dark:text-gray-300">
           {{ t('admin.ops.systemLogs.samplingInitial') }}
-          <input v-model.number="runtimeConfig.sampling_initial" type="number" min="1" class="input mt-1" />
+          <ElementInput v-model.number="runtimeConfig.sampling_initial" type="number" min="1" class="input mt-1" />
         </label>
         <label class="text-xs text-gray-600 dark:text-gray-300">
           {{ t('admin.ops.systemLogs.samplingThereafter') }}
-          <input v-model.number="runtimeConfig.sampling_thereafter" type="number" min="1" class="input mt-1" />
+          <ElementInput v-model.number="runtimeConfig.sampling_thereafter" type="number" min="1" class="input mt-1" />
         </label>
         <label class="text-xs text-gray-600 dark:text-gray-300">
           {{ t('admin.ops.systemLogs.retentionDays') }}
-          <input v-model.number="runtimeConfig.retention_days" type="number" min="1" max="3650" class="input mt-1" />
+          <ElementInput v-model.number="runtimeConfig.retention_days" type="number" min="1" max="3650" class="input mt-1" />
           <span class="mt-1 block text-[11px] text-gray-500 dark:text-gray-400">{{ t('admin.ops.systemLogs.retentionDaysHint') }}</span>
         </label>
         <div class="md:col-span-2 xl:col-span-6">
           <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                <input v-model="runtimeConfig.caller" type="checkbox" />
-                {{ t('admin.ops.systemLogs.caller') }}
-              </label>
-              <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                <input v-model="runtimeConfig.enable_sampling" type="checkbox" />
-                {{ t('admin.ops.systemLogs.sampling') }}
-              </label>
-              <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                <input v-model="runtimeConfig.persist_access_logs" type="checkbox" />
-                {{ t('admin.ops.systemLogs.persistAccessLogs') }}
-              </label>
+              <ElementCheckbox v-model="runtimeConfig.caller" :class="[&quot;inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300&quot;]">
+                {{ t('admin.ops.systemLogs.caller') }}</ElementCheckbox>
+              <ElementCheckbox v-model="runtimeConfig.enable_sampling" :class="[&quot;inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300&quot;]">
+                {{ t('admin.ops.systemLogs.sampling') }}</ElementCheckbox>
+              <ElementCheckbox v-model="runtimeConfig.persist_access_logs" :class="[&quot;inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300&quot;]">
+                {{ t('admin.ops.systemLogs.persistAccessLogs') }}</ElementCheckbox>
             </div>
             <div class="flex flex-wrap items-center gap-2 lg:justify-end">
-              <button type="button" class="btn btn-primary btn-sm" :disabled="runtimeSaving" @click="saveRuntimeConfig">
+              <ElButton type="primary" size="small" native-type="button" class="" :disabled="runtimeSaving" @click="saveRuntimeConfig">
                 {{ runtimeSaving ? t('common.saving') : t('admin.ops.systemLogs.saveAndApply') }}
-              </button>
-              <button type="button" class="btn btn-secondary btn-sm" :disabled="runtimeSaving" @click="resetRuntimeConfig">
+              </ElButton>
+              <ElButton size="small" native-type="button" class="" :disabled="runtimeSaving" @click="resetRuntimeConfig">
                 {{ t('admin.ops.systemLogs.resetDefaults') }}
-              </button>
+              </ElButton>
             </div>
           </div>
         </div>
@@ -463,11 +457,11 @@ onMounted(async () => {
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         {{ t('admin.ops.systemLogs.startTime') }}
-        <input v-model="filters.start_time" type="datetime-local" class="input mt-1" />
+        <ElementInput v-model="filters.start_time" type="datetime-local" class="input mt-1" />
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         {{ t('admin.ops.systemLogs.endTime') }}
-        <input v-model="filters.end_time" type="datetime-local" class="input mt-1" />
+        <ElementInput v-model="filters.end_time" type="datetime-local" class="input mt-1" />
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         {{ t('admin.ops.systemLogs.level') }}
@@ -475,51 +469,51 @@ onMounted(async () => {
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         {{ t('admin.ops.systemLogs.component') }}
-        <input v-model="filters.component" type="text" class="input mt-1" :placeholder="t('admin.ops.systemLogs.componentPlaceholder')" />
+        <ElementInput v-model="filters.component" type="text" class="input mt-1" :placeholder="t('admin.ops.systemLogs.componentPlaceholder')" />
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         {{ t('admin.ops.systemLogs.host') }}
-        <input v-model="filters.host" type="text" class="input mt-1" />
+        <ElementInput v-model="filters.host" type="text" class="input mt-1" />
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         request_id
-        <input v-model="filters.request_id" type="text" class="input mt-1" />
+        <ElementInput v-model="filters.request_id" type="text" class="input mt-1" />
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         client_request_id
-        <input v-model="filters.client_request_id" type="text" class="input mt-1" />
+        <ElementInput v-model="filters.client_request_id" type="text" class="input mt-1" />
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         user_id
-        <input v-model="filters.user_id" type="text" class="input mt-1" />
+        <ElementInput v-model="filters.user_id" type="text" class="input mt-1" />
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         {{ t('admin.ops.systemLogs.keyId') }}
-        <input v-model="filters.api_key_id" type="text" class="input mt-1" />
+        <ElementInput v-model="filters.api_key_id" type="text" class="input mt-1" />
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         account_id
-        <input v-model="filters.account_id" type="text" class="input mt-1" />
+        <ElementInput v-model="filters.account_id" type="text" class="input mt-1" />
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         {{ t('admin.ops.systemLogs.platform') }}
-        <input v-model="filters.platform" type="text" class="input mt-1" />
+        <ElementInput v-model="filters.platform" type="text" class="input mt-1" />
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         {{ t('admin.ops.systemLogs.model') }}
-        <input v-model="filters.model" type="text" class="input mt-1" />
+        <ElementInput v-model="filters.model" type="text" class="input mt-1" />
       </label>
       <label class="text-xs text-gray-600 dark:text-gray-300">
         {{ t('admin.ops.systemLogs.keyword') }}
-        <input v-model="filters.q" type="text" class="input mt-1" :placeholder="t('admin.ops.systemLogs.keywordPlaceholder')" />
+        <ElementInput v-model="filters.q" type="text" class="input mt-1" :placeholder="t('admin.ops.systemLogs.keywordPlaceholder')" />
       </label>
     </div>
 
     <div class="mb-3 flex flex-wrap gap-2">
-      <button type="button" class="btn btn-primary btn-sm" @click="applyFilters">{{ t('admin.ops.systemLogs.search') }}</button>
-      <button type="button" class="btn btn-secondary btn-sm" @click="resetFilters">{{ t('common.reset') }}</button>
-      <button type="button" class="btn btn-danger btn-sm" @click="cleanupCurrentFilter">{{ t('admin.ops.systemLogs.cleanCurrentFilters') }}</button>
-      <button type="button" class="btn btn-secondary btn-sm" @click="fetchHealth">{{ t('admin.ops.systemLogs.refreshHealth') }}</button>
+      <ElButton type="primary" size="small" native-type="button" class="" @click="applyFilters">{{ t('admin.ops.systemLogs.search') }}</ElButton>
+      <ElButton size="small" native-type="button" class="" @click="resetFilters">{{ t('common.reset') }}</ElButton>
+      <ElButton type="danger" size="small" native-type="button" class="" @click="cleanupCurrentFilter">{{ t('admin.ops.systemLogs.cleanCurrentFilters') }}</ElButton>
+      <ElButton size="small" native-type="button" class="" @click="fetchHealth">{{ t('admin.ops.systemLogs.refreshHealth') }}</ElButton>
     </div>
 
     <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-dark-700">
@@ -542,32 +536,26 @@ onMounted(async () => {
         </div>
       </div>
       <div v-else class="overflow-auto">
-        <table class="min-w-full table-fixed divide-y divide-gray-200 dark:divide-dark-700">
-          <thead class="bg-gray-50 dark:bg-dark-900">
-            <tr>
-              <th class="w-[170px] px-3 py-2 text-left text-[11px] font-semibold text-gray-500">{{ t('admin.ops.systemLogs.time') }}</th>
-              <th class="w-[160px] px-3 py-2 text-left text-[11px] font-semibold text-gray-500">{{ t('admin.ops.systemLogs.host') }}</th>
-              <th class="w-[80px] px-3 py-2 text-left text-[11px] font-semibold text-gray-500">{{ t('admin.ops.systemLogs.level') }}</th>
-              <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500">{{ t('admin.ops.systemLogs.logDetails') }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100 dark:divide-dark-800">
-            <tr v-for="row in logs" :key="row.id" class="align-top">
-              <td class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300">{{ formatTime(row.created_at) }}</td>
-              <td class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300">
-                <span class="block truncate" :title="row.host || '-'">{{ row.host || '-' }}</span>
-              </td>
-              <td class="px-3 py-2 text-xs">
-                <span class="inline-flex rounded-full px-2 py-0.5 font-semibold" :class="levelBadgeClass(row.level)">
+        <ElTable  row-key="id" row-class-name="align-top" :data="logs" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="w-[170px] px-3 py-2 text-left text-[11px] font-semibold text-gray-500">{{ t('admin.ops.systemLogs.time') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300" >{{ formatTime(row.created_at) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="w-[160px] px-3 py-2 text-left text-[11px] font-semibold text-gray-500">{{ t('admin.ops.systemLogs.host') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300" ><span class="block truncate" :title="row.host || '-'">{{ row.host || '-' }}</span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="w-[80px] px-3 py-2 text-left text-[11px] font-semibold text-gray-500">{{ t('admin.ops.systemLogs.level') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2 text-xs" ><span class="inline-flex rounded-full px-2 py-0.5 font-semibold" :class="levelBadgeClass(row.level)">
                   {{ row.level }}
-                </span>
-              </td>
-              <td class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300 whitespace-normal break-all">
-                {{ formatSystemLogDetail(row) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500">{{ t('admin.ops.systemLogs.logDetails') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="px-3 py-2 text-xs text-gray-700 dark:text-gray-300 whitespace-normal break-all" >{{ formatSystemLogDetail(row) }}</div></template>
+  </ElTableColumn>
+</ElTable>
       </div>
       <Pagination
         :total="total"

@@ -40,19 +40,7 @@
               <div class="flex items-center gap-4">
                 <!-- 复选框 -->
                 <div class="flex-shrink-0">
-                  <label class="relative flex h-6 w-6 cursor-pointer items-center justify-center">
-                    <input
-                      type="checkbox"
-                      :checked="config.isSelected"
-                      @change="toggleExclusiveGroup(config.groupId)"
-                      class="peer sr-only"
-                    />
-                    <div class="h-5 w-5 rounded-md border-2 border-gray-300 transition-all peer-checked:border-primary-500 peer-checked:bg-primary-500 dark:border-dark-500 peer-checked:dark:border-primary-500">
-                      <svg v-if="config.isSelected" class="h-full w-full text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  </label>
+                  <ElCheckbox :model-value="config.isSelected" @change="toggleExclusiveGroup(config.groupId)" :aria-label="config.groupName" />
                 </div>
 
                 <!-- 分组信息 -->
@@ -78,7 +66,7 @@
                 <!-- 专属倍率输入 -->
                 <div class="flex flex-shrink-0 items-center gap-3">
                   <label class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('admin.users.customRate') }}</label>
-                  <input
+                  <ElementInput
                     type="number"
                     step="0.001"
                     min="0.001"
@@ -101,15 +89,8 @@
               {{ restrictPublicGroups ? t('admin.users.publicGroupsRestricted') : t('admin.users.publicGroups') }}
             </h4>
             <span class="text-xs text-gray-400">({{ publicGroupConfigs.length }})</span>
-            <label class="ml-auto flex cursor-pointer items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <input
-                type="checkbox"
-                :checked="restrictPublicGroups"
-                @change="toggleRestrictPublicGroups"
-                class="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-500"
-              />
-              {{ t('admin.users.restrictPublicGroups') }}
-            </label>
+            <ElementCheckbox :checked="restrictPublicGroups" @change="toggleRestrictPublicGroups" :class="[&quot;ml-auto flex cursor-pointer items-center gap-2 text-sm text-gray-600 dark:text-gray-400&quot;,&quot;cursor-pointer&quot;]">
+              {{ t('admin.users.restrictPublicGroups') }}</ElementCheckbox>
           </div>
           <p class="mb-3 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.users.restrictPublicGroupsHint') }}</p>
           <div class="grid gap-3">
@@ -121,12 +102,12 @@
               <div class="flex items-center gap-4">
                 <!-- 未开启限制时公开分组恒可用，此处仅作展示；开启后才是真实开关 -->
                 <div class="flex-shrink-0">
-                  <input
+                  <ElementCheckbox
                     v-if="restrictPublicGroups"
-                    type="checkbox"
+
                     :checked="config.isSelected"
                     @change="togglePublicGroup(config.groupId)"
-                    class="h-5 w-5 cursor-pointer rounded-md border-2 border-green-400 text-green-600 focus:ring-green-500 dark:border-green-600"
+                    class="cursor-pointer"
                   />
                   <div
                     v-else
@@ -158,7 +139,7 @@
                 <!-- 专属倍率输入 -->
                 <div class="flex flex-shrink-0 items-center gap-3">
                   <label class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('admin.users.customRate') }}</label>
-                  <input
+                  <ElementInput
                     type="number"
                     step="0.001"
                     min="0.001"
@@ -187,14 +168,14 @@
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <button @click="$emit('close')" class="btn btn-secondary px-5">{{ t('common.cancel') }}</button>
-        <button @click="handleSave" :disabled="submitting" class="btn btn-primary px-6">
+        <ElButton @click="$emit('close')" class="px-5">{{ t('common.cancel') }}</ElButton>
+        <ElButton type="primary" @click="handleSave" :disabled="submitting" class="px-6">
           <svg v-if="submitting" class="-ml-1 mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
           {{ submitting ? t('common.saving') : t('common.save') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

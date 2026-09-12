@@ -9,45 +9,20 @@
       </div>
 
       <!-- Settings Form -->
-      <form v-else @submit.prevent="saveSettings" class="space-y-6" novalidate>
+      <ElForm v-else @submit.prevent="saveSettings" class="space-y-6" novalidate>
         <!-- Tab Navigation -->
         <div class="settings-tabs-shell">
-          <nav
-            class="settings-tabs-scroll"
-            role="tablist"
-            :aria-label="t('admin.settings.title')"
-          >
-            <div class="settings-tabs">
-              <button
-                v-for="tab in settingsTabs"
-                :key="tab.key"
-                :id="`settings-tab-${tab.key}`"
-                type="button"
-                role="tab"
-                :aria-selected="activeTab === tab.key"
-                :tabindex="activeTab === tab.key ? 0 : -1"
-                :class="[
-                  'settings-tab',
-                  activeTab === tab.key && 'settings-tab-active',
-                ]"
-                @click="selectSettingsTab(tab.key)"
-                @keydown="handleSettingsTabKeydown($event, tab.key)"
-              >
-                <span class="settings-tab-icon">
+          <ElTabs :model-value="activeTab" @update:model-value="value => selectSettingsTab(value as SettingsTab)" :aria-label="t('admin.settings.title')" class="element-page-tabs"><ElTabPane v-for="tab in settingsTabs" :key="tab.key" :name="tab.key"><template #label><span class="settings-tab-icon">
                   <Icon :name="tab.icon" size="sm" />
-                </span>
-                <span class="settings-tab-label">{{
+                </span><span class="settings-tab-label">{{
                   t(`admin.settings.tabs.${tab.key}`)
-                }}</span>
-              </button>
-            </div>
-          </nav>
+                }}</span></template></ElTabPane></ElTabs>
         </div>
 
         <!-- Tab: Security — Admin API Key -->
         <div v-show="activeTab === 'security'" class="space-y-6">
           <!-- Admin API Key Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -94,11 +69,11 @@
                 <span class="text-gray-500 dark:text-gray-400">
                   {{ t("admin.settings.adminApiKey.notConfigured") }}
                 </span>
-                <button
-                  type="button"
+                <ElButton type="primary" size="small"
+                  native-type="button"
                   @click="createAdminApiKey"
                   :disabled="adminApiKeyOperating"
-                  class="btn btn-primary btn-sm"
+                  class=""
                 >
                   <svg
                     v-if="adminApiKeyOperating"
@@ -125,7 +100,7 @@
                       ? t("admin.settings.adminApiKey.creating")
                       : t("admin.settings.adminApiKey.create")
                   }}
-                </button>
+                </ElButton>
               </div>
 
               <!-- Key Exists -->
@@ -144,26 +119,26 @@
                     </code>
                   </div>
                   <div class="flex gap-2">
-                    <button
-                      type="button"
+                    <ElButton size="small"
+                      native-type="button"
                       @click="regenerateAdminApiKey"
                       :disabled="adminApiKeyOperating"
-                      class="btn btn-secondary btn-sm"
+                      class=""
                     >
                       {{
                         adminApiKeyOperating
                           ? t("admin.settings.adminApiKey.regenerating")
                           : t("admin.settings.adminApiKey.regenerate")
                       }}
-                    </button>
-                    <button
-                      type="button"
+                    </ElButton>
+                    <ElButton size="small"
+                      native-type="button"
                       @click="deleteAdminApiKey"
                       :disabled="adminApiKeyOperating"
-                      class="btn btn-secondary btn-sm text-red-600 hover:text-red-700 dark:text-red-400"
+                      class="text-red-600 hover:text-red-700 dark:text-red-400"
                     >
                       {{ t("admin.settings.adminApiKey.delete") }}
-                    </button>
+                    </ElButton>
                   </div>
                 </div>
 
@@ -183,13 +158,13 @@
                     >
                       {{ newAdminApiKey }}
                     </code>
-                    <button
-                      type="button"
+                    <ElButton type="primary" size="small"
+                      native-type="button"
                       @click="copyNewKey"
-                      class="btn btn-primary btn-sm flex-shrink-0"
+                      class="flex-shrink-0"
                     >
                       {{ t("admin.settings.adminApiKey.copyKey") }}
-                    </button>
+                    </ElButton>
                   </div>
                   <p class="text-xs text-green-600 dark:text-green-400">
                     {{ t("admin.settings.adminApiKey.usage") }}
@@ -197,14 +172,14 @@
                 </div>
               </div>
             </div>
-          </div>
+          </ElCard>
         </div>
         <!-- /Tab: Security — Admin API Key -->
 
         <!-- Tab: Gateway -->
         <div v-show="activeTab === 'gateway'" class="space-y-6">
           <!-- Overload Cooldown (529) Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -249,7 +224,7 @@
                     >
                       {{ t("admin.settings.overloadCooldown.cooldownMinutes") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model.number="overloadCooldownForm.cooldown_minutes"
                       type="number"
                       min="1"
@@ -267,11 +242,11 @@
                 <div
                   class="flex justify-end border-t border-gray-100 pt-4 dark:border-dark-700"
                 >
-                  <button
-                    type="button"
+                  <ElButton type="primary" size="small"
+                    native-type="button"
                     @click="saveOverloadCooldownSettings"
                     :disabled="overloadCooldownSaving"
-                    class="btn btn-primary btn-sm"
+                    class=""
                   >
                     <svg
                       v-if="overloadCooldownSaving"
@@ -298,14 +273,14 @@
                         ? t("common.saving")
                         : t("common.save")
                     }}
-                  </button>
+                  </ElButton>
                 </div>
               </template>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Rate Limit Cooldown (429) Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -354,7 +329,7 @@
                         )
                       }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model.number="rateLimit429CooldownForm.cooldown_seconds"
                       type="number"
                       min="1"
@@ -374,11 +349,11 @@
                 <div
                   class="flex justify-end border-t border-gray-100 pt-4 dark:border-dark-700"
                 >
-                  <button
-                    type="button"
+                  <ElButton type="primary" size="small"
+                    native-type="button"
                     @click="saveRateLimit429CooldownSettings"
                     :disabled="rateLimit429CooldownSaving"
-                    class="btn btn-primary btn-sm"
+                    class=""
                   >
                     <svg
                       v-if="rateLimit429CooldownSaving"
@@ -405,14 +380,14 @@
                         ? t("common.saving")
                         : t("common.save")
                     }}
-                  </button>
+                  </ElButton>
                 </div>
               </template>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Stream Timeout Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -461,22 +436,22 @@
                     >
                       {{ t("admin.settings.streamTimeout.action") }}
                     </label>
-                    <select
+                    <ElementSelect
                       v-model="streamTimeoutForm.action"
                       class="input w-64"
                     >
-                      <option value="temp_unsched">
+                      <ElOption :label="(t(&quot;admin.settings.streamTimeout.actionTempUnsched&quot;))" value="temp_unsched">
                         {{
                           t("admin.settings.streamTimeout.actionTempUnsched")
                         }}
-                      </option>
-                      <option value="error">
+                      </ElOption>
+                      <ElOption :label="(t(&quot;admin.settings.streamTimeout.actionError&quot;))" value="error">
                         {{ t("admin.settings.streamTimeout.actionError") }}
-                      </option>
-                      <option value="none">
+                      </ElOption>
+                      <ElOption :label="(t(&quot;admin.settings.streamTimeout.actionNone&quot;))" value="none">
                         {{ t("admin.settings.streamTimeout.actionNone") }}
-                      </option>
-                    </select>
+                      </ElOption>
+                    </ElementSelect>
                     <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                       {{ t("admin.settings.streamTimeout.actionHint") }}
                     </p>
@@ -489,7 +464,7 @@
                     >
                       {{ t("admin.settings.streamTimeout.tempUnschedMinutes") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model.number="streamTimeoutForm.temp_unsched_minutes"
                       type="number"
                       min="1"
@@ -510,7 +485,7 @@
                     >
                       {{ t("admin.settings.streamTimeout.thresholdCount") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model.number="streamTimeoutForm.threshold_count"
                       type="number"
                       min="1"
@@ -531,7 +506,7 @@
                         t("admin.settings.streamTimeout.thresholdWindowMinutes")
                       }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model.number="
                         streamTimeoutForm.threshold_window_minutes
                       "
@@ -554,11 +529,11 @@
                 <div
                   class="flex justify-end border-t border-gray-100 pt-4 dark:border-dark-700"
                 >
-                  <button
-                    type="button"
+                  <ElButton type="primary" size="small"
+                    native-type="button"
                     @click="saveStreamTimeoutSettings"
                     :disabled="streamTimeoutSaving"
-                    class="btn btn-primary btn-sm"
+                    class=""
                   >
                     <svg
                       v-if="streamTimeoutSaving"
@@ -585,14 +560,14 @@
                         ? t("common.saving")
                         : t("common.save")
                     }}
-                  </button>
+                  </ElButton>
                 </div>
               </template>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Request Rectifier Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -709,7 +684,7 @@
                       :key="index"
                       class="flex items-center gap-2"
                     >
-                      <input
+                      <ElementInput
                         v-model="rectifierForm.apikey_signature_patterns[index]"
                         type="text"
                         class="input input-sm flex-1"
@@ -717,15 +692,15 @@
                           t('admin.settings.rectifier.apikeyPatternPlaceholder')
                         "
                       />
-                      <button
-                        type="button"
+                      <ElButton
+                        native-type="button"
                         @click="
                           rectifierForm.apikey_signature_patterns.splice(
                             index,
                             1,
                           )
                         "
-                        class="btn btn-ghost btn-xs text-red-500 hover:text-red-700"
+                        class="btn-xs text-red-500 hover:text-red-700"
                       >
                         <svg
                           class="h-4 w-4"
@@ -740,15 +715,15 @@
                             d="M6 18L18 6M6 6l12 12"
                           />
                         </svg>
-                      </button>
+                      </ElButton>
                     </div>
-                    <button
-                      type="button"
+                    <ElButton
+                      native-type="button"
                       @click="rectifierForm.apikey_signature_patterns.push('')"
-                      class="btn btn-ghost btn-xs text-primary-600 dark:text-primary-400"
+                      class="btn-xs text-primary-600 dark:text-primary-400"
                     >
                       + {{ t("admin.settings.rectifier.addPattern") }}
-                    </button>
+                    </ElButton>
                   </div>
                 </div>
 
@@ -756,11 +731,11 @@
                 <div
                   class="flex justify-end border-t border-gray-100 pt-4 dark:border-dark-700"
                 >
-                  <button
-                    type="button"
+                  <ElButton type="primary" size="small"
+                    native-type="button"
                     @click="saveRectifierSettings"
                     :disabled="rectifierSaving"
-                    class="btn btn-primary btn-sm"
+                    class=""
                   >
                     <svg
                       v-if="rectifierSaving"
@@ -785,13 +760,13 @@
                     {{
                       rectifierSaving ? t("common.saving") : t("common.save")
                     }}
-                  </button>
+                  </ElButton>
                 </div>
               </template>
             </div>
-          </div>
+          </ElCard>
           <!-- Beta Policy Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -871,7 +846,7 @@
                     >
                       {{ t("admin.settings.betaPolicy.errorMessage") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="rule.error_message"
                       type="text"
                       class="input"
@@ -892,16 +867,16 @@
                       {{ t("admin.settings.betaPolicy.quickPresets") }}
                     </label>
                     <div class="flex flex-wrap gap-2">
-                      <button
+                      <ElButton text
                         v-for="preset in betaPresets[rule.beta_token]"
                         :key="preset.label"
-                        type="button"
+                        native-type="button"
                         class="inline-flex items-center gap-1 rounded-md border border-primary-200 bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700 transition-colors hover:bg-primary-100 dark:border-primary-800 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50"
                         @click="applyBetaPreset(rule, preset)"
                         :title="preset.description"
                       >
                         {{ preset.label }}
-                      </button>
+                      </ElButton>
                     </div>
                   </div>
 
@@ -921,7 +896,7 @@
                       :key="index"
                       class="mb-1.5 flex items-center gap-2"
                     >
-                      <input
+                      <ElementInput
                         v-model="rule.model_whitelist![index]"
                         type="text"
                         class="input input-sm flex-1"
@@ -929,8 +904,8 @@
                           t('admin.settings.betaPolicy.modelPatternPlaceholder')
                         "
                       />
-                      <button
-                        type="button"
+                      <ElButton text
+                        native-type="button"
                         @click="rule.model_whitelist!.splice(index, 1)"
                         class="shrink-0 rounded p-1 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
                       >
@@ -947,11 +922,11 @@
                             d="M6 18L18 6M6 6l12 12"
                           />
                         </svg>
-                      </button>
+                      </ElButton>
                     </div>
                     <!-- Add pattern button -->
-                    <button
-                      type="button"
+                    <ElButton text
+                      native-type="button"
                       @click="
                         if (!rule.model_whitelist) rule.model_whitelist = [];
                         rule.model_whitelist.push('');
@@ -972,7 +947,7 @@
                         />
                       </svg>
                       {{ t("admin.settings.betaPolicy.addModelPattern") }}
-                    </button>
+                    </ElButton>
                     <!-- Common pattern chips -->
                     <div class="flex flex-wrap items-center gap-1.5">
                       <span class="text-xs text-gray-400 dark:text-gray-500"
@@ -980,15 +955,15 @@
                           t("admin.settings.betaPolicy.commonPatterns")
                         }}:</span
                       >
-                      <button
+                      <ElButton text
                         v-for="pattern in commonModelPatterns"
                         :key="pattern"
-                        type="button"
+                        native-type="button"
                         class="rounded border border-gray-200 px-2 py-0.5 text-xs text-gray-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700 dark:border-dark-600 dark:text-gray-400 dark:hover:border-primary-700 dark:hover:bg-primary-900/30 dark:hover:text-primary-300"
                         @click="addQuickPattern(rule, pattern)"
                       >
                         {{ pattern }}
-                      </button>
+                      </ElButton>
                     </div>
                   </div>
 
@@ -1014,7 +989,7 @@
                     </p>
                     <!-- Fallback Error Message (only when fallback_action=block) -->
                     <div v-if="rule.fallback_action === 'block'" class="mt-2">
-                      <input
+                      <ElementInput
                         v-model="rule.fallback_error_message"
                         type="text"
                         class="input"
@@ -1035,11 +1010,11 @@
                 <div
                   class="flex justify-end border-t border-gray-100 pt-4 dark:border-dark-700"
                 >
-                  <button
-                    type="button"
+                  <ElButton type="primary" size="small"
+                    native-type="button"
                     @click="saveBetaPolicySettings"
                     :disabled="betaPolicySaving"
-                    class="btn btn-primary btn-sm"
+                    class=""
                   >
                     <svg
                       v-if="betaPolicySaving"
@@ -1064,13 +1039,13 @@
                     {{
                       betaPolicySaving ? t("common.saving") : t("common.save")
                     }}
-                  </button>
+                  </ElButton>
                 </div>
               </template>
             </div>
-          </div>
+          </ElCard>
           <!-- OpenAI Fast/Flex Policy Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -1106,8 +1081,8 @@
                       })
                     }}
                   </span>
-                  <button
-                    type="button"
+                  <ElButton text
+                    native-type="button"
                     @click="removeOpenAIFastPolicyRule(ruleIndex)"
                     class="rounded p-1 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
                     :title="t('admin.settings.openaiFastPolicy.removeRule')"
@@ -1125,7 +1100,7 @@
                         d="M6 18L18 6M6 6l12 12"
                       />
                     </svg>
-                  </button>
+                  </ElButton>
                 </div>
 
                 <div
@@ -1254,7 +1229,7 @@
                   >
                     {{ t("admin.settings.openaiFastPolicy.errorMessage") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model="rule.error_message"
                     type="text"
                     class="input"
@@ -1295,7 +1270,7 @@
                     :key="patternIdx"
                     class="mb-1.5 flex items-center gap-2"
                   >
-                    <input
+                    <ElementInput
                       v-model="rule.model_whitelist![patternIdx]"
                       type="text"
                       class="input input-sm flex-1"
@@ -1305,8 +1280,8 @@
                         )
                       "
                     />
-                    <button
-                      type="button"
+                    <ElButton text
+                      native-type="button"
                       @click="
                         removeOpenAIFastPolicyModelPattern(rule, patternIdx)
                       "
@@ -1325,10 +1300,10 @@
                           d="M6 18L18 6M6 6l12 12"
                         />
                       </svg>
-                    </button>
+                    </ElButton>
                   </div>
-                  <button
-                    type="button"
+                  <ElButton text
+                    native-type="button"
                     @click="addOpenAIFastPolicyModelPattern(rule)"
                     class="mb-2 inline-flex items-center gap-1 text-xs text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                   >
@@ -1346,7 +1321,7 @@
                       />
                     </svg>
                     {{ t("admin.settings.openaiFastPolicy.addModelPattern") }}
-                  </button>
+                  </ElButton>
                 </div>
 
                 <!-- Other Models Action (only when target models are non-empty) -->
@@ -1376,7 +1351,7 @@
                     }}
                   </p>
                   <div v-if="rule.fallback_action === 'block'" class="mt-2">
-                    <input
+                    <ElementInput
                       v-model="rule.fallback_error_message"
                       type="text"
                       class="input"
@@ -1392,10 +1367,10 @@
 
               <!-- Add Rule Button -->
               <div>
-                <button
-                  type="button"
+                <ElButton size="small"
+                  native-type="button"
                   @click="addOpenAIFastPolicyRule"
-                  class="btn btn-secondary btn-sm inline-flex items-center gap-1"
+                  class="inline-flex items-center gap-1"
                 >
                   <svg
                     class="h-4 w-4"
@@ -1411,20 +1386,20 @@
                     />
                   </svg>
                   {{ t("admin.settings.openaiFastPolicy.addRule") }}
-                </button>
+                </ElButton>
                 <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">
                   {{ t("admin.settings.openaiFastPolicy.saveHint") }}
                 </p>
               </div>
             </div>
-          </div>
+          </ElCard>
         </div>
         <!-- /Tab: Gateway -->
 
         <!-- Tab: Security — Registration, Turnstile, LinuxDo -->
         <div v-show="activeTab === 'security'" class="space-y-6">
           <!-- Registration Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -1486,8 +1461,8 @@
                       class="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-1 text-xs font-mono text-gray-700 dark:bg-dark-600 dark:text-gray-200"
                     >
                       <span>{{ suffix }}</span>
-                      <button
-                        type="button"
+                      <ElButton text
+                        native-type="button"
                         class="rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-dark-500 dark:hover:text-white"
                         @click="
                           removeRegistrationEmailSuffixWhitelistTag(suffix)
@@ -1499,13 +1474,13 @@
                           class="h-3.5 w-3.5"
                           :stroke-width="2"
                         />
-                      </button>
+                      </ElButton>
                     </span>
 
                     <div
                       class="flex min-w-[220px] flex-1 items-center gap-1 rounded border border-transparent px-2 py-1 focus-within:border-primary-300 dark:focus-within:border-primary-700"
                     >
-                      <input
+                      <ElementInput
                         v-model="registrationEmailSuffixWhitelistDraft"
                         type="text"
                         class="w-full bg-transparent text-sm font-mono text-gray-900 outline-none placeholder:text-gray-400 dark:text-white dark:placeholder:text-gray-500"
@@ -1606,7 +1581,7 @@
                 >
                   {{ t("admin.settings.registration.frontendUrl") }}
                 </label>
-                <input
+                <ElementInput
                   v-model="form.frontend_url"
                   type="url"
                   class="input"
@@ -1745,7 +1720,7 @@
                     {{ t("admin.settings.security.auditRetentionHint") }}
                   </p>
                 </div>
-                <input
+                <ElementInput
                   v-model.number="form.audit_log_retention_days"
                   type="number"
                   min="0"
@@ -1753,10 +1728,10 @@
                 />
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- API Key IP ACL Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -1804,8 +1779,8 @@
                       class="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-1 text-xs font-mono text-gray-700 dark:bg-dark-600 dark:text-gray-200"
                     >
                       <span>{{ header }}</span>
-                      <button
-                        type="button"
+                      <ElButton text
+                        native-type="button"
                         class="rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-dark-500 dark:hover:text-white"
                         :aria-label="t('admin.settings.apiKeyAcl.removeForwardedClientIpHeader', { header })"
                         @click="removeForwardedClientIpHeader(header)"
@@ -1816,12 +1791,12 @@
                           class="h-3.5 w-3.5"
                           :stroke-width="2"
                         />
-                      </button>
+                      </ElButton>
                     </span>
                     <div
                       class="flex min-w-[220px] flex-1 items-center gap-1 rounded border border-transparent px-2 py-1 focus-within:border-primary-300 dark:focus-within:border-primary-700"
                     >
-                      <input
+                      <ElementInput
                         id="forwarded-client-ip-headers"
                         v-model="forwardedClientIpHeaderDraft"
                         data-testid="forwarded-client-ip-headers-input"
@@ -1840,10 +1815,10 @@
                 </p>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Panel API Rate Limit Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -1913,7 +1888,7 @@
                         {{ t("admin.settings.panelRateLimit.userRpm") }}
                       </label>
                       <div class="flex items-center gap-2">
-                        <input
+                        <ElementInput
                           v-model.number="panelRateLimitForm.user_rpm"
                           data-testid="panel-rate-limit-user-rpm"
                           type="number"
@@ -1937,7 +1912,7 @@
                         {{ t("admin.settings.panelRateLimit.heavyRpm") }}
                       </label>
                       <div class="flex items-center gap-2">
-                        <input
+                        <ElementInput
                           v-model.number="panelRateLimitForm.heavy_rpm"
                           type="number"
                           min="0"
@@ -1960,7 +1935,7 @@
                         {{ t("admin.settings.panelRateLimit.publicIpRpm") }}
                       </label>
                       <div class="flex items-center gap-2">
-                        <input
+                        <ElementInput
                           v-model.number="panelRateLimitForm.public_ip_rpm"
                           type="number"
                           min="0"
@@ -1995,12 +1970,12 @@
                 <div
                   class="flex justify-end border-t border-gray-100 pt-4 dark:border-dark-700"
                 >
-                  <button
-                    type="button"
+                  <ElButton type="primary" size="small"
+                    native-type="button"
                     data-testid="panel-rate-limit-save"
                     @click="savePanelRateLimitSettings"
                     :disabled="panelRateLimitSaving"
-                    class="btn btn-primary btn-sm"
+                    class=""
                   >
                     <svg
                       v-if="panelRateLimitSaving"
@@ -2027,14 +2002,14 @@
                         ? t("common.saving")
                         : t("common.save")
                     }}
-                  </button>
+                  </ElButton>
                 </div>
               </template>
             </div>
-          </div>
+          </ElCard>
 
           <!-- 人机验证 Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -2077,8 +2052,8 @@
                   <div
                     class="grid grid-cols-3 gap-2 rounded-lg bg-gray-100 p-1 dark:bg-dark-700"
                   >
-                    <button
-                      type="button"
+                    <ElButton text
+                      native-type="button"
                       data-testid="captcha-provider-turnstile"
                       class="inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition"
                       :class="
@@ -2089,9 +2064,9 @@
                       @click="selectCaptchaProvider('turnstile')"
                     >
                       {{ t("admin.settings.captcha.providerTurnstile") }}
-                    </button>
-                    <button
-                      type="button"
+                    </ElButton>
+                    <ElButton text
+                      native-type="button"
                       data-testid="captcha-provider-tencent"
                       class="inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition"
                       :class="
@@ -2102,9 +2077,9 @@
                       @click="selectCaptchaProvider('tencent')"
                     >
                       {{ t("admin.settings.captcha.providerTencent") }}
-                    </button>
-                    <button
-                      type="button"
+                    </ElButton>
+                    <ElButton text
+                      native-type="button"
                       data-testid="captcha-provider-aliyun"
                       class="inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition"
                       :class="
@@ -2115,7 +2090,7 @@
                       @click="selectCaptchaProvider('aliyun')"
                     >
                       {{ t("admin.settings.captcha.providerAliyun") }}
-                    </button>
+                    </ElButton>
                   </div>
                 </div>
 
@@ -2130,7 +2105,7 @@
                     >
                       {{ t("admin.settings.turnstile.siteKey") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.turnstile_site_key"
                       type="text"
                       class="input font-mono text-sm"
@@ -2154,7 +2129,7 @@
                     >
                       {{ t("admin.settings.turnstile.secretKey") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.turnstile_secret_key"
                       type="password"
                       class="input font-mono text-sm"
@@ -2179,8 +2154,8 @@
                       {{ t("admin.settings.tencentCaptcha.region") }}
                     </label>
                     <div class="grid grid-cols-2 gap-2 rounded-lg bg-gray-100 p-1 dark:bg-dark-700">
-                      <button
-                        type="button"
+                      <ElButton text
+                        native-type="button"
                         data-testid="tencent-captcha-region-cn"
                         class="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition"
                         :class="
@@ -2191,9 +2166,9 @@
                         @click="form.tencent_captcha_region = 'cn'"
                       >
                         {{ t("admin.settings.tencentCaptcha.regionCn") }}
-                      </button>
-                      <button
-                        type="button"
+                      </ElButton>
+                      <ElButton text
+                        native-type="button"
                         data-testid="tencent-captcha-region-intl"
                         class="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition"
                         :class="
@@ -2204,7 +2179,7 @@
                         @click="form.tencent_captcha_region = 'intl'"
                       >
                         {{ t("admin.settings.tencentCaptcha.regionIntl") }}
-                      </button>
+                      </ElButton>
                     </div>
                     <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                       {{ t("admin.settings.tencentCaptcha.regionHint") }}
@@ -2223,7 +2198,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ t("admin.settings.tencentCaptcha.appId") }}
                       </label>
-                      <input
+                      <ElementInput
                         v-model="form.tencent_captcha_app_id"
                         type="text"
                         inputmode="numeric"
@@ -2235,7 +2210,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ t("admin.settings.tencentCaptcha.appSecretKey") }}
                       </label>
-                      <input
+                      <ElementInput
                         v-model="form.tencent_captcha_app_secret_key"
                         type="password"
                         autocomplete="new-password"
@@ -2258,7 +2233,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ t("admin.settings.tencentCaptcha.cloudSecretId") }}
                       </label>
-                      <input
+                      <ElementInput
                         v-model="form.tencent_captcha_cloud_secret_id"
                         type="password"
                         autocomplete="new-password"
@@ -2273,7 +2248,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ t("admin.settings.tencentCaptcha.cloudSecretKey") }}
                       </label>
-                      <input
+                      <ElementInput
                         v-model="form.tencent_captcha_cloud_secret_key"
                         type="password"
                         autocomplete="new-password"
@@ -2331,8 +2306,8 @@
                       <div
                         class="grid grid-cols-2 gap-2 rounded-lg bg-gray-100 p-1 dark:bg-dark-700"
                       >
-                        <button
-                          type="button"
+                        <ElButton text
+                          native-type="button"
                           class="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition"
                           :class="
                             form.aliyun_captcha_region !== 'sgp'
@@ -2342,9 +2317,9 @@
                           @click="form.aliyun_captcha_region = 'cn'"
                         >
                           {{ t("admin.settings.aliyunCaptcha.regionCn") }}
-                        </button>
-                        <button
-                          type="button"
+                        </ElButton>
+                        <ElButton text
+                          native-type="button"
                           class="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition"
                           :class="
                             form.aliyun_captcha_region === 'sgp'
@@ -2354,7 +2329,7 @@
                           @click="form.aliyun_captcha_region = 'sgp'"
                         >
                           {{ t("admin.settings.aliyunCaptcha.regionSgp") }}
-                        </button>
+                        </ElButton>
                       </div>
                       <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                         {{ t("admin.settings.aliyunCaptcha.regionHint") }}
@@ -2366,7 +2341,7 @@
                       >
                         {{ t("admin.settings.aliyunCaptcha.prefix") }}
                       </label>
-                      <input
+                      <ElementInput
                         v-model="form.aliyun_captcha_prefix"
                         type="text"
                         class="input font-mono text-sm"
@@ -2383,7 +2358,7 @@
                     >
                       {{ t("admin.settings.aliyunCaptcha.sceneId") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.aliyun_captcha_scene_id"
                       type="text"
                       class="input font-mono text-sm"
@@ -2399,7 +2374,7 @@
                     >
                       {{ t("admin.settings.aliyunCaptcha.accessKeyId") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.aliyun_captcha_access_key_id"
                       type="text"
                       class="input font-mono text-sm"
@@ -2415,7 +2390,7 @@
                     >
                       {{ t("admin.settings.aliyunCaptcha.accessKeySecret") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.aliyun_captcha_access_key_secret"
                       type="password"
                       autocomplete="new-password"
@@ -2435,10 +2410,10 @@
                 </div>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- LinuxDo Connect OAuth 登录 -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -2473,7 +2448,7 @@
                     >
                       {{ t("admin.settings.linuxdo.clientId") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.linuxdo_connect_client_id"
                       type="text"
                       class="input font-mono text-sm"
@@ -2492,7 +2467,7 @@
                     >
                       {{ t("admin.settings.linuxdo.clientSecret") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.linuxdo_connect_client_secret"
                       type="password"
                       class="input font-mono text-sm"
@@ -2521,7 +2496,7 @@
                     >
                       {{ t("admin.settings.linuxdo.redirectUrl") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.linuxdo_connect_redirect_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -2532,13 +2507,13 @@
                     <div
                       class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3"
                     >
-                      <button
-                        type="button"
-                        class="btn btn-secondary btn-sm w-fit"
+                      <ElButton size="small"
+                        native-type="button"
+                        class="w-fit"
                         @click="setAndCopyLinuxdoRedirectUrl"
                       >
                         {{ t("admin.settings.linuxdo.quickSetCopy") }}
-                      </button>
+                      </ElButton>
                       <code
                         v-if="linuxdoRedirectUrlSuggestion"
                         class="select-all break-all rounded bg-gray-50 px-2 py-1 font-mono text-xs text-gray-600 dark:bg-dark-800 dark:text-gray-300"
@@ -2553,10 +2528,10 @@
                 </div>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- GitHub / Google 邮箱快捷登录 -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -2621,7 +2596,7 @@
                     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                       <div>
                         <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Client ID</label>
-                        <input
+                        <ElementInput
                           v-model="form.github_oauth_client_id"
                           type="text"
                           class="input font-mono text-sm"
@@ -2630,7 +2605,7 @@
                       </div>
                       <div>
                         <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Client Secret</label>
-                        <input
+                        <ElementInput
                           v-model="form.github_oauth_client_secret"
                           type="password"
                           class="input font-mono text-sm"
@@ -2647,20 +2622,20 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ localText("后端回调地址", "Backend Callback URL") }}
                       </label>
-                      <input
+                      <ElementInput
                         v-model="form.github_oauth_redirect_url"
                         type="url"
                         class="input font-mono text-sm"
                         placeholder="https://your-domain.com/api/v1/auth/oauth/github/callback"
                       />
                       <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-                        <button
-                          type="button"
-                          class="btn btn-secondary btn-sm w-fit"
+                        <ElButton size="small"
+                          native-type="button"
+                          class="w-fit"
                           @click="setAndCopyEmailOAuthRedirectUrl('github')"
                         >
                           {{ localText("生成并复制", "Generate and copy") }}
-                        </button>
+                        </ElButton>
                         <code
                           v-if="githubOAuthRedirectUrlSuggestion"
                           class="select-all break-all rounded bg-gray-50 px-2 py-1 font-mono text-xs text-gray-600 dark:bg-dark-800 dark:text-gray-300"
@@ -2674,7 +2649,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ localText("前端回跳地址", "Frontend Callback URL") }}
                       </label>
-                      <input
+                      <ElementInput
                         v-model="form.github_oauth_frontend_redirect_url"
                         type="text"
                         class="input font-mono text-sm"
@@ -2715,7 +2690,7 @@
                     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                       <div>
                         <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Client ID</label>
-                        <input
+                        <ElementInput
                           v-model="form.google_oauth_client_id"
                           type="text"
                           class="input font-mono text-sm"
@@ -2724,7 +2699,7 @@
                       </div>
                       <div>
                         <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Client Secret</label>
-                        <input
+                        <ElementInput
                           v-model="form.google_oauth_client_secret"
                           type="password"
                           class="input font-mono text-sm"
@@ -2741,20 +2716,20 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ localText("后端回调地址", "Backend Callback URL") }}
                       </label>
-                      <input
+                      <ElementInput
                         v-model="form.google_oauth_redirect_url"
                         type="url"
                         class="input font-mono text-sm"
                         placeholder="https://your-domain.com/api/v1/auth/oauth/google/callback"
                       />
                       <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-                        <button
-                          type="button"
-                          class="btn btn-secondary btn-sm w-fit"
+                        <ElButton size="small"
+                          native-type="button"
+                          class="w-fit"
                           @click="setAndCopyEmailOAuthRedirectUrl('google')"
                         >
                           {{ localText("生成并复制", "Generate and copy") }}
-                        </button>
+                        </ElButton>
                         <code
                           v-if="googleOAuthRedirectUrlSuggestion"
                           class="select-all break-all rounded bg-gray-50 px-2 py-1 font-mono text-xs text-gray-600 dark:bg-dark-800 dark:text-gray-300"
@@ -2768,7 +2743,7 @@
                       <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {{ localText("前端回跳地址", "Frontend Callback URL") }}
                       </label>
-                      <input
+                      <ElementInput
                         v-model="form.google_oauth_frontend_redirect_url"
                         type="text"
                         class="input font-mono text-sm"
@@ -2779,10 +2754,10 @@
                 </div>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- WeChat Connect OAuth 登录 -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -2847,7 +2822,7 @@
                         >
                           {{ localText("PC AppID", "PC App ID") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="form.wechat_connect_open_app_id"
                           data-testid="wechat-connect-open-app-id"
                           type="text"
@@ -2866,7 +2841,7 @@
                         >
                           {{ localText("PC AppSecret", "PC App Secret") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="form.wechat_connect_open_app_secret"
                           data-testid="wechat-connect-open-app-secret"
                           type="password"
@@ -2920,7 +2895,7 @@
                         >
                           {{ localText("公众号 AppID", "Official Account App ID") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="form.wechat_connect_mp_app_id"
                           data-testid="wechat-connect-mp-app-id"
                           type="text"
@@ -2944,7 +2919,7 @@
                             )
                           }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="form.wechat_connect_mp_app_secret"
                           data-testid="wechat-connect-mp-app-secret"
                           type="password"
@@ -2998,7 +2973,7 @@
                         >
                           {{ localText("移动应用 AppID", "Mobile App ID") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="form.wechat_connect_mobile_app_id"
                           data-testid="wechat-connect-mobile-app-id"
                           type="text"
@@ -3017,7 +2992,7 @@
                         >
                           {{ localText("移动应用 AppSecret", "Mobile App Secret") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="form.wechat_connect_mobile_app_secret"
                           data-testid="wechat-connect-mobile-app-secret"
                           type="password"
@@ -3067,7 +3042,7 @@
                         )
                       }}
                     </label>
-                    <input
+                    <ElementInput
                       data-testid="wechat-connect-redirect-url"
                       v-model="form.wechat_connect_redirect_url"
                       type="url"
@@ -3085,13 +3060,13 @@
                     <div
                       class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3"
                     >
-                      <button
-                        type="button"
-                        class="btn btn-secondary btn-sm w-fit"
+                      <ElButton size="small"
+                        native-type="button"
+                        class="w-fit"
                         @click="setAndCopyWeChatRedirectUrl"
                       >
                         {{ t("admin.settings.wechatConnect.generateAndCopy") }}
-                      </button>
+                      </ElButton>
                       <code
                         v-if="wechatRedirectUrlSuggestion"
                         class="select-all break-all rounded bg-gray-50 px-2 py-1 font-mono text-xs text-gray-600 dark:bg-dark-800 dark:text-gray-300"
@@ -3108,7 +3083,7 @@
                   >
                     {{ t("admin.settings.wechatConnect.frontendRedirectUrlLabel") }}
                   </label>
-                  <input
+                  <ElementInput
                     data-testid="wechat-connect-frontend-redirect-url"
                     v-model="form.wechat_connect_frontend_redirect_url"
                     type="text"
@@ -3121,10 +3096,10 @@
                 </div>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- DingTalk Connect OAuth 登录 -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -3159,7 +3134,7 @@
                     >
                       {{ t("admin.settings.dingtalk.clientId") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.dingtalk_connect_client_id"
                       type="text"
                       class="input font-mono text-sm"
@@ -3178,7 +3153,7 @@
                     >
                       {{ t("admin.settings.dingtalk.clientSecret") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.dingtalk_connect_client_secret"
                       type="password"
                       class="input font-mono text-sm"
@@ -3207,7 +3182,7 @@
                     >
                       {{ t("admin.settings.dingtalk.redirectUrl") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.dingtalk_connect_redirect_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -3229,28 +3204,12 @@
                       {{ t("admin.settings.dingtalk.corpPolicy.hint") }}
                     </p>
                     <div class="space-y-2">
-                      <label class="flex cursor-pointer items-center gap-3">
-                        <input
-                          v-model="form.dingtalk_connect_corp_restriction_policy"
-                          type="radio"
-                          value="none"
-                          class="h-4 w-4 text-primary-600"
-                        />
-                        <span class="text-sm text-gray-700 dark:text-gray-300">
+                      <ElementRadio v-model="form.dingtalk_connect_corp_restriction_policy" value="none" :class="[&quot;flex cursor-pointer items-center gap-3&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">
                           {{ t("admin.settings.dingtalk.corpPolicy.none") }}
-                        </span>
-                      </label>
-                      <label class="flex cursor-pointer items-center gap-3">
-                        <input
-                          v-model="form.dingtalk_connect_corp_restriction_policy"
-                          type="radio"
-                          value="internal_only"
-                          class="h-4 w-4 text-primary-600"
-                        />
-                        <span class="text-sm text-gray-700 dark:text-gray-300">
+                        </span></ElementRadio>
+                      <ElementRadio v-model="form.dingtalk_connect_corp_restriction_policy" value="internal_only" :class="[&quot;flex cursor-pointer items-center gap-3&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">
                           {{ t("admin.settings.dingtalk.corpPolicy.internalOnly") }}
-                        </span>
-                      </label>
+                        </span></ElementRadio>
                     </div>
                   </div>
 
@@ -3291,7 +3250,7 @@
                         <label class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap min-w-[5rem]">
                           {{ t("admin.settings.dingtalk.syncDisplayNameTarget") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="form.dingtalk_connect_sync_display_name_attr_key"
                           type="text"
                           placeholder="dingtalk_name"
@@ -3302,7 +3261,7 @@
                         <label class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap min-w-[5rem]">
                           {{ t("admin.settings.dingtalk.syncAttrDisplayName") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="form.dingtalk_connect_sync_display_name_attr_name"
                           type="text"
                           :placeholder="localText('钉钉姓名', 'DingTalk Name')"
@@ -3337,7 +3296,7 @@
                         <label class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap min-w-[5rem]">
                           {{ t("admin.settings.dingtalk.syncCorpEmailTarget") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="form.dingtalk_connect_sync_corp_email_attr_key"
                           type="text"
                           placeholder="dingtalk_email"
@@ -3348,7 +3307,7 @@
                         <label class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap min-w-[5rem]">
                           {{ t("admin.settings.dingtalk.syncAttrDisplayName") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="form.dingtalk_connect_sync_corp_email_attr_name"
                           type="text"
                           :placeholder="localText('钉钉企业邮箱', 'DingTalk Corporate Email')"
@@ -3383,7 +3342,7 @@
                         <label class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap min-w-[5rem]">
                           {{ t("admin.settings.dingtalk.syncDeptTarget") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="form.dingtalk_connect_sync_dept_attr_key"
                           type="text"
                           placeholder="dingtalk_department"
@@ -3394,7 +3353,7 @@
                         <label class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap min-w-[5rem]">
                           {{ t("admin.settings.dingtalk.syncAttrDisplayName") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="form.dingtalk_connect_sync_dept_attr_name"
                           type="text"
                           :placeholder="localText('钉钉部门', 'DingTalk Department')"
@@ -3409,10 +3368,10 @@
                 </div>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Generic OIDC OAuth 登录 -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -3447,7 +3406,7 @@
                     >
                       {{ t("admin.settings.oidc.providerName") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_provider_name"
                       type="text"
                       class="input"
@@ -3463,7 +3422,7 @@
                     >
                       {{ t("admin.settings.oidc.clientId") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_client_id"
                       type="text"
                       class="input font-mono text-sm"
@@ -3479,7 +3438,7 @@
                     >
                       {{ t("admin.settings.oidc.clientSecret") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_client_secret"
                       type="password"
                       class="input font-mono text-sm"
@@ -3508,7 +3467,7 @@
                     >
                       {{ t("admin.settings.oidc.issuerUrl") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_issuer_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -3524,7 +3483,7 @@
                     >
                       {{ t("admin.settings.oidc.discoveryUrl") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_discovery_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -3540,7 +3499,7 @@
                     >
                       {{ t("admin.settings.oidc.authorizeUrl") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_authorize_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -3556,7 +3515,7 @@
                     >
                       {{ t("admin.settings.oidc.tokenUrl") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_token_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -3572,7 +3531,7 @@
                     >
                       {{ t("admin.settings.oidc.userinfoUrl") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_userinfo_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -3588,7 +3547,7 @@
                     >
                       {{ t("admin.settings.oidc.jwksUrl") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_jwks_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -3604,7 +3563,7 @@
                     >
                       {{ t("admin.settings.oidc.scopes") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_scopes"
                       type="text"
                       class="input font-mono text-sm"
@@ -3621,7 +3580,7 @@
                     >
                       {{ t("admin.settings.oidc.redirectUrl") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_redirect_url"
                       type="url"
                       class="input font-mono text-sm"
@@ -3632,13 +3591,13 @@
                     <div
                       class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3"
                     >
-                      <button
-                        type="button"
-                        class="btn btn-secondary btn-sm w-fit"
+                      <ElButton size="small"
+                        native-type="button"
+                        class="w-fit"
                         @click="setAndCopyOIDCRedirectUrl"
                       >
                         {{ t("admin.settings.oidc.quickSetCopy") }}
-                      </button>
+                      </ElButton>
                       <code
                         v-if="oidcRedirectUrlSuggestion"
                         class="select-all break-all rounded bg-gray-50 px-2 py-1 font-mono text-xs text-gray-600 dark:bg-dark-800 dark:text-gray-300"
@@ -3657,7 +3616,7 @@
                     >
                       {{ t("admin.settings.oidc.frontendRedirectUrl") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_frontend_redirect_url"
                       type="text"
                       class="input font-mono text-sm"
@@ -3678,18 +3637,18 @@
                     >
                       {{ t("admin.settings.oidc.tokenAuthMethod") }}
                     </label>
-                    <select
+                    <ElementSelect
                       v-model="form.oidc_connect_token_auth_method"
                       class="input font-mono text-sm"
                     >
-                      <option value="client_secret_post">
+                      <ElOption :label="&quot;client_secret_post&quot;" value="client_secret_post">
                         client_secret_post
-                      </option>
-                      <option value="client_secret_basic">
+                      </ElOption>
+                      <ElOption :label="&quot;client_secret_basic&quot;" value="client_secret_basic">
                         client_secret_basic
-                      </option>
-                      <option value="none">none</option>
-                    </select>
+                      </ElOption>
+                      <ElOption :label="&quot;none&quot;" value="none">none</ElOption>
+                    </ElementSelect>
                   </div>
 
                   <div>
@@ -3698,7 +3657,7 @@
                     >
                       {{ t("admin.settings.oidc.clockSkewSeconds") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model.number="form.oidc_connect_clock_skew_seconds"
                       type="number"
                       min="0"
@@ -3713,7 +3672,7 @@
                     >
                       {{ t("admin.settings.oidc.allowedSigningAlgs") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_allowed_signing_algs"
                       type="text"
                       class="input font-mono text-sm"
@@ -3774,7 +3733,7 @@
                     >
                       {{ t("admin.settings.oidc.userinfoEmailPath") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_userinfo_email_path"
                       type="text"
                       class="input font-mono text-sm"
@@ -3790,7 +3749,7 @@
                     >
                       {{ t("admin.settings.oidc.userinfoIdPath") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_userinfo_id_path"
                       type="text"
                       class="input font-mono text-sm"
@@ -3806,7 +3765,7 @@
                     >
                       {{ t("admin.settings.oidc.userinfoUsernamePath") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.oidc_connect_userinfo_username_path"
                       type="text"
                       class="input font-mono text-sm"
@@ -3818,14 +3777,14 @@
                 </div>
               </div>
             </div>
-          </div>
+          </ElCard>
         </div>
         <!-- /Tab: Security — Registration, Turnstile, LinuxDo, OIDC -->
 
         <!-- Tab: Users -->
         <div v-show="activeTab === 'users'" class="space-y-6">
           <!-- Default Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -3844,7 +3803,7 @@
                   >
                     {{ t("admin.settings.defaults.defaultBalance") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model.number="form.default_balance"
                     type="number"
                     step="0.01"
@@ -3862,7 +3821,7 @@
                   >
                     {{ t("admin.settings.defaults.defaultConcurrency") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model.number="form.default_concurrency"
                     type="number"
                     min="1"
@@ -3879,7 +3838,7 @@
                   >
                     {{ t("admin.settings.defaults.defaultUserRpmLimit") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model.number="form.default_user_rpm_limit"
                     type="number"
                     min="0"
@@ -3905,14 +3864,14 @@
                       }}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
+                  <ElButton size="small"
+                    native-type="button"
+                    class=""
                     @click="addDefaultSubscription"
                     :disabled="subscriptionGroups.length === 0"
                   >
                     {{ t("admin.settings.defaults.addDefaultSubscription") }}
-                  </button>
+                  </ElButton>
                 </div>
 
                 <div
@@ -4010,7 +3969,7 @@
                           t("admin.settings.defaults.subscriptionValidityDays")
                         }}
                       </label>
-                      <input
+                      <ElementInput
                         v-model.number="item.validity_days"
                         type="number"
                         min="1"
@@ -4019,13 +3978,13 @@
                       />
                     </div>
                     <div class="flex items-end">
-                      <button
-                        type="button"
-                        class="btn btn-secondary default-sub-delete-btn w-full text-red-600 hover:text-red-700 dark:text-red-400"
+                      <ElButton
+                        native-type="button"
+                        class="default-sub-delete-btn w-full text-red-600 hover:text-red-700 dark:text-red-400"
                         @click="removeDefaultSubscription(index)"
                       >
                         {{ t("common.delete") }}
-                      </button>
+                      </ElButton>
                     </div>
                   </div>
                 </div>
@@ -4045,60 +4004,52 @@
                   </p>
                 </div>
                 <div class="overflow-x-auto">
-                  <table class="min-w-full text-sm">
-                    <thead>
-                      <tr class="text-left text-xs text-gray-500 dark:text-gray-400">
-                        <th class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.platform") }}</th>
-                        <th class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.daily") }}</th>
-                        <th class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.weekly") }}</th>
-                        <th class="pb-2 font-medium">{{ t("admin.settings.platformQuota.monthly") }}</th>
-                      </tr>
-                    </thead>
-                    <tbody class="space-y-2">
-                      <tr v-for="p in (['anthropic', 'openai', 'gemini', 'antigravity', 'grok'] as const)" :key="p" class="align-top">
-                        <td class="pr-4 py-1">
-                          <span class="font-mono text-xs text-gray-700 dark:text-gray-300">{{ p }}</span>
-                        </td>
-                        <td class="pr-4 py-1">
-                          <input
+                  <ElTable  :row-key="(p) => p" row-class-name="align-top" :data="(['anthropic', 'openai', 'gemini', 'antigravity', 'grok'] as const)" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.platform") }}</div></template>
+    <template #default="{ row: p, $index: rowIndex }"><div class="pr-4 py-1" ><span class="font-mono text-xs text-gray-700 dark:text-gray-300">{{ p }}</span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.daily") }}</div></template>
+    <template #default="{ row: p, $index: rowIndex }"><div class="pr-4 py-1" ><ElementInput
                             v-model.number="form.default_platform_quotas[p]!.daily"
                             type="number"
                             step="0.01"
                             min="0"
                             class="input h-8 w-28 text-sm"
                             :placeholder="t('admin.settings.platformQuota.placeholder')"
-                          />
-                        </td>
-                        <td class="pr-4 py-1">
-                          <input
+                          /></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.weekly") }}</div></template>
+    <template #default="{ row: p, $index: rowIndex }"><div class="pr-4 py-1" ><ElementInput
                             v-model.number="form.default_platform_quotas[p]!.weekly"
                             type="number"
                             step="0.01"
                             min="0"
                             class="input h-8 w-28 text-sm"
                             :placeholder="t('admin.settings.platformQuota.placeholder')"
-                          />
-                        </td>
-                        <td class="py-1">
-                          <input
+                          /></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="pb-2 font-medium">{{ t("admin.settings.platformQuota.monthly") }}</div></template>
+    <template #default="{ row: p, $index: rowIndex }"><div class="py-1" ><ElementInput
                             v-model.number="form.default_platform_quotas[p]!.monthly"
                             type="number"
                             step="0.01"
                             min="0"
                             class="input h-8 w-28 text-sm"
                             :placeholder="t('admin.settings.platformQuota.placeholder')"
-                          />
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                          /></div></template>
+  </ElTableColumn>
+</ElTable>
                 </div>
               </div>
               <!-- /全局平台限额矩阵 -->
             </div>
-          </div>
+          </ElCard>
 
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -4163,7 +4114,7 @@
                         >
                           {{ t("admin.settings.defaults.defaultBalance") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model.number="
                             authSourceDefaults[authSource.source].balance
                           "
@@ -4180,7 +4131,7 @@
                         >
                           {{ t("admin.settings.defaults.defaultConcurrency") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model.number="
                             authSourceDefaults[authSource.source].concurrency
                           "
@@ -4226,9 +4177,9 @@
                           {{ t("admin.settings.authSourceDefaults.defaultSubscriptionsHint") }}
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        class="btn btn-secondary btn-sm"
+                      <ElButton size="small"
+                        native-type="button"
+                        class=""
                         @click="
                           addAuthSourceDefaultSubscription(authSource.source)
                         "
@@ -4237,7 +4188,7 @@
                         {{
                           t("admin.settings.defaults.addDefaultSubscription")
                         }}
-                      </button>
+                      </ElButton>
                     </div>
 
                     <div
@@ -4344,7 +4295,7 @@
                               )
                             }}
                           </label>
-                          <input
+                          <ElementInput
                             v-model.number="item.validity_days"
                             type="number"
                             min="1"
@@ -4353,9 +4304,9 @@
                           />
                         </div>
                         <div class="flex items-end">
-                          <button
-                            type="button"
-                            class="btn btn-secondary w-full text-red-600 hover:text-red-700 dark:text-red-400"
+                          <ElButton
+                            native-type="button"
+                            class="w-full text-red-600 hover:text-red-700 dark:text-red-400"
                             @click="
                               removeAuthSourceDefaultSubscription(
                                 authSource.source,
@@ -4364,7 +4315,7 @@
                             "
                           >
                             {{ t("common.delete") }}
-                          </button>
+                          </ElButton>
                         </div>
                       </div>
                     </div>
@@ -4380,53 +4331,45 @@
                         </p>
                       </div>
                       <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
-                          <thead>
-                            <tr class="text-left text-xs text-gray-500 dark:text-gray-400">
-                              <th class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.platform") }}</th>
-                              <th class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.daily") }}</th>
-                              <th class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.weekly") }}</th>
-                              <th class="pb-2 font-medium">{{ t("admin.settings.platformQuota.monthly") }}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="p in (['anthropic', 'openai', 'gemini', 'antigravity', 'grok'] as const)" :key="`${authSource.source}-pq-${p}`" class="align-top">
-                              <td class="pr-4 py-1">
-                                <span class="font-mono text-xs text-gray-700 dark:text-gray-300">{{ p }}</span>
-                              </td>
-                              <td class="pr-4 py-1">
-                                <input
+                        <ElTable  :row-key="(p) => `${authSource.source}-pq-${p}`" row-class-name="align-top" :data="(['anthropic', 'openai', 'gemini', 'antigravity', 'grok'] as const)" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.platform") }}</div></template>
+    <template #default="{ row: p, $index: rowIndex }"><div class="pr-4 py-1" ><span class="font-mono text-xs text-gray-700 dark:text-gray-300">{{ p }}</span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.daily") }}</div></template>
+    <template #default="{ row: p, $index: rowIndex }"><div class="pr-4 py-1" ><ElementInput
                                   v-model.number="authSourceDefaults[authSource.source].platform_quotas[p]!.daily"
                                   type="number"
                                   step="0.01"
                                   min="0"
                                   class="input h-8 w-28 text-sm"
                                   :placeholder="t('admin.settings.platformQuota.placeholder')"
-                                />
-                              </td>
-                              <td class="pr-4 py-1">
-                                <input
+                                /></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="pb-2 pr-4 font-medium">{{ t("admin.settings.platformQuota.weekly") }}</div></template>
+    <template #default="{ row: p, $index: rowIndex }"><div class="pr-4 py-1" ><ElementInput
                                   v-model.number="authSourceDefaults[authSource.source].platform_quotas[p]!.weekly"
                                   type="number"
                                   step="0.01"
                                   min="0"
                                   class="input h-8 w-28 text-sm"
                                   :placeholder="t('admin.settings.platformQuota.placeholder')"
-                                />
-                              </td>
-                              <td class="py-1">
-                                <input
+                                /></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="pb-2 font-medium">{{ t("admin.settings.platformQuota.monthly") }}</div></template>
+    <template #default="{ row: p, $index: rowIndex }"><div class="py-1" ><ElementInput
                                   v-model.number="authSourceDefaults[authSource.source].platform_quotas[p]!.monthly"
                                   type="number"
                                   step="0.01"
                                   min="0"
                                   class="input h-8 w-28 text-sm"
                                   :placeholder="t('admin.settings.platformQuota.placeholder')"
-                                />
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
+                                /></div></template>
+  </ElTableColumn>
+</ElTable>
                       </div>
                     </div>
                     <!-- /auth source 平台限额覆盖区块 -->
@@ -4434,14 +4377,14 @@
                 </div>
               </div>
             </div>
-          </div>
+          </ElCard>
         </div>
         <!-- /Tab: Users -->
 
         <!-- Tab: Gateway — Claude Code, Scheduling -->
         <div v-show="activeTab === 'gateway'" class="space-y-6">
           <!-- Claude Code Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -4459,7 +4402,7 @@
                 >
                   {{ t("admin.settings.claudeCode.minVersion") }}
                 </label>
-                <input
+                <ElementInput
                   v-model="form.min_claude_code_version"
                   type="text"
                   class="input max-w-xs font-mono text-sm"
@@ -4477,7 +4420,7 @@
                 >
                   {{ t("admin.settings.claudeCode.maxVersion") }}
                 </label>
-                <input
+                <ElementInput
                   v-model="form.max_claude_code_version"
                   type="text"
                   class="input max-w-xs font-mono text-sm"
@@ -4490,10 +4433,10 @@
                 </p>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Codex Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -4517,7 +4460,7 @@
                     >
                       {{ t("admin.settings.gatewayForwarding.minCodexVersion") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.min_codex_version"
                       type="text"
                       class="input w-full font-mono text-sm"
@@ -4534,7 +4477,7 @@
                     >
                       {{ t("admin.settings.gatewayForwarding.maxCodexVersion") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="form.max_codex_version"
                       type="text"
                       class="input w-full font-mono text-sm"
@@ -4562,32 +4505,30 @@
                     :key="`codex-fp-${i}`"
                     class="mb-2 flex items-center gap-2"
                   >
-                    <select v-model="row.type" class="input w-32 text-sm">
-                      <option value="header_exact">{{ t("admin.settings.gatewayForwarding.codexFpTypeHeaderExact") }}</option>
-                      <option value="header_prefix">{{ t("admin.settings.gatewayForwarding.codexFpTypeHeaderPrefix") }}</option>
-                      <option value="body_path">{{ t("admin.settings.gatewayForwarding.codexFpTypeBodyPath") }}</option>
-                    </select>
-                    <input
+                    <ElementSelect v-model="row.type" class="input w-32 text-sm">
+                      <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.codexFpTypeHeaderExact&quot;))" value="header_exact">{{ t("admin.settings.gatewayForwarding.codexFpTypeHeaderExact") }}</ElOption>
+                      <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.codexFpTypeHeaderPrefix&quot;))" value="header_prefix">{{ t("admin.settings.gatewayForwarding.codexFpTypeHeaderPrefix") }}</ElOption>
+                      <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.codexFpTypeBodyPath&quot;))" value="body_path">{{ t("admin.settings.gatewayForwarding.codexFpTypeBodyPath") }}</ElOption>
+                    </ElementSelect>
+                    <ElementInput
                       v-model="row.match"
                       type="text"
                       class="input flex-1 font-mono text-sm"
                       :placeholder="t('admin.settings.gatewayForwarding.codexFpMatchPlaceholder')"
                     />
-                    <label class="flex shrink-0 items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                      <input v-model="row.required" type="checkbox" />
-                      {{ t("admin.settings.gatewayForwarding.codexFpRequired") }}
-                    </label>
-                    <button
-                      type="button"
-                      class="btn btn-secondary btn-sm shrink-0 text-red-600 hover:text-red-700 dark:text-red-400"
+                    <ElementCheckbox v-model="row.required" :class="[&quot;flex shrink-0 items-center gap-1 text-xs text-gray-600 dark:text-gray-400&quot;]">
+                      {{ t("admin.settings.gatewayForwarding.codexFpRequired") }}</ElementCheckbox>
+                    <ElButton size="small"
+                      native-type="button"
+                      class="shrink-0 text-red-600 hover:text-red-700 dark:text-red-400"
                       @click="removeCodexFingerprintRow(i)"
                     >
                       {{ t("admin.settings.gatewayForwarding.codexRemoveRow") }}
-                    </button>
+                    </ElButton>
                   </div>
-                  <button type="button" class="btn btn-secondary btn-sm" @click="addCodexFingerprintRow">
+                  <ElButton size="small" native-type="button" class="" @click="addCodexFingerprintRow">
                     {{ t("admin.settings.gatewayForwarding.codexAddRow") }}
-                  </button>
+                  </ElButton>
                   <p
                     v-if="codexFingerprintNoRequired"
                     class="mt-2 text-xs text-amber-600 dark:text-amber-500"
@@ -4632,7 +4573,7 @@
                     :key="`codex-bl-${i}`"
                     class="mb-2 flex gap-2"
                   >
-                    <input
+                    <ElementInput
                       v-model="row.originator"
                       type="text"
                       class="input w-1/3 font-mono text-sm"
@@ -4642,7 +4583,7 @@
                         )
                       "
                     />
-                    <input
+                    <ElementInput
                       v-model="row.uaContains"
                       type="text"
                       class="input flex-1 font-mono text-sm"
@@ -4652,21 +4593,21 @@
                         )
                       "
                     />
-                    <button
-                      type="button"
-                      class="btn btn-secondary btn-sm shrink-0 text-red-600 hover:text-red-700 dark:text-red-400"
+                    <ElButton size="small"
+                      native-type="button"
+                      class="shrink-0 text-red-600 hover:text-red-700 dark:text-red-400"
                       @click="removeCodexBlacklistRow(i)"
                     >
                       {{ t("admin.settings.gatewayForwarding.codexRemoveRow") }}
-                    </button>
+                    </ElButton>
                   </div>
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
+                  <ElButton size="small"
+                    native-type="button"
+                    class=""
                     @click="addCodexBlacklistRow"
                   >
                     {{ t("admin.settings.gatewayForwarding.codexAddRow") }}
-                  </button>
+                  </ElButton>
                 </div>
 
                 <div>
@@ -4683,7 +4624,7 @@
                     :key="`codex-wl-${i}`"
                     class="mb-2 flex gap-2"
                   >
-                    <input
+                    <ElementInput
                       v-model="row.originator"
                       type="text"
                       class="input w-1/3 font-mono text-sm"
@@ -4693,7 +4634,7 @@
                         )
                       "
                     />
-                    <input
+                    <ElementInput
                       v-model="row.uaContains"
                       type="text"
                       class="input flex-1 font-mono text-sm"
@@ -4703,45 +4644,37 @@
                         )
                       "
                     />
-                    <label
-                      class="flex shrink-0 items-center gap-1 text-xs text-gray-600 dark:text-gray-400"
-                      :title="
+                    <ElementCheckbox :title="
                         t(
                           'admin.settings.gatewayForwarding.codexWhitelistSkipFingerprintTooltip',
                         )
-                      "
-                    >
-                      <input
-                        v-model="row.skipEngineFingerprint"
-                        type="checkbox"
-                      />
+                      " v-model="row.skipEngineFingerprint" :class="[&quot;flex shrink-0 items-center gap-1 text-xs text-gray-600 dark:text-gray-400&quot;]">
                       {{
                         t(
                           'admin.settings.gatewayForwarding.codexWhitelistSkipFingerprint',
                         )
-                      }}
-                    </label>
-                    <button
-                      type="button"
-                      class="btn btn-secondary btn-sm shrink-0 text-red-600 hover:text-red-700 dark:text-red-400"
+                      }}</ElementCheckbox>
+                    <ElButton size="small"
+                      native-type="button"
+                      class="shrink-0 text-red-600 hover:text-red-700 dark:text-red-400"
                       @click="removeCodexWhitelistRow(i)"
                     >
                       {{ t("admin.settings.gatewayForwarding.codexRemoveRow") }}
-                    </button>
+                    </ElButton>
                   </div>
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
+                  <ElButton size="small"
+                    native-type="button"
+                    class=""
                     @click="addCodexWhitelistRow"
                   >
                     {{ t("admin.settings.gatewayForwarding.codexAddRow") }}
-                  </button>
+                  </ElButton>
                 </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Upstream Billing Probe Settings -->
-          <div class="card" data-testid="upstream-billing-probe-settings">
+          <ElCard shadow="never" class="element-surface-card" data-testid="upstream-billing-probe-settings">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -4790,7 +4723,7 @@
                   >
                     {{ t("admin.settings.upstreamBillingProbe.intervalMinutes") }}
                   </label>
-                  <input
+                  <ElementInput
                     id="upstream-billing-probe-interval"
                     v-model.number="upstreamBillingProbeForm.interval_minutes"
                     type="number"
@@ -4808,9 +4741,9 @@
                 <div
                   class="flex justify-end border-t border-gray-100 pt-4 dark:border-dark-700"
                 >
-                  <button
-                    type="button"
-                    class="btn btn-primary btn-sm"
+                  <ElButton type="primary" size="small"
+                    native-type="button"
+                    class=""
                     :disabled="upstreamBillingProbeSaving"
                     data-testid="upstream-billing-probe-save"
                     @click="saveUpstreamBillingProbeSettings"
@@ -4820,14 +4753,14 @@
                         ? t("common.saving")
                         : t("common.save")
                     }}
-                  </button>
+                  </ElButton>
                 </div>
               </template>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Ollama Cloud Usage Settings -->
-          <div class="card" data-testid="ollama-cloud-usage-global-settings">
+          <ElCard shadow="never" class="element-surface-card" data-testid="ollama-cloud-usage-global-settings">
             <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
                 {{ t("admin.settings.ollamaCloudUsage.title") }}
@@ -4862,7 +4795,7 @@
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300" for="ollama-cloud-usage-debounce">
                       {{ t("admin.settings.ollamaCloudUsage.debounceMinutes") }}
                     </label>
-                    <input
+                    <ElementInput
                       id="ollama-cloud-usage-debounce"
                       v-model.number="ollamaCloudUsageForm.debounce_minutes"
                       type="number"
@@ -4880,7 +4813,7 @@
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300" for="ollama-cloud-usage-interval">
                       {{ t("admin.settings.ollamaCloudUsage.intervalMinutes") }}
                     </label>
-                    <input
+                    <ElementInput
                       id="ollama-cloud-usage-interval"
                       v-model.number="ollamaCloudUsageForm.interval_minutes"
                       type="number"
@@ -4896,22 +4829,22 @@
                   </div>
                 </div>
                 <div class="flex justify-end border-t border-gray-100 pt-4 dark:border-dark-700">
-                  <button
-                    type="button"
-                    class="btn btn-primary btn-sm"
+                  <ElButton type="primary" size="small"
+                    native-type="button"
+                    class=""
                     :disabled="ollamaCloudUsageSaving"
                     data-testid="ollama-cloud-usage-global-save"
                     @click="saveOllamaCloudUsageSettings"
                   >
                     {{ ollamaCloudUsageSaving ? t("common.saving") : t("common.save") }}
-                  </button>
+                  </ElButton>
                 </div>
               </template>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Gateway Scheduling Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -4995,7 +4928,7 @@
                         %
                       </span>
                     </div>
-                    <input
+                    <ElementInput
                       v-model.number="form.account_scheduling_thresholds[platform]"
                       type="number"
                       min="1"
@@ -5047,7 +4980,7 @@
                   </p>
                 </div>
                 <div class="relative w-full shrink-0 sm:w-32">
-                  <input
+                  <ElementInput
                     id="openai-oauth-scheduling-rate-multiplier"
                     v-model.number="form.openai_oauth_scheduling_rate_multiplier"
                     class="input pr-8"
@@ -5136,7 +5069,7 @@
                   </p>
                 </div>
                 <div class="relative w-full shrink-0 sm:w-32">
-                  <input
+                  <ElementInput
                     id="openai-oauth-scheduling-rate-multiplier"
                     v-model.number="form.openai_oauth_scheduling_rate_multiplier"
                     class="input pr-8"
@@ -5178,7 +5111,7 @@
                     <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
                       {{ field.label }}
                     </span>
-                    <input
+                    <ElementInput
                       v-model="form[field.key]"
                       class="input mt-1"
                       inputmode="decimal"
@@ -5189,10 +5122,10 @@
                 </div>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Gateway Forwarding Behavior -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -5212,7 +5145,7 @@
                   >
                     {{ t("admin.settings.gatewayForwarding.grokDefaultTextModel") }}
                   </label>
-                  <input
+                  <ElementInput
                     id="grok-default-text-model"
                     v-model.trim="form.grok_default_text_model"
                     type="text"
@@ -5252,18 +5185,18 @@
                   >
                     {{ t("admin.settings.gatewayForwarding.grokDefaultBaseURLMode") }}
                   </label>
-                  <select
+                  <ElementSelect
                     id="grok-default-base-url-mode"
                     v-model="form.grok_default_base_url_mode"
                     class="input mt-2 w-full"
                     data-testid="grok-default-base-url-mode"
                   >
-                    <option value="cli">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeCLI") }}</option>
-                    <option value="api">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeAPI") }}</option>
-                    <option value="us-east-1">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeUSEast1") }}</option>
-                    <option value="us-west-2">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeUSWest2") }}</option>
-                    <option value="eu-west-1">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeEUWest1") }}</option>
-                  </select>
+                    <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.grokBaseURLModeCLI&quot;))" value="cli">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeCLI") }}</ElOption>
+                    <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.grokBaseURLModeAPI&quot;))" value="api">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeAPI") }}</ElOption>
+                    <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.grokBaseURLModeUSEast1&quot;))" value="us-east-1">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeUSEast1") }}</ElOption>
+                    <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.grokBaseURLModeUSWest2&quot;))" value="us-west-2">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeUSWest2") }}</ElOption>
+                    <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.grokBaseURLModeEUWest1&quot;))" value="eu-west-1">{{ t("admin.settings.gatewayForwarding.grokBaseURLModeEUWest1") }}</ElOption>
+                  </ElementSelect>
                   <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                     {{ t("admin.settings.gatewayForwarding.grokDefaultBaseURLModeHint") }}
                   </p>
@@ -5277,19 +5210,19 @@
                 >
                   {{ t("admin.settings.gatewayForwarding.openaiTTFTMode") }}
                 </label>
-                <select
+                <ElementSelect
                   id="openai-ttft-mode"
                   v-model="form.openai_ttft_mode"
                   class="input mt-2 w-full"
                   data-testid="openai-ttft-mode"
                 >
-                  <option value="semantic">
+                  <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.openaiTTFTModeSemantic&quot;))" value="semantic">
                     {{ t("admin.settings.gatewayForwarding.openaiTTFTModeSemantic") }}
-                  </option>
-                  <option value="visible">
+                  </ElOption>
+                  <ElOption :label="(t(&quot;admin.settings.gatewayForwarding.openaiTTFTModeVisible&quot;))" value="visible">
                     {{ t("admin.settings.gatewayForwarding.openaiTTFTModeVisible") }}
-                  </option>
-                </select>
+                  </ElOption>
+                </ElementSelect>
                 <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                   {{ t("admin.settings.gatewayForwarding.openaiTTFTModeHint") }}
                 </p>
@@ -5419,9 +5352,9 @@
                         </div>
                       </div>
                       <div class="flex items-center gap-2">
-                        <button
-                          type="button"
-                          class="btn btn-secondary btn-sm px-2"
+                        <ElButton size="small"
+                          native-type="button"
+                          class="px-2"
                           :title="
                             block.expanded
                               ? t(
@@ -5446,33 +5379,33 @@
                             :name="block.expanded ? 'eyeOff' : 'eye'"
                             size="xs"
                           />
-                        </button>
-                        <button
-                          type="button"
-                          class="btn btn-secondary btn-sm px-2"
+                        </ElButton>
+                        <ElButton size="small"
+                          native-type="button"
+                          class="px-2"
                           :disabled="index === 0"
                           @click="moveClaudeOAuthSystemPromptBlock(index, -1)"
                         >
                           <Icon name="arrowUp" size="xs" />
-                        </button>
-                        <button
-                          type="button"
-                          class="btn btn-secondary btn-sm px-2"
+                        </ElButton>
+                        <ElButton size="small"
+                          native-type="button"
+                          class="px-2"
                           :disabled="
                             index === claudeOAuthSystemPromptBlocks.length - 1
                           "
                           @click="moveClaudeOAuthSystemPromptBlock(index, 1)"
                         >
                           <Icon name="arrowDown" size="xs" />
-                        </button>
+                        </ElButton>
                         <Toggle v-model="block.enabled" />
-                        <button
-                          type="button"
-                          class="btn btn-secondary btn-sm px-2 text-red-600 hover:text-red-700 dark:text-red-400"
+                        <ElButton size="small"
+                          native-type="button"
+                          class="px-2 text-red-600 hover:text-red-700 dark:text-red-400"
                           @click="removeClaudeOAuthSystemPromptBlock(index)"
                         >
                           <Icon name="trash" size="xs" />
-                        </button>
+                        </ElButton>
                       </div>
                     </div>
 
@@ -5520,9 +5453,9 @@
                         >
                           {{ t("admin.settings.gatewayForwarding.systemBlockText") }}
                         </label>
-                        <textarea
+                        <ElementInput type="textarea"
                           v-model="block.text"
-                          rows="6"
+                          :rows="6"
                           class="input w-full resize-y font-mono text-xs leading-5"
                           @input="markClaudeOAuthSystemPromptBlockCustom(block)"
                         />
@@ -5557,24 +5490,24 @@
                 </div>
 
                 <div class="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
+                  <ElButton size="small"
+                    native-type="button"
+                    class=""
                     @click="addClaudeOAuthSystemPromptBlock"
                   >
                     <Icon name="plus" size="xs" />
                     {{ t("admin.settings.gatewayForwarding.addSystemBlock") }}
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
+                  </ElButton>
+                  <ElButton size="small"
+                    native-type="button"
+                    class=""
                     @click="resetClaudeOAuthSystemPromptBlocks"
                   >
                     <Icon name="refresh" size="xs" />
                     {{
                       t("admin.settings.gatewayForwarding.resetSystemBlocks")
                     }}
-                  </button>
+                  </ElButton>
                 </div>
                 <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                   {{
@@ -5669,7 +5602,7 @@
                     )
                   }}
                 </label>
-                <input
+                <ElementInput
                   v-model="form.antigravity_user_agent_version"
                   type="text"
                   class="input max-w-xs font-mono text-sm"
@@ -5699,7 +5632,7 @@
                     )
                   }}
                 </label>
-                <input
+                <ElementInput
                   v-model="form.openai_codex_user_agent"
                   type="text"
                   class="input w-full font-mono text-sm"
@@ -5729,7 +5662,7 @@
                     )
                   }}
                 </label>
-                <input
+                <ElementInput
                   v-model="form.openai_codex_client_version"
                   type="text"
                   class="input w-full font-mono text-sm"
@@ -5778,10 +5711,10 @@
               </div>
 
             </div>
-          </div>
+          </ElCard>
 
           <!-- Web Search Emulation -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -5816,13 +5749,13 @@
                   >
                     {{ t("admin.settings.webSearchEmulation.providers") }}
                   </label>
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
+                  <ElButton size="small"
+                    native-type="button"
+                    class=""
                     @click="addWebSearchProvider"
                   >
                     {{ t("admin.settings.webSearchEmulation.addProvider") }}
-                  </button>
+                  </ElButton>
                 </div>
 
                 <div
@@ -5890,15 +5823,15 @@
                         }}
                       </span>
                     </div>
-                    <button
-                      type="button"
+                    <ElButton text
+                      native-type="button"
                       class="text-red-500 hover:text-red-700 text-xs"
                       @click.stop="removeWebSearchProvider(pIdx)"
                     >
                       {{
                         t("admin.settings.webSearchEmulation.removeProvider")
                       }}
-                    </button>
+                    </ElButton>
                   </div>
 
                   <!-- Expanded content -->
@@ -5912,7 +5845,7 @@
                         t("admin.settings.webSearchEmulation.apiKey")
                       }}</label>
                       <div class="relative">
-                        <input
+                        <ElementInput
                           v-model="provider.api_key"
                           :type="apiKeyVisible[pIdx] ? 'text' : 'password'"
                           class="input w-full text-sm"
@@ -5933,8 +5866,8 @@
                           v-if="provider.api_key || provider.api_key_configured"
                           class="absolute inset-y-0 right-0 flex items-center pr-1.5"
                         >
-                          <button
-                            type="button"
+                          <ElButton text
+                            native-type="button"
                             class="rounded p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             :title="
                               apiKeyVisible[pIdx]
@@ -5981,9 +5914,9 @@
                                 d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
                               />
                             </svg>
-                          </button>
-                          <button
-                            type="button"
+                          </ElButton>
+                          <ElButton text
+                            native-type="button"
                             class="rounded p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             :class="{
                               'opacity-30 cursor-not-allowed':
@@ -6008,7 +5941,7 @@
                                 d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                               />
                             </svg>
-                          </button>
+                          </ElButton>
                         </div>
                       </div>
                     </div>
@@ -6019,7 +5952,7 @@
                         <label class="text-xs text-gray-500">{{
                           t("admin.settings.webSearchEmulation.quotaLimit")
                         }}</label>
-                        <input
+                        <ElementInput
                           v-model="provider.quota_limit"
                           type="number"
                           min="1"
@@ -6038,7 +5971,7 @@
                         <label class="text-xs text-gray-500">{{
                           t("admin.settings.webSearchEmulation.subscribedAt")
                         }}</label>
-                        <input
+                        <ElementInput
                           :value="formatSubscribedAt(provider.subscribed_at)"
                           type="date"
                           class="input text-sm"
@@ -6098,14 +6031,14 @@
                             : "∞"
                         }}</span
                       >
-                      <button
+                      <ElButton text
                         v-if="(provider.quota_used ?? 0) > 0"
-                        type="button"
+                        native-type="button"
                         class="text-xs text-primary-600 hover:text-primary-700"
                         @click="resetWebSearchUsage(pIdx)"
                       >
                         {{ t("admin.settings.webSearchEmulation.resetUsage") }}
-                      </button>
+                      </ElButton>
                     </div>
 
                     <!-- Proxy + Test on same row -->
@@ -6119,36 +6052,23 @@
                           :proxies="webSearchProxies"
                         />
                       </div>
-                      <button
-                        type="button"
-                        class="btn btn-secondary btn-sm whitespace-nowrap"
+                      <ElButton size="small"
+                        native-type="button"
+                        class="whitespace-nowrap"
                         @click="openTestDialog()"
                       >
                         {{ t("admin.settings.webSearchEmulation.test") }}
-                      </button>
+                      </ElButton>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Web Search Test Dialog -->
-          <div
-            v-if="wsTestDialogOpen"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-            @click.self="wsTestDialogOpen = false"
-          >
-            <div
-              class="mx-4 w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-dark-800"
-            >
-              <h3
-                class="mb-4 text-lg font-semibold text-gray-900 dark:text-white"
-              >
-                {{ t("admin.settings.webSearchEmulation.testResultTitle") }}
-              </h3>
-              <div class="flex items-center gap-2">
-                <input
+          <ElDialog :model-value="Boolean(wsTestDialogOpen)" :title="t(&quot;admin.settings.webSearchEmulation.testResultTitle&quot;)" width="512px" append-to-body align-center destroy-on-close class="element-dialog " :show-close="true" @update:model-value="visible => { if (!visible) { wsTestDialogOpen = false } }" ><template v-if="wsTestDialogOpen"><div class="flex items-center gap-2">
+                <ElementInput
                   v-model="wsTestQuery"
                   type="text"
                   class="input flex-1 text-sm"
@@ -6157,9 +6077,9 @@
                   "
                   @keyup.enter="testWebSearchProvider()"
                 />
-                <button
-                  type="button"
-                  class="btn btn-primary btn-sm"
+                <ElButton type="primary" size="small"
+                  native-type="button"
+                  class=""
                   :disabled="wsTestLoading"
                   @click="testWebSearchProvider()"
                 >
@@ -6168,10 +6088,8 @@
                       ? t("admin.settings.webSearchEmulation.testing")
                       : t("admin.settings.webSearchEmulation.test")
                   }}
-                </button>
-              </div>
-              <!-- Test results -->
-              <div
+                </ElButton>
+              </div><!-- Test results --><div
                 v-if="wsTestResult"
                 class="mt-4 max-h-80 overflow-y-auto rounded-lg bg-gray-50 p-4 dark:bg-dark-700"
               >
@@ -6203,21 +6121,18 @@
                     {{ r.snippet }}
                   </p>
                 </div>
-              </div>
-              <div class="mt-4 flex justify-end">
-                <button
-                  type="button"
-                  class="btn btn-secondary btn-sm"
+              </div><div class="mt-4 flex justify-end">
+                <ElButton size="small"
+                  native-type="button"
+                  class=""
                   @click="wsTestDialogOpen = false"
                 >
                   {{ t("common.close") }}
-                </button>
-              </div>
-            </div>
-          </div>
+                </ElButton>
+              </div></template></ElDialog>
 
         <!-- Usage Records Settings -->
-        <div class="card">
+        <ElCard shadow="never" class="element-surface-card">
           <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('admin.settings.usageRecords.title') }}
@@ -6237,20 +6152,17 @@
                   {{ t('admin.settings.user_error_view.description') }}
                 </p>
               </div>
-              <label class="toggle">
-                <input v-model="form.allow_user_view_error_requests" type="checkbox" />
-                <span class="toggle-slider"></span>
-              </label>
+              <ElementCheckbox v-model="form.allow_user_view_error_requests" :class="[&quot;toggle&quot;]"><span class="toggle-slider"></span></ElementCheckbox>
             </div>
           </div>
-        </div>
+        </ElCard>
         </div>
         <!-- /Tab: Gateway — Claude Code, Scheduling -->
 
         <!-- Tab: General -->
         <div v-show="activeTab === 'general'" class="space-y-6">
           <!-- Site Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -6284,7 +6196,7 @@
                   >
                     {{ t("admin.settings.site.siteName") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model="form.site_name"
                     type="text"
                     class="input"
@@ -6300,7 +6212,7 @@
                   >
                     {{ t("admin.settings.site.siteSubtitle") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model="form.site_subtitle"
                     type="text"
                     class="input"
@@ -6321,7 +6233,7 @@
                 >
                   {{ t("admin.settings.site.apiBaseUrl") }}
                 </label>
-                <input
+                <ElementInput
                   v-model="form.api_base_url"
                   type="text"
                   class="input font-mono text-sm"
@@ -6347,7 +6259,7 @@
                     >
                       {{ t("admin.settings.site.tableDefaultPageSize") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model.number="form.table_default_page_size"
                       type="number"
                       min="5"
@@ -6365,7 +6277,7 @@
                     >
                       {{ t("admin.settings.site.tablePageSizeOptions") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="tablePageSizeOptionsInput"
                       type="text"
                       class="input font-mono text-sm"
@@ -6407,8 +6319,8 @@
                           })
                         }}
                       </span>
-                      <button
-                        type="button"
+                      <ElButton text
+                        native-type="button"
                         class="rounded p-1 text-red-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
                         @click="removeEndpoint(index)"
                       >
@@ -6425,7 +6337,7 @@
                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                           />
                         </svg>
-                      </button>
+                      </ElButton>
                     </div>
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div>
@@ -6434,7 +6346,7 @@
                         >
                           {{ t("admin.settings.site.customEndpoints.name") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="ep.name"
                           type="text"
                           class="input text-sm"
@@ -6453,7 +6365,7 @@
                             t("admin.settings.site.customEndpoints.endpointUrl")
                           }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="ep.endpoint"
                           type="url"
                           class="input font-mono text-sm"
@@ -6474,7 +6386,7 @@
                             )
                           }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="ep.description"
                           type="text"
                           class="input text-sm"
@@ -6489,8 +6401,8 @@
                   </div>
                 </div>
 
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   class="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-2.5 text-sm text-gray-500 transition-colors hover:border-primary-400 hover:text-primary-600 dark:border-dark-600 dark:text-gray-400 dark:hover:border-primary-500 dark:hover:text-primary-400"
                   @click="addEndpoint"
                 >
@@ -6508,7 +6420,7 @@
                     />
                   </svg>
                   {{ t("admin.settings.site.customEndpoints.add") }}
-                </button>
+                </ElButton>
               </div>
 
               <!-- Contact Info -->
@@ -6518,7 +6430,7 @@
                 >
                   {{ t("admin.settings.site.contactInfo") }}
                 </label>
-                <input
+                <ElementInput
                   v-model="form.contact_info"
                   type="text"
                   class="input"
@@ -6536,7 +6448,7 @@
                 >
                   {{ t("admin.settings.site.docUrl") }}
                 </label>
-                <input
+                <ElementInput
                   v-model="form.doc_url"
                   type="url"
                   class="input font-mono text-sm"
@@ -6571,12 +6483,12 @@
                 >
                   {{ t("admin.settings.site.homeContent") }}
                 </label>
-                <textarea
+                <ElementInput type="textarea"
                   v-model="form.home_content"
-                  rows="6"
+                  :rows="6"
                   class="input font-mono text-sm"
                   :placeholder="t('admin.settings.site.homeContentPlaceholder')"
-                ></textarea>
+                ></ElementInput>
                 <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                   {{ t("admin.settings.site.homeContentHint") }}
                 </p>
@@ -6614,10 +6526,10 @@
                 <Toggle v-model="form.hide_ccs_import_button" />
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Custom Menu Items -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -6645,9 +6557,9 @@
                   </span>
                   <div class="flex items-center gap-2">
                     <!-- Move up -->
-                    <button
+                    <ElButton text
                       v-if="index > 0"
-                      type="button"
+                      native-type="button"
                       class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-dark-700"
                       :title="t('admin.settings.customMenu.moveUp')"
                       @click="moveMenuItem(index, -1)"
@@ -6665,11 +6577,11 @@
                           d="M5 15l7-7 7 7"
                         />
                       </svg>
-                    </button>
+                    </ElButton>
                     <!-- Move down -->
-                    <button
+                    <ElButton text
                       v-if="index < form.custom_menu_items.length - 1"
-                      type="button"
+                      native-type="button"
                       class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-dark-700"
                       :title="t('admin.settings.customMenu.moveDown')"
                       @click="moveMenuItem(index, 1)"
@@ -6687,10 +6599,10 @@
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                    </ElButton>
                     <!-- Delete -->
-                    <button
-                      type="button"
+                    <ElButton text
+                      native-type="button"
                       class="rounded p-1 text-red-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
                       :title="t('admin.settings.customMenu.remove')"
                       @click="removeMenuItem(index)"
@@ -6708,7 +6620,7 @@
                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                         />
                       </svg>
-                    </button>
+                    </ElButton>
                   </div>
                 </div>
 
@@ -6720,7 +6632,7 @@
                     >
                       {{ t("admin.settings.customMenu.name") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="item.label"
                       type="text"
                       class="input text-sm"
@@ -6737,14 +6649,14 @@
                     >
                       {{ t("admin.settings.customMenu.visibility") }}
                     </label>
-                    <select v-model="item.visibility" class="input text-sm">
-                      <option value="user">
+                    <ElementSelect v-model="item.visibility" class="input text-sm">
+                      <ElOption :label="(t(&quot;admin.settings.customMenu.visibilityUser&quot;))" value="user">
                         {{ t("admin.settings.customMenu.visibilityUser") }}
-                      </option>
-                      <option value="admin">
+                      </ElOption>
+                      <ElOption :label="(t(&quot;admin.settings.customMenu.visibilityAdmin&quot;))" value="admin">
                         {{ t("admin.settings.customMenu.visibilityAdmin") }}
-                      </option>
-                    </select>
+                      </ElOption>
+                    </ElementSelect>
                   </div>
 
                   <!-- URL (full width) -->
@@ -6754,7 +6666,7 @@
                     >
                       {{ t("admin.settings.customMenu.url") }}
                     </label>
-                    <input
+                    <ElementInput
                       v-model="item.url"
                       type="url"
                       class="input font-mono text-sm"
@@ -6764,16 +6676,9 @@
                     />
                   </div>
 
-                  <label class="flex items-center gap-2 sm:col-span-2">
-                    <input
-                      v-model="item.hide_open_button"
-                      type="checkbox"
-                      data-testid="custom-menu-hide-open-button"
-                    />
-                    <span class="text-sm text-gray-700 dark:text-gray-300">
+                  <ElementCheckbox v-model="item.hide_open_button" data-testid="custom-menu-hide-open-button" :class="[&quot;flex items-center gap-2 sm:col-span-2&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">
                       {{ t("admin.settings.customMenu.hideOpenButton") }}
-                    </span>
-                  </label>
+                    </span></ElementCheckbox>
 
                   <!-- SVG Icon (full width) -->
                   <div class="sm:col-span-2">
@@ -6795,8 +6700,8 @@
               </div>
 
               <!-- Add button -->
-              <button
-                type="button"
+              <ElButton text
+                native-type="button"
                 class="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-3 text-sm text-gray-500 transition-colors hover:border-primary-400 hover:text-primary-600 dark:border-dark-600 dark:text-gray-400 dark:hover:border-primary-500 dark:hover:text-primary-400"
                 @click="addMenuItem"
               >
@@ -6814,15 +6719,15 @@
                   />
                 </svg>
                 {{ t("admin.settings.customMenu.add") }}
-              </button>
+              </ElButton>
             </div>
-          </div>
+          </ElCard>
 	        </div>
 	        <!-- /Tab: General -->
 
 	        <!-- Tab: Login Agreement -->
 	        <div v-show="activeTab === 'agreement'" class="space-y-6">
-	          <div class="card">
+	          <ElCard shadow="never" class="element-surface-card">
 	            <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
 	              <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 	                <div>
@@ -6854,8 +6759,8 @@
 	                    {{ localText("展示形式", "Display mode") }}
 	                  </label>
 	                  <div class="grid grid-cols-2 gap-2 rounded-lg bg-gray-100 p-1 dark:bg-dark-700">
-                    <button
-                      type="button"
+                    <ElButton text
+                      native-type="button"
                       class="inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition"
                       :class="
                         form.login_agreement_mode === 'modal'
@@ -6866,9 +6771,9 @@
                     >
                       <Icon name="shield" size="sm" />
                       {{ localText("弹窗", "Modal") }}
-                    </button>
-                    <button
-                      type="button"
+                    </ElButton>
+                    <ElButton text
+                      native-type="button"
                       class="inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition"
                       :class="
                         form.login_agreement_mode === 'checkbox'
@@ -6879,7 +6784,7 @@
                     >
                       <Icon name="checkCircle" size="sm" />
                       {{ localText("复选框", "Checkbox") }}
-                    </button>
+                    </ElButton>
                   </div>
                   <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                     {{
@@ -6894,7 +6799,7 @@
                   <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {{ localText("条款更新日期", "Updated date") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model="form.login_agreement_updated_at"
                     type="date"
                     class="input"
@@ -6920,14 +6825,14 @@
                       }}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    class="btn btn-primary btn-sm inline-flex items-center gap-1.5"
+                  <ElButton type="primary" size="small"
+                    native-type="button"
+                    class="inline-flex items-center gap-1.5"
                     @click="addLoginAgreementDocument"
                   >
                     <Icon name="plus" size="sm" />
                     {{ localText("添加文档", "Add document") }}
-                  </button>
+                  </ElButton>
                 </div>
 
                 <div class="mt-4 space-y-3">
@@ -6961,8 +6866,8 @@
                           </p>
                         </div>
                       </div>
-                      <button
-                        type="button"
+                      <ElButton text
+                        native-type="button"
                         class="rounded-md p-2 text-red-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-red-900/20"
                         :disabled="
                           form.login_agreement_enabled &&
@@ -6971,7 +6876,7 @@
                         @click="removeLoginAgreementDocument(index)"
                       >
                         <Icon name="trash" size="sm" />
-                      </button>
+                      </ElButton>
                     </div>
 
                     <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -6979,7 +6884,7 @@
                         <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
                           {{ localText("文档名称", "Document title") }}
                         </label>
-                        <input
+                        <ElementInput
                           v-model="doc.title"
                           type="text"
                           class="input text-sm"
@@ -6994,7 +6899,7 @@
                           <span class="inline-flex flex-shrink-0 items-center border-r border-gray-200 bg-gray-50 px-3 text-sm text-gray-500 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-400">
                             /legal/
                           </span>
-                          <input
+                          <ElementInput
                             v-model="doc.id"
                             type="text"
                             class="min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-0 dark:text-white dark:placeholder:text-dark-500"
@@ -7007,25 +6912,25 @@
                       <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
                         {{ localText("Markdown 内容", "Markdown content") }}
                       </label>
-                        <textarea
+                        <ElementInput type="textarea"
                           v-model="doc.content_md"
-                          rows="8"
+                          :rows="8"
                           class="input font-mono text-sm"
                           :placeholder="localText('在这里填写正式 Markdown 内容。', 'Write the final Markdown content here.')"
-                        ></textarea>
+                        ></ElementInput>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </ElCard>
         </div>
         <!-- /Tab: Login Agreement -->
 
 	        <!-- Tab: Features (功能开关) -->
         <div v-show="activeTab === 'features'" class="space-y-6">
 
-        <div class="card">
+        <ElCard shadow="never" class="element-surface-card">
           <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('admin.settings.features.channelMonitor.title') }}
@@ -7062,8 +6967,8 @@
                   {{ t('admin.settings.features.channelMonitor.mode') }}
                 </label>
                 <div class="mt-1.5 inline-flex w-full max-w-md rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-dark-600 dark:bg-dark-900/40">
-                  <button
-                    type="button"
+                  <ElButton text
+                    native-type="button"
                     class="inline-flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition"
                     :class="
                       form.channel_monitor_mode === 'v2'
@@ -7073,9 +6978,9 @@
                     @click="form.channel_monitor_mode = 'v2'"
                   >
                     {{ t('admin.settings.features.channelMonitor.modeV2') }}
-                  </button>
-                  <button
-                    type="button"
+                  </ElButton>
+                  <ElButton text
+                    native-type="button"
                     class="inline-flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition"
                     :class="
                       form.channel_monitor_mode === 'v1'
@@ -7085,7 +6990,7 @@
                     @click="form.channel_monitor_mode = 'v1'"
                   >
                     {{ t('admin.settings.features.channelMonitor.modeV1') }}
-                  </button>
+                  </ElButton>
                 </div>
                 <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                   {{
@@ -7104,7 +7009,7 @@
                   {{ t('admin.settings.features.channelMonitor.defaultInterval') }}
                   <span class="text-red-500">*</span>
                 </label>
-                <input
+                <ElementInput
                   v-model.number="form.channel_monitor_default_interval_seconds"
                   type="number"
                   min="15"
@@ -7154,9 +7059,9 @@
               </div>
             </div>
           </div>
-        </div>
+        </ElCard>
 
-        <div class="card">
+        <ElCard shadow="never" class="element-surface-card">
           <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('admin.settings.features.availableChannels.title') }}
@@ -7187,9 +7092,9 @@
               <Toggle v-model="form.available_channels_enabled" />
             </div>
           </div>
-        </div>
+        </ElCard>
 
-        <div class="card">
+        <ElCard shadow="never" class="element-surface-card">
           <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('admin.settings.features.modelPlaza.title') }}
@@ -7230,16 +7135,16 @@
               <p class="mb-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                 {{ t('admin.settings.features.modelPlaza.priceDescriptionHint') }}
               </p>
-              <textarea
+              <ElementInput type="textarea"
                 v-model="form.model_plaza_description"
-                rows="6"
+                :rows="6"
                 class="input font-mono text-sm"
-              ></textarea>
+              ></ElementInput>
             </div>
           </div>
-        </div>
+        </ElCard>
 
-        <div class="card">
+        <ElCard shadow="never" class="element-surface-card">
           <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('admin.settings.features.siteBillingMode.title') }}
@@ -7267,9 +7172,9 @@
               </div>
             </div>
           </div>
-        </div>
+        </ElCard>
 
-        <div class="card">
+        <ElCard shadow="never" class="element-surface-card">
           <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('admin.settings.features.pluginManagement.title') }}
@@ -7291,9 +7196,9 @@
               <Toggle v-model="form.plugin_management_enabled" />
             </div>
           </div>
-        </div>
+        </ElCard>
 
-        <div class="card">
+        <ElCard shadow="never" class="element-surface-card">
           <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('admin.settings.features.riskControl.title') }}
@@ -7341,7 +7246,7 @@
                 {{ t('admin.settings.features.riskControl.cyberSessionBlockTTL') }}
                 <span class="text-red-500">*</span>
               </label>
-              <input
+              <ElementInput
                 v-model.number="form.cyber_session_block_ttl_seconds"
                 type="number"
                 min="1"
@@ -7349,10 +7254,10 @@
               />
             </div>
           </div>
-        </div>
+        </ElCard>
 
         <!-- Affiliate (邀请返利) feature card -->
-        <div class="card">
+        <ElCard shadow="never" class="element-surface-card">
           <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ t('admin.settings.features.affiliate.title') }}
@@ -7392,7 +7297,7 @@
                   {{ t('admin.settings.features.affiliate.rebateRate') }}
                 </label>
                 <div class="relative">
-                  <input
+                  <ElementInput
                     v-model.number="form.affiliate_rebate_rate"
                     type="number"
                     step="0.01"
@@ -7412,7 +7317,7 @@
                 <label class="input-label">
                   {{ t('admin.settings.features.affiliate.freezeHours') }}
                 </label>
-                <input
+                <ElementInput
                   v-model.number="form.affiliate_rebate_freeze_hours"
                   type="number"
                   step="1"
@@ -7429,7 +7334,7 @@
                 <label class="input-label">
                   {{ t('admin.settings.features.affiliate.durationDays') }}
                 </label>
-                <input
+                <ElementInput
                   v-model.number="form.affiliate_rebate_duration_days"
                   type="number"
                   step="1"
@@ -7446,7 +7351,7 @@
                 <label class="input-label">
                   {{ t('admin.settings.features.affiliate.perInviteeCap') }}
                 </label>
-                <input
+                <ElementInput
                   v-model.number="form.affiliate_rebate_per_invitee_cap"
                   type="number"
                   step="0.01"
@@ -7469,100 +7374,87 @@
                       {{ t('admin.settings.features.affiliate.customUsers.description') }}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    class="btn btn-primary btn-sm"
+                  <ElButton type="primary" size="small"
+                    native-type="button"
+                    class=""
                     @click="openAffiliateModal(null)"
                   >
                     + {{ t('admin.settings.features.affiliate.customUsers.addButton') }}
-                  </button>
+                  </ElButton>
                 </div>
 
                 <div class="mb-3 flex items-center gap-2">
-                  <input
+                  <ElementInput
                     v-model="affiliateState.search"
                     type="text"
                     class="input flex-1"
                     :placeholder="t('admin.settings.features.affiliate.customUsers.searchPlaceholder')"
                     @input="onAffiliateSearchInput"
                   />
-                  <button
+                  <ElButton size="small"
                     v-if="affiliateState.selected.length > 0"
-                    type="button"
-                    class="btn btn-secondary btn-sm"
+                    native-type="button"
+                    class=""
                     @click="openAffiliateBatchModal"
                   >
                     {{ t('admin.settings.features.affiliate.customUsers.batchButton', { count: affiliateState.selected.length }) }}
-                  </button>
+                  </ElButton>
                 </div>
 
                 <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-dark-700">
-                  <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-700">
-                    <thead class="bg-gray-50 dark:bg-dark-800">
-                      <tr>
-                        <th class="px-3 py-2 text-left">
-                          <input
-                            type="checkbox"
+                  <ElTable  row-key="user_id" row-class-name="" :data="(affiliateState.loading) ? [] : (affiliateState.entries)" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left"><ElementCheckbox
+
                             :checked="affiliateState.entries.length > 0 && affiliateState.selected.length === affiliateState.entries.length"
                             @change="toggleAffiliateSelectAll"
-                          />
-                        </th>
-                        <th class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.email') }}</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.username') }}</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.code') }}</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.rate') }}</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.actions') }}</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white dark:divide-dark-700 dark:bg-dark-900">
-                      <tr v-if="affiliateState.loading">
-                        <td colspan="6" class="px-3 py-6 text-center text-sm text-gray-500">
-                          {{ t('common.loading') }}
-                        </td>
-                      </tr>
-                      <tr v-else-if="affiliateState.entries.length === 0">
-                        <td colspan="6" class="px-3 py-6 text-center text-sm text-gray-500">
-                          {{ t('admin.settings.features.affiliate.customUsers.empty') }}
-                        </td>
-                      </tr>
-                      <tr v-for="entry in affiliateState.entries" :key="entry.user_id">
-                        <td class="px-3 py-2">
-                          <input
-                            type="checkbox"
+                          /></div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2" ><ElementCheckbox
+
                             :checked="affiliateState.selected.includes(entry.user_id)"
                             @change="toggleAffiliateSelect(entry.user_id)"
-                          />
-                        </td>
-                        <td class="px-3 py-2 text-sm text-gray-900 dark:text-white">{{ entry.email }}</td>
-                        <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-300">{{ entry.username }}</td>
-                        <td class="px-3 py-2 text-sm font-mono">
-                          {{ entry.aff_code }}
+                          /></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.email') }}</div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2 text-sm text-gray-900 dark:text-white" >{{ entry.email }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.username') }}</div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2 text-sm text-gray-600 dark:text-gray-300" >{{ entry.username }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.code') }}</div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2 text-sm font-mono" >{{ entry.aff_code }}
                           <span
                             v-if="entry.aff_code_custom"
                             class="ml-1 inline-block rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-300"
-                          >{{ t('admin.settings.features.affiliate.customUsers.customBadge') }}</span>
-                        </td>
-                        <td class="px-3 py-2 text-sm">
-                          <span v-if="entry.aff_rebate_rate_percent != null">{{ entry.aff_rebate_rate_percent }}%</span>
-                          <span v-else class="text-gray-400">{{ t('admin.settings.features.affiliate.customUsers.useGlobal') }}</span>
-                        </td>
-                        <td class="px-3 py-2 text-sm">
-                          <div class="flex items-center gap-2">
-                            <button type="button" class="text-primary-600 hover:underline" @click="openAffiliateModal(entry)">
+                          >{{ t('admin.settings.features.affiliate.customUsers.customBadge') }}</span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.rate') }}</div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2 text-sm" ><span v-if="entry.aff_rebate_rate_percent != null">{{ entry.aff_rebate_rate_percent }}%</span><span v-else class="text-gray-400">{{ t('admin.settings.features.affiliate.customUsers.useGlobal') }}</span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">{{ t('admin.settings.features.affiliate.customUsers.col.actions') }}</div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2 text-sm" ><div class="flex items-center gap-2">
+                            <ElButton text native-type="button" class="text-primary-600 hover:underline" @click="openAffiliateModal(entry)">
                               {{ t('common.edit') }}
-                            </button>
-                            <button
-                              type="button"
+                            </ElButton>
+                            <ElButton text
+                              native-type="button"
                               class="text-red-600 hover:underline"
                               @click="askResetAffiliateUser(entry)"
                             >
                               {{ t('common.delete') }}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                            </ElButton>
+                          </div></div></template>
+  </ElTableColumn>
+  <template #empty>
+    <div v-if="affiliateState.loading">{{ t('common.loading') }}</div>
+    <div v-else-if="affiliateState.entries.length === 0">{{ t('admin.settings.features.affiliate.customUsers.empty') }}</div>
+  </template>
+</ElTable>
                 </div>
 
                 <div v-if="affiliateState.total > affiliateState.pageSize" class="mt-3 flex items-center justify-between text-sm">
@@ -7570,41 +7462,32 @@
                     {{ t('admin.settings.features.affiliate.customUsers.totalLabel', { total: affiliateState.total }) }}
                   </span>
                   <div class="flex items-center gap-2">
-                    <button
-                      type="button"
-                      class="btn btn-secondary btn-sm"
+                    <ElButton size="small"
+                      native-type="button"
+                      class=""
                       :disabled="affiliateState.page <= 1"
                       @click="changeAffiliatePage(affiliateState.page - 1)"
                     >
                       {{ t('pagination.previous') }}
-                    </button>
+                    </ElButton>
                     <span class="text-gray-500">{{ affiliateState.page }} / {{ Math.max(1, Math.ceil(affiliateState.total / affiliateState.pageSize)) }}</span>
-                    <button
-                      type="button"
-                      class="btn btn-secondary btn-sm"
+                    <ElButton size="small"
+                      native-type="button"
+                      class=""
                       :disabled="affiliateState.page >= Math.ceil(affiliateState.total / affiliateState.pageSize)"
                       @click="changeAffiliatePage(affiliateState.page + 1)"
                     >
                       {{ t('pagination.next') }}
-                    </button>
+                    </ElButton>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </ElCard>
 
         <!-- Affiliate add/edit modal -->
-        <div
-          v-if="affiliateModal.open"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          @click.self="closeAffiliateModal"
-        >
-          <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-dark-900">
-            <h3 class="mb-4 text-lg font-semibold">
-              {{ affiliateModal.mode === 'add' ? t('admin.settings.features.affiliate.modal.addTitle') : t('admin.settings.features.affiliate.modal.editTitle') }}
-            </h3>
-            <div class="space-y-4">
+        <ElDialog :model-value="Boolean(affiliateModal.open)" :title="affiliateModal.mode === 'add' ? t('admin.settings.features.affiliate.modal.addTitle') : t('admin.settings.features.affiliate.modal.editTitle')" width="512px" append-to-body align-center destroy-on-close class="element-dialog " :show-close="true" @update:model-value="visible => { if (!visible) { closeAffiliateModal() } }" ><template v-if="affiliateModal.open"><div class="space-y-4">
               <div v-if="affiliateModal.mode === 'add'">
                 <label class="input-label">{{ t('admin.settings.features.affiliate.modal.userLabel') }}</label>
                 <!-- Chip showing the picked user; clicking it re-opens the search -->
@@ -7616,18 +7499,18 @@
                     <span class="font-medium text-gray-900 dark:text-white">{{ affiliateModal.selectedUser.email }}</span>
                     <span class="ml-1 text-xs text-gray-500">({{ affiliateModal.selectedUser.username }})</span>
                   </div>
-                  <button
-                    type="button"
+                  <ElButton text
+                    native-type="button"
                     class="text-lg leading-none text-gray-400 hover:text-red-600"
                     :title="t('admin.settings.features.affiliate.modal.changeUser')"
                     @click="clearSelectedAffiliateUser"
                   >
                     ×
-                  </button>
+                  </ElButton>
                 </div>
                 <!-- Search input + result dropdown — hidden once a selection is made -->
                 <template v-else>
-                  <input
+                  <ElementInput
                     v-model="affiliateModal.userQuery"
                     type="text"
                     class="input"
@@ -7638,21 +7521,21 @@
                     v-if="affiliateModal.userResults.length > 0"
                     class="mt-1 max-h-40 overflow-y-auto rounded border border-gray-200 dark:border-dark-700"
                   >
-                    <button
+                    <ElButton text
                       v-for="u in affiliateModal.userResults"
                       :key="u.id"
-                      type="button"
+                      native-type="button"
                       class="w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-dark-800"
                       @click="selectAffiliateUser(u)"
                     >
                       {{ u.email }} <span class="text-xs text-gray-500">({{ u.username }})</span>
-                    </button>
+                    </ElButton>
                   </div>
                 </template>
               </div>
               <div v-else>
                 <label class="input-label">{{ t('admin.settings.features.affiliate.modal.userLabel') }}</label>
-                <input
+                <ElementInput
                   type="text"
                   class="input"
                   :value="affiliateModal.editingEntry ? affiliateModal.editingEntry.email : ''"
@@ -7662,7 +7545,7 @@
 
               <div>
                 <label class="input-label">{{ t('admin.settings.features.affiliate.modal.codeLabel') }}</label>
-                <input
+                <ElementInput
                   v-model="affiliateModal.code"
                   type="text"
                   class="input font-mono"
@@ -7677,7 +7560,7 @@
               <div>
                 <label class="input-label">{{ t('admin.settings.features.affiliate.modal.rateLabel') }}</label>
                 <div class="relative">
-                  <input
+                  <ElementInput
                     v-model="affiliateModal.rate"
                     type="number"
                     step="0.01"
@@ -7692,9 +7575,7 @@
                   {{ t('admin.settings.features.affiliate.modal.rateHint') }}
                 </p>
               </div>
-            </div>
-
-            <div class="mt-6 flex items-center justify-between gap-3">
+            </div><div class="mt-6 flex items-center justify-between gap-3">
               <p
                 v-if="!affiliateModalCanSubmit"
                 class="text-xs text-gray-500 dark:text-gray-400"
@@ -7703,37 +7584,25 @@
               </p>
               <span v-else></span>
               <div class="flex gap-2">
-                <button type="button" class="btn btn-secondary" @click="closeAffiliateModal">
+                <ElButton native-type="button" class="" @click="closeAffiliateModal">
                   {{ t('common.cancel') }}
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-primary"
+                </ElButton>
+                <ElButton type="primary"
+                  native-type="button"
+                  class=""
                   :disabled="affiliateModal.saving || !affiliateModalCanSubmit"
                   @click="submitAffiliateModal"
                 >
                   {{ affiliateModal.saving ? t('common.saving') : t('common.save') }}
-                </button>
+                </ElButton>
               </div>
-            </div>
-          </div>
-        </div>
+            </div></template></ElDialog>
 
         <!-- Affiliate batch rate modal -->
-        <div
-          v-if="affiliateBatchModal.open"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          @click.self="affiliateBatchModal.open = false"
-        >
-          <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-dark-900">
-            <h3 class="mb-4 text-lg font-semibold">
-              {{ t('admin.settings.features.affiliate.batchModal.title', { count: affiliateState.selected.length }) }}
-            </h3>
-            <p class="mb-4 text-sm text-gray-500">
+        <ElDialog :model-value="Boolean(affiliateBatchModal.open)" :title="t('admin.settings.features.affiliate.batchModal.title', { count: affiliateState.selected.length })" width="512px" append-to-body align-center destroy-on-close class="element-dialog " :show-close="true" @update:model-value="visible => { if (!visible) { affiliateBatchModal.open = false } }" ><template v-if="affiliateBatchModal.open"><p class="mb-4 text-sm text-gray-500">
               {{ t('admin.settings.features.affiliate.batchModal.hint') }}
-            </p>
-            <div class="relative">
-              <input
+            </p><div class="relative">
+              <ElementInput
                 v-model="affiliateBatchModal.rate"
                 type="number"
                 step="0.01"
@@ -7743,25 +7612,21 @@
                 :placeholder="t('admin.settings.features.affiliate.batchModal.placeholder')"
               />
               <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">%</span>
-            </div>
-            <p class="mt-2 text-xs text-gray-400">
+            </div><p class="mt-2 text-xs text-gray-400">
               {{ t('admin.settings.features.affiliate.batchModal.clearHint') }}
-            </p>
-            <div class="mt-6 flex justify-end gap-2">
-              <button type="button" class="btn btn-secondary" @click="affiliateBatchModal.open = false">
+            </p><div class="mt-6 flex justify-end gap-2">
+              <ElButton native-type="button" class="" @click="affiliateBatchModal.open = false">
                 {{ t('common.cancel') }}
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
+              </ElButton>
+              <ElButton type="primary"
+                native-type="button"
+                class=""
                 :disabled="affiliateBatchModal.saving"
                 @click="submitAffiliateBatchModal"
               >
                 {{ affiliateBatchModal.saving ? t('common.saving') : t('common.save') }}
-              </button>
-            </div>
-          </div>
-        </div>
+              </ElButton>
+            </div></template></ElDialog>
 
         </div><!-- /Tab: Features -->
 
@@ -7769,7 +7634,7 @@
         <!-- Tab: Payment -->
         <div v-show="activeTab === 'payment'" class="space-y-6">
           <!-- Payment System Settings -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -7821,7 +7686,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.productNamePrefix")
                     }}</label
-                    ><input
+                    ><ElementInput
                       v-model="form.payment_product_name_prefix"
                       type="text"
                       class="input"
@@ -7832,7 +7697,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.productNameSuffix")
                     }}</label
-                    ><input
+                    ><ElementInput
                       v-model="form.payment_product_name_suffix"
                       type="text"
                       class="input"
@@ -7860,7 +7725,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.minAmount")
                     }}</label
-                    ><input
+                    ><ElementInput
                       :value="form.payment_min_amount || ''"
                       @input="
                         form.payment_min_amount =
@@ -7879,7 +7744,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.maxAmount")
                     }}</label
-                    ><input
+                    ><ElementInput
                       :value="form.payment_max_amount || ''"
                       @input="
                         form.payment_max_amount =
@@ -7898,7 +7763,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.dailyLimit")
                     }}</label
-                    ><input
+                    ><ElementInput
                       :value="form.payment_daily_limit || ''"
                       @input="
                         form.payment_daily_limit =
@@ -7917,7 +7782,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.balanceRechargeMultiplier")
                     }}</label>
-                    <input
+                    <ElementInput
                       :value="form.payment_balance_recharge_multiplier || ''"
                       @input="
                         form.payment_balance_recharge_multiplier =
@@ -7954,7 +7819,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.subscriptionUsdToCnyRate")
                     }}</label>
-                    <input
+                    <ElementInput
                       :value="form.payment_subscription_usd_to_cny_rate || ''"
                       @input="
                         form.payment_subscription_usd_to_cny_rate =
@@ -7983,7 +7848,7 @@
                       t("admin.settings.payment.rechargeFeeRate")
                     }}</label>
                     <div class="relative">
-                      <input
+                      <ElementInput
                         :value="form.payment_recharge_fee_rate ?? ''"
                         @input="
                           form.payment_recharge_fee_rate = Math.min(
@@ -8030,7 +7895,7 @@
                     <label class="input-label"
                       >{{ t("admin.settings.payment.orderTimeout") }}
                       <span class="text-red-500">*</span></label
-                    ><input
+                    ><ElementInput
                       v-model.number="form.payment_order_timeout_minutes"
                       type="number"
                       min="1"
@@ -8048,7 +7913,7 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.maxPendingOrders")
                     }}</label
-                    ><input
+                    ><ElementInput
                       v-model.number="form.payment_max_pending_orders"
                       type="number"
                       min="1"
@@ -8070,8 +7935,8 @@
                       t("admin.settings.payment.cancelRateLimit")
                     }}</label>
                     <div class="flex items-center gap-2">
-                      <button
-                        type="button"
+                      <ElButton text
+                        native-type="button"
                         :class="[
                           'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
                           form.payment_cancel_rate_limit_enabled
@@ -8091,7 +7956,7 @@
                               : 'translate-x-0',
                           ]"
                         />
-                      </button>
+                      </ElButton>
                       <Select
                         v-model="form.payment_cancel_rate_limit_window_mode"
                         :options="cancelRateLimitModeOptions"
@@ -8109,7 +7974,7 @@
                           t("admin.settings.payment.cancelRateLimitEvery")
                         }}</span
                       >
-                      <input
+                      <ElementInput
                         v-model.number="form.payment_cancel_rate_limit_window"
                         type="number"
                         min="1"
@@ -8134,7 +7999,7 @@
                           t("admin.settings.payment.cancelRateLimitAllowMax")
                         }}</span
                       >
-                      <input
+                      <ElementInput
                         v-model.number="form.payment_cancel_rate_limit_max"
                         type="number"
                         min="1"
@@ -8160,8 +8025,8 @@
                       t("admin.settings.payment.alipayForceQRCode")
                     }}</label>
                     <div class="flex items-center gap-2">
-                      <button
-                        type="button"
+                      <ElButton text
+                        native-type="button"
                         :class="[
                           'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
                           form.payment_alipay_force_qrcode
@@ -8181,7 +8046,7 @@
                               : 'translate-x-0',
                           ]"
                         />
-                      </button>
+                      </ElButton>
                       <span class="text-sm text-gray-500 dark:text-gray-400">{{
                         t("admin.settings.payment.alipayForceQRCodeHint")
                       }}</span>
@@ -8192,8 +8057,8 @@
                       t("admin.settings.payment.alipayMobilePrecreateDeepLink")
                     }}</label>
                     <div class="flex items-center gap-2">
-                      <button
-                        type="button"
+                      <ElButton text
+                        native-type="button"
                         :class="[
                           'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
                           form.payment_alipay_mobile_precreate_deep_link
@@ -8213,7 +8078,7 @@
                               : 'translate-x-0',
                           ]"
                         />
-                      </button>
+                      </ElButton>
                       <span class="text-sm text-gray-500 dark:text-gray-400">{{
                         t("admin.settings.payment.alipayMobilePrecreateDeepLinkHint")
                       }}</span>
@@ -8226,10 +8091,10 @@
                     t("admin.settings.payment.enabledPaymentTypes")
                   }}</label>
                   <div class="mt-1.5 flex flex-wrap gap-2">
-                    <button
+                    <ElButton text
                       v-for="pt in allPaymentTypes"
                       :key="pt.value"
-                      type="button"
+                      native-type="button"
                       @click="togglePaymentType(pt.value)"
                       :class="[
                         'rounded-lg border px-3 py-1.5 text-sm font-medium transition-all',
@@ -8239,7 +8104,7 @@
                       ]"
                     >
                       {{ pt.label }}
-                    </button>
+                    </ElButton>
                   </div>
                   <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">
                     {{ t("admin.settings.payment.enabledPaymentTypesHint") }}
@@ -8285,19 +8150,19 @@
                     <label class="input-label">{{
                       t("admin.settings.payment.helpText")
                     }}</label>
-                    <textarea
+                    <ElementInput type="textarea"
                       v-model="form.payment_help_text"
-                      rows="3"
+                      :rows="3"
                       class="input"
                       :placeholder="
                         t('admin.settings.payment.helpTextPlaceholder')
                       "
-                    ></textarea>
+                    ></ElementInput>
                   </div>
                 </div>
               </template>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Provider Management -->
           <PaymentProviderList
@@ -8320,7 +8185,7 @@
 
         <div v-show="activeTab === 'email'" class="space-y-6">
           <!-- Email disabled hint - show when email_verify_enabled is off -->
-          <div v-if="!form.email_verify_enabled" class="card">
+          <ElCard shadow="never" v-if="!form.email_verify_enabled" class="element-surface-card">
             <div class="p-6">
               <div class="flex items-start gap-3">
                 <Icon
@@ -8338,10 +8203,10 @@
                 </div>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- SMTP Settings - Only show when email verification is enabled -->
-          <div v-if="form.email_verify_enabled" class="card">
+          <ElCard shadow="never" v-if="form.email_verify_enabled" class="element-surface-card">
             <div
               class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -8353,11 +8218,11 @@
                   {{ t("admin.settings.smtp.description") }}
                 </p>
               </div>
-              <button
-                type="button"
+              <ElButton size="small"
+                native-type="button"
                 @click="testSmtpConnection"
                 :disabled="testingSmtp || loadFailed"
-                class="btn btn-secondary btn-sm"
+                class=""
               >
                 <svg
                   v-if="testingSmtp"
@@ -8384,7 +8249,7 @@
                     ? t("admin.settings.smtp.testing")
                     : t("admin.settings.smtp.testConnection")
                 }}
-              </button>
+              </ElButton>
             </div>
             <div class="space-y-6 p-6">
               <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -8394,7 +8259,7 @@
                   >
                     {{ t("admin.settings.smtp.host") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model="form.smtp_host"
                     type="text"
                     class="input"
@@ -8407,7 +8272,7 @@
                   >
                     {{ t("admin.settings.smtp.port") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model.number="form.smtp_port"
                     type="number"
                     min="1"
@@ -8422,7 +8287,7 @@
                   >
                     {{ t("admin.settings.smtp.username") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model="form.smtp_username"
                     type="text"
                     class="input"
@@ -8435,7 +8300,7 @@
                   >
                     {{ t("admin.settings.smtp.password") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model="form.smtp_password"
                     type="password"
                     class="input"
@@ -8464,7 +8329,7 @@
                   >
                     {{ t("admin.settings.smtp.fromEmail") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model="form.smtp_from_email"
                     type="email"
                     class="input"
@@ -8477,7 +8342,7 @@
                   >
                     {{ t("admin.settings.smtp.fromName") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model="form.smtp_from_name"
                     type="text"
                     class="input"
@@ -8501,10 +8366,10 @@
                 <Toggle v-model="form.smtp_use_tls" />
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Send Test Email - Only show when email verification is enabled -->
-          <div v-if="form.email_verify_enabled" class="card">
+          <ElCard shadow="never" v-if="form.email_verify_enabled" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -8523,7 +8388,7 @@
                   >
                     {{ t("admin.settings.testEmail.recipientEmail") }}
                   </label>
-                  <input
+                  <ElementInput
                     v-model="testEmailAddress"
                     type="email"
                     class="input"
@@ -8532,13 +8397,13 @@
                     "
                   />
                 </div>
-                <button
-                  type="button"
+                <ElButton
+                  native-type="button"
                   @click="sendTestEmail"
                   :disabled="
                     sendingTestEmail || !testEmailAddress || loadFailed
                   "
-                  class="btn btn-secondary"
+                  class=""
                 >
                   <svg
                     v-if="sendingTestEmail"
@@ -8565,13 +8430,13 @@
                       ? t("admin.settings.testEmail.sending")
                       : t("admin.settings.testEmail.sendTestEmail")
                   }}
-                </button>
+                </ElButton>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- 订阅到期提醒 -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -8597,12 +8462,12 @@
                 <Toggle v-model="form.subscription_expiry_notify_enabled" />
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <EmailTemplateEditor />
 
           <!-- Balance Low Notification -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -8631,7 +8496,7 @@
                     class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                     >$</span
                   >
-                  <input
+                  <ElementInput
                     v-model.number="form.balance_low_notify_threshold"
                     type="number"
                     min="0"
@@ -8648,7 +8513,7 @@
                   class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >{{ t("admin.settings.balanceNotify.rechargeUrl") }}</label
                 >
-                <input
+                <ElementInput
                   v-model="form.balance_low_notify_recharge_url"
                   type="url"
                   class="input"
@@ -8659,10 +8524,10 @@
                 </p>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Account Quota Notification -->
-          <div class="card">
+          <ElCard shadow="never" class="element-surface-card">
             <div
               class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
             >
@@ -8693,20 +8558,8 @@
                     :key="index"
                     class="flex items-center gap-2"
                   >
-                    <label
-                      class="relative inline-flex items-center cursor-pointer shrink-0"
-                    >
-                      <input
-                        type="checkbox"
-                        :checked="!entry.disabled"
-                        @change="entry.disabled = !entry.disabled"
-                        class="sr-only peer"
-                      />
-                      <div
-                        class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:after:border-gray-500 peer-checked:bg-primary-600"
-                      ></div>
-                    </label>
-                    <input
+                    <ElSwitch :model-value="!entry.disabled" @change="entry.disabled = !entry.disabled" :aria-label="entry.email" />
+                    <ElementInput
                       v-model="entry.email"
                       type="email"
                       class="input flex-1"
@@ -8714,28 +8567,28 @@
                         t('admin.settings.quotaNotify.emailPlaceholder')
                       "
                     />
-                    <button
+                    <ElButton
                       @click="form.account_quota_notify_emails.splice(index, 1)"
-                      class="btn btn-secondary px-2"
-                      type="button"
+                      class="px-2"
+                      native-type="button"
                     >
                       <Icon name="x" size="xs" class="h-4 w-4" />
-                    </button>
+                    </ElButton>
                   </div>
-                  <button
+                  <ElButton size="small"
                     @click="addQuotaNotifyEmail"
-                    class="btn btn-secondary btn-sm"
-                    type="button"
+                    class=""
+                    native-type="button"
                   >
                     + {{ t("admin.settings.quotaNotify.addEmail") }}
-                  </button>
+                  </ElButton>
                 </div>
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   {{ t("admin.settings.quotaNotify.emailsHint") }}
                 </p>
               </div>
             </div>
-          </div>
+          </ElCard>
         </div>
         <!-- /Tab: Email -->
 
@@ -8746,10 +8599,10 @@
 
         <!-- Save Button -->
         <div v-show="activeTab !== 'backup'" class="flex justify-end">
-          <button
-            type="submit"
+          <ElButton type="primary"
+            native-type="submit"
             :disabled="saving || loadFailed"
-            class="btn btn-primary"
+            class=""
           >
             <svg
               v-if="saving"
@@ -8776,9 +8629,9 @@
                 ? t("admin.settings.saving")
                 : t("admin.settings.saveSettings")
             }}
-          </button>
+          </ElButton>
         </div>
-      </form>
+      </ElForm>
 
       <!-- Provider dialogs placed outside the settings form to prevent form submission bubbling -->
       <PaymentProviderDialog
@@ -8960,42 +8813,9 @@ function selectSettingsTab(tab: SettingsTab): void {
   activeTab.value = tab;
 }
 
-function focusSettingsTab(tab: SettingsTab): void {
-  window.requestAnimationFrame(() => {
-    document.getElementById(`settings-tab-${tab}`)?.focus();
-  });
-}
 
-function handleSettingsTabKeydown(event: KeyboardEvent, tab: SettingsTab): void {
-  const action =
-    settingsTabKeyboardActions[
-      event.key as keyof typeof settingsTabKeyboardActions
-    ];
-  if (action === undefined) {
-    return;
-  }
 
-  event.preventDefault();
-  const currentIndex = settingsTabs.findIndex((item) => item.key === tab);
-  let nextIndex = currentIndex < 0 ? 0 : currentIndex;
 
-  if (action === "first") {
-    nextIndex = 0;
-  } else if (action === "last") {
-    nextIndex = settingsTabs.length - 1;
-  } else {
-    nextIndex =
-      (nextIndex + action + settingsTabs.length) % settingsTabs.length;
-  }
-
-  const nextTab = settingsTabs[nextIndex]?.key;
-  if (!nextTab) {
-    return;
-  }
-
-  selectSettingsTab(nextTab);
-  focusSettingsTab(nextTab);
-}
 
 const { copyToClipboard } = useClipboard();
 

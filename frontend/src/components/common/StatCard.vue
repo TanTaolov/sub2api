@@ -1,5 +1,5 @@
 <template>
-  <div class="stat-card">
+  <ElCard shadow="never" class="element-stat-card" body-class="stat-card">
     <div :class="['stat-icon', iconClass]">
       <component v-if="icon" :is="icon" class="h-6 w-6" aria-hidden="true" />
     </div>
@@ -18,11 +18,12 @@
         </span>
       </div>
     </div>
-  </div>
+  </ElCard>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { ElCard } from 'element-plus'
 import type { Component } from 'vue'
 import Icon from '@/components/icons/Icon.vue'
 

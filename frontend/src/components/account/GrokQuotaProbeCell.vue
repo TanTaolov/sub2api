@@ -1,8 +1,8 @@
 <template>
   <div v-if="visible" class="space-y-1">
     <div class="flex flex-wrap items-center gap-1.5">
-      <button
-        type="button"
+      <ElButton text
+        native-type="button"
         class="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium text-cyan-700 transition-colors hover:bg-cyan-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-cyan-300 dark:hover:bg-cyan-900/30"
         :disabled="loading"
         :title="t('admin.accounts.usageWindow.grokProbeTooltip')"
@@ -23,7 +23,7 @@
           />
         </svg>
         {{ t('admin.accounts.usageWindow.grokProbe') }}
-      </button>
+      </ElButton>
     </div>
 
     <!-- Compact mode: parent already shows 7d/30d/prepaid or 24h — only surface errors. -->

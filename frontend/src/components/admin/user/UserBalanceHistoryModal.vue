@@ -56,16 +56,16 @@
           @change="loadHistory(1)"
         />
         <!-- Deposit button - matches menu style -->
-        <button
+        <ElButton text
           v-if="!hideActions"
           @click="emit('deposit')"
           class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:border-dark-600 dark:bg-dark-800 dark:text-gray-300 dark:hover:bg-dark-700"
         >
           <Icon name="plus" size="sm" class="text-emerald-500" :stroke-width="2" />
           {{ t('admin.users.deposit') }}
-        </button>
+        </ElButton>
         <!-- Withdraw button - matches menu style -->
-        <button
+        <ElButton text
           v-if="!hideActions"
           @click="emit('withdraw')"
           class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:border-dark-600 dark:bg-dark-800 dark:text-gray-300 dark:hover:bg-dark-700"
@@ -74,7 +74,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
           </svg>
           {{ t('admin.users.withdraw') }}
-        </button>
+        </ElButton>
       </div>
 
       <!-- Loading -->
@@ -149,23 +149,23 @@
 
       <!-- Pagination -->
       <div v-if="totalPages > 1" class="flex items-center justify-center gap-2 pt-2">
-        <button
+        <ElButton
           :disabled="currentPage <= 1"
-          class="btn btn-secondary px-3 py-1 text-sm"
+          class="px-3 py-1 text-sm"
           @click="loadHistory(currentPage - 1)"
         >
           {{ t('pagination.previous') }}
-        </button>
+        </ElButton>
         <span class="text-sm text-gray-500 dark:text-dark-400">
           {{ currentPage }} / {{ totalPages }}
         </span>
-        <button
+        <ElButton
           :disabled="currentPage >= totalPages"
-          class="btn btn-secondary px-3 py-1 text-sm"
+          class="px-3 py-1 text-sm"
           @click="loadHistory(currentPage + 1)"
         >
           {{ t('pagination.next') }}
-        </button>
+        </ElButton>
       </div>
     </div>
   </BaseDialog>

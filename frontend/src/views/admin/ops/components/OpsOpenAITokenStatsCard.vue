@@ -177,20 +177,20 @@ function onNextPage() {
           <div class="w-24">
             <Select v-model="pageSize" :options="pageSizeOptions" />
           </div>
-          <button
-            class="btn btn-secondary btn-sm"
+          <ElButton size="small"
+            class=""
             :disabled="loading || page <= 1"
             @click="onPrevPage"
           >
             {{ t('admin.ops.openaiTokenStats.prevPage') }}
-          </button>
-          <button
-            class="btn btn-secondary btn-sm"
+          </ElButton>
+          <ElButton size="small"
+            class=""
             :disabled="loading || page >= totalPages"
             @click="onNextPage"
           >
             {{ t('admin.ops.openaiTokenStats.nextPage') }}
-          </button>
+          </ElButton>
           <span class="text-xs text-gray-500 dark:text-gray-400">
             {{ t('admin.ops.openaiTokenStats.pageInfo', { page, total: totalPages }) }}
           </span>
@@ -246,34 +246,36 @@ function onNextPage() {
               </div>
             </div>
           </div>
-          <table v-else class="min-w-full text-left text-xs md:text-sm">
-            <thead class="sticky top-0 z-10 bg-white dark:bg-dark-800">
-              <tr class="border-b border-gray-200 text-gray-500 dark:border-dark-700 dark:text-gray-400">
-                <th class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.model') }}</th>
-                <th class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.requestCount') }}</th>
-                <th class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.avgTokensPerSec') }}</th>
-                <th class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.avgFirstTokenMs') }}</th>
-                <th class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.totalOutputTokens') }}</th>
-                <th class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.avgDurationMs') }}</th>
-                <th class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.requestsWithFirstToken') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="row in items"
-                :key="row.model"
-                class="border-b border-gray-100 text-gray-700 last:border-b-0 dark:border-dark-800 dark:text-gray-200"
-              >
-                <td class="px-2 py-2 font-medium">{{ row.model }}</td>
-                <td class="px-2 py-2">{{ formatInt(row.request_count) }}</td>
-                <td class="px-2 py-2">{{ formatRate(row.avg_tokens_per_sec) }}</td>
-                <td class="px-2 py-2">{{ formatRate(row.avg_first_token_ms) }}</td>
-                <td class="px-2 py-2">{{ formatInt(row.total_output_tokens) }}</td>
-                <td class="px-2 py-2">{{ formatInt(row.avg_duration_ms) }}</td>
-                <td class="px-2 py-2">{{ formatInt(row.requests_with_first_token) }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <ElTable v-else row-key="model" row-class-name="border-b border-gray-100 text-gray-700 last:border-b-0 dark:border-dark-800 dark:text-gray-200" :data="items" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.model') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="px-2 py-2 font-medium" >{{ row.model }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.requestCount') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="px-2 py-2" >{{ formatInt(row.request_count) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.avgTokensPerSec') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="px-2 py-2" >{{ formatRate(row.avg_tokens_per_sec) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.avgFirstTokenMs') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="px-2 py-2" >{{ formatRate(row.avg_first_token_ms) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.totalOutputTokens') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="px-2 py-2" >{{ formatInt(row.total_output_tokens) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.avgDurationMs') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="px-2 py-2" >{{ formatInt(row.avg_duration_ms) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-2 py-2 font-semibold">{{ t('admin.ops.openaiTokenStats.table.requestsWithFirstToken') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="px-2 py-2" >{{ formatInt(row.requests_with_first_token) }}</div></template>
+  </ElTableColumn>
+</ElTable>
         </div>
       </div>
       <div v-if="viewMode === 'topn'" class="mt-3 text-xs text-gray-500 dark:text-gray-400">

@@ -5,7 +5,7 @@
     width="wide"
     @close="handleClose"
   >
-    <form
+    <ElForm
       v-if="account"
       id="edit-account-form"
       @submit.prevent="handleSubmit"
@@ -13,16 +13,16 @@
     >
       <div>
         <label class="input-label">{{ t('common.name') }}</label>
-        <input v-model="form.name" type="text" required class="input" data-tour="edit-account-form-name" />
+        <ElementInput v-model="form.name" type="text" required class="input" data-tour="edit-account-form-name" />
       </div>
       <div>
         <label class="input-label">{{ t('admin.accounts.notes') }}</label>
-        <textarea
+        <ElementInput type="textarea"
           v-model="form.notes"
-          rows="3"
+          :rows="3"
           class="input"
           :placeholder="t('admin.accounts.notesPlaceholder')"
-        ></textarea>
+        ></ElementInput>
         <p class="input-hint">{{ t('admin.accounts.notesHint') }}</p>
       </div>
 
@@ -30,7 +30,7 @@
       <div v-if="account.type === 'apikey'" class="space-y-4">
         <div v-if="!isCNApiKeyAccount || editApiProtocol !== 'adaptive'">
           <label class="input-label">{{ t('admin.accounts.baseUrl') }}</label>
-          <input
+          <ElementInput
             v-model="editBaseUrl"
             type="text"
             class="input"
@@ -69,7 +69,7 @@
               <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
                 {{ t(`admin.accounts.cnProviders.apiProtocol.${item.labelKey}`) }}
               </label>
-              <input v-model="editAdaptiveBaseUrls[item.value]" type="text" class="input" />
+              <ElementInput v-model="editAdaptiveBaseUrls[item.value]" type="text" class="input" />
             </div>
           </div>
           <p v-if="!cnSupportsNativeResponses(account.platform)" class="input-hint">
@@ -80,8 +80,8 @@
         <div v-if="isCNApiKeyAccount && account.platform === 'opencode_go'">
           <label class="input-label">{{ t('admin.accounts.cnProviders.accountMode.title') }}</label>
           <div class="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="editOpenCodeAccountMode = 'zen'"
               :class="[
                 'flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-all',
@@ -102,9 +102,9 @@
                 <span class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('admin.accounts.opencodeGo.accountMode.zen') }}</span>
                 <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('admin.accounts.opencodeGo.accountMode.zenDesc') }}</span>
               </div>
-            </button>
-            <button
-              type="button"
+            </ElButton>
+            <ElButton text
+              native-type="button"
               @click="editOpenCodeAccountMode = 'go'"
               :class="[
                 'flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-all',
@@ -125,17 +125,17 @@
                 <span class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('admin.accounts.opencodeGo.accountMode.go') }}</span>
                 <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('admin.accounts.opencodeGo.accountMode.goDesc') }}</span>
               </div>
-            </button>
+            </ElButton>
           </div>
         </div>
         <!-- Account Mode Selection (CN providers) -->
         <div v-if="isCNApiKeyAccount && account.platform !== 'opencode_go'">
           <label class="input-label">{{ t('admin.accounts.cnProviders.accountMode.title') }}</label>
           <div class="mt-2 flex flex-wrap gap-2">
-            <button
+            <ElButton text
               v-for="opt in cnAccountModeOptions"
               :key="opt.value"
-              type="button"
+              native-type="button"
               :class="[
                 'rounded-lg border-2 px-3 py-1.5 text-xs transition-all',
                 editAccountMode === opt.value
@@ -145,7 +145,7 @@
               @click="editAccountMode = opt.value"
             >
               {{ t(`admin.accounts.cnProviders.accountMode.${opt.labelKey}`) }}
-            </button>
+            </ElButton>
           </div>
           <p class="input-hint">{{ t(`admin.accounts.cnProviders.accountMode.${editAccountMode}Desc`) }}</p>
         </div>
@@ -153,10 +153,10 @@
         <div v-if="isCNApiKeyAccount">
           <label class="input-label">{{ t('admin.accounts.cnProviders.apiProtocol.title') }}</label>
           <div class="mt-2 flex flex-wrap gap-2">
-            <button
+            <ElButton text
               v-for="opt in cnProtocolOptions"
               :key="opt.value"
-              type="button"
+              native-type="button"
               :class="[
                 'rounded-lg border-2 px-3 py-1.5 text-xs transition-all',
                 editApiProtocol === opt.value
@@ -166,7 +166,7 @@
               @click="editApiProtocol = opt.value"
             >
               {{ t(`admin.accounts.cnProviders.apiProtocol.${opt.labelKey}`) }}
-            </button>
+            </ElButton>
           </div>
           <p class="input-hint">{{ t(`admin.accounts.cnProviders.apiProtocol.${cnProtocolDescKey}Desc`) }}</p>
         </div>
@@ -195,18 +195,18 @@
           <div class="mt-2 grid gap-4 sm:grid-cols-2">
             <div>
               <label class="input-label">{{ t('admin.accounts.cnProviders.zhipuTeam.organization') }}</label>
-              <input v-model="editZhipuOrganization" type="text" class="input" :placeholder="t('admin.accounts.cnProviders.zhipuTeam.organizationPlaceholder')" />
+              <ElementInput v-model="editZhipuOrganization" type="text" class="input" :placeholder="t('admin.accounts.cnProviders.zhipuTeam.organizationPlaceholder')" />
             </div>
             <div>
               <label class="input-label">{{ t('admin.accounts.cnProviders.zhipuTeam.project') }}</label>
-              <input v-model="editZhipuProject" type="text" class="input" :placeholder="t('admin.accounts.cnProviders.zhipuTeam.projectPlaceholder')" />
+              <ElementInput v-model="editZhipuProject" type="text" class="input" :placeholder="t('admin.accounts.cnProviders.zhipuTeam.projectPlaceholder')" />
             </div>
           </div>
           <p class="input-hint mt-2">{{ t('admin.accounts.cnProviders.zhipuTeam.hint') }}</p>
         </div>
         <div>
           <label class="input-label">{{ t('admin.accounts.apiKey') }}</label>
-          <input
+          <ElementInput
             v-model="editApiKey"
             type="password"
             class="input font-mono"
@@ -245,8 +245,8 @@
           <template v-else>
             <!-- Mode Toggle -->
             <div class="mb-4 flex gap-2">
-              <button
-                type="button"
+              <ElButton text
+                native-type="button"
                 @click="modelRestrictionMode = 'whitelist'"
                 :class="[
                   'flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all',
@@ -269,9 +269,9 @@
                   />
                 </svg>
                 {{ t('admin.accounts.modelWhitelist') }}
-              </button>
-              <button
-                type="button"
+              </ElButton>
+              <ElButton text
+                native-type="button"
                 @click="modelRestrictionMode = 'mapping'"
                 :class="[
                   'flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all',
@@ -294,7 +294,7 @@
                   />
                 </svg>
                 {{ t('admin.accounts.modelMapping') }}
-              </button>
+              </ElButton>
             </div>
 
             <!-- Whitelist Mode -->
@@ -336,7 +336,7 @@
                 :key="getModelMappingKey(mapping)"
                 class="flex items-center gap-2"
               >
-                <input
+                <ElementInput
                   v-model="mapping.from"
                   type="text"
                   class="input flex-1"
@@ -355,14 +355,14 @@
                     d="M14 5l7 7m0 0l-7 7m7-7H3"
                   />
                 </svg>
-                <input
+                <ElementInput
                   v-model="mapping.to"
                   type="text"
                   class="input flex-1"
                   :placeholder="t('admin.accounts.actualModel')"
                 />
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   @click="removeModelMapping(index)"
                   class="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
                 >
@@ -374,12 +374,12 @@
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                     />
                   </svg>
-                </button>
+                </ElButton>
               </div>
             </div>
 
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="addModelMapping"
               class="mb-3 w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-2 text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-700 dark:border-dark-500 dark:text-gray-400 dark:hover:border-dark-400 dark:hover:text-gray-300"
             >
@@ -397,19 +397,19 @@
                 />
               </svg>
               {{ t('admin.accounts.addMapping') }}
-            </button>
+            </ElButton>
 
               <!-- Quick Add Buttons -->
               <div class="flex flex-wrap gap-2">
-                <button
+                <ElButton text
                   v-for="preset in presetMappings"
                   :key="preset.label"
-                  type="button"
+                  native-type="button"
                   @click="addPresetMapping(preset.from, preset.to)"
                   :class="['rounded-lg px-3 py-1 text-xs transition-colors', preset.color]"
                 >
                   + {{ preset.label }}
-                </button>
+                </ElButton>
               </div>
             </div>
           </template>
@@ -424,8 +424,8 @@
                 {{ t('admin.accounts.poolModeHint') }}
               </p>
             </div>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="poolModeEnabled = !poolModeEnabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -438,7 +438,7 @@
                   poolModeEnabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
           <div v-if="poolModeEnabled" class="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
             <p class="text-xs text-blue-700 dark:text-blue-400">
@@ -448,7 +448,7 @@
           </div>
           <div v-if="poolModeEnabled" class="mt-3">
             <label class="input-label">{{ t('admin.accounts.poolModeRetryCount') }}</label>
-            <input
+            <ElementInput
               v-model.number="poolModeRetryCount"
               type="number"
               min="0"
@@ -467,7 +467,7 @@
           </div>
           <div v-if="poolModeEnabled" class="mt-3">
             <label class="input-label">{{ t('admin.accounts.poolModeRetryStatusCodes') }}</label>
-            <input
+            <ElementInput
               v-model="poolModeRetryStatusCodesInput"
               type="text"
               class="input"
@@ -488,8 +488,8 @@
                 {{ t('admin.accounts.customErrorCodesHint') }}
               </p>
             </div>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="customErrorCodesEnabled = !customErrorCodesEnabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -502,7 +502,7 @@
                   customErrorCodesEnabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
 
           <div v-if="customErrorCodesEnabled" class="space-y-3">
@@ -515,10 +515,10 @@
 
             <!-- Error Code Buttons -->
             <div class="flex flex-wrap gap-2">
-              <button
+              <ElButton text
                 v-for="code in commonErrorCodes"
                 :key="code.value"
-                type="button"
+                native-type="button"
                 @click="toggleErrorCode(code.value)"
                 :class="[
                   'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
@@ -528,12 +528,12 @@
                 ]"
               >
                 {{ code.value }} {{ code.label }}
-              </button>
+              </ElButton>
             </div>
 
             <!-- Manual input -->
             <div class="flex items-center gap-2">
-              <input
+              <ElementInput
                 v-model.number="customErrorCodeInput"
                 type="number"
                 min="100"
@@ -542,7 +542,7 @@
                 :placeholder="t('admin.accounts.enterErrorCode')"
                 @keyup.enter="addCustomErrorCode"
               />
-              <button type="button" @click="addCustomErrorCode" class="btn btn-secondary px-3">
+              <ElButton native-type="button" @click="addCustomErrorCode" class="px-3">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     stroke-linecap="round"
@@ -551,7 +551,7 @@
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-              </button>
+              </ElButton>
             </div>
 
             <!-- Selected codes summary -->
@@ -562,13 +562,13 @@
                 class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-sm font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400"
               >
                 {{ code }}
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   @click="removeErrorCode(code)"
                   class="hover:text-red-900 dark:hover:text-red-300"
                 >
                   <Icon name="x" size="sm" :stroke-width="2" />
-                </button>
+                </ElButton>
               </span>
               <span v-if="selectedErrorCodes.length === 0" class="text-xs text-gray-400">
                 {{ t('admin.accounts.noneSelectedUsesDefault') }}
@@ -612,16 +612,16 @@
               {{ t('admin.accounts.grokMediaEligibility.hint') }}
             </p>
           </div>
-          <select
+          <ElementSelect
             v-model="grokMediaEligibilityMode"
             class="input"
             data-testid="grok-media-eligibility-mode"
             :disabled="grokMediaEligibilityLoading"
           >
-            <option value="auto">{{ t('admin.accounts.grokMediaEligibility.auto') }}</option>
-            <option value="enabled">{{ t('admin.accounts.grokMediaEligibility.enabled') }}</option>
-            <option value="disabled">{{ t('admin.accounts.grokMediaEligibility.disabled') }}</option>
-          </select>
+            <ElOption :label="(t('admin.accounts.grokMediaEligibility.auto'))" value="auto">{{ t('admin.accounts.grokMediaEligibility.auto') }}</ElOption>
+            <ElOption :label="(t('admin.accounts.grokMediaEligibility.enabled'))" value="enabled">{{ t('admin.accounts.grokMediaEligibility.enabled') }}</ElOption>
+            <ElOption :label="(t('admin.accounts.grokMediaEligibility.disabled'))" value="disabled">{{ t('admin.accounts.grokMediaEligibility.disabled') }}</ElOption>
+          </ElementSelect>
           <p v-if="grokMediaEligibilityLoading" class="text-xs text-gray-500 dark:text-gray-400">
             {{ t('admin.accounts.grokMediaEligibility.loading') }}
           </p>
@@ -662,8 +662,8 @@
               {{ t('admin.accounts.grokCustomBaseUrl.hint') }}
             </p>
           </div>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             data-testid="grok-custom-base-url-toggle"
             @click="grokOAuthCustomBaseUrlEnabled = !grokOAuthCustomBaseUrlEnabled"
             :class="[
@@ -677,10 +677,10 @@
                 grokOAuthCustomBaseUrlEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
         <div v-if="grokOAuthCustomBaseUrlEnabled" class="space-y-2">
-          <input
+          <ElementInput
             v-model="grokOAuthBaseUrl"
             type="text"
             class="input"
@@ -700,8 +700,8 @@
               {{ t('admin.accounts.headerOverride.hint') }}
             </p>
           </div>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             @click="headerOverrideEnabled = !headerOverrideEnabled"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -714,7 +714,7 @@
                 headerOverrideEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
 
         <div v-if="headerOverrideEnabled" class="space-y-3">
@@ -751,8 +751,8 @@
         <template v-else>
           <!-- Mode Toggle -->
           <div class="mb-4 flex gap-2">
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="modelRestrictionMode = 'whitelist'"
               :class="[
                 'flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all',
@@ -762,9 +762,9 @@
               ]"
             >
               {{ t('admin.accounts.modelWhitelist') }}
-            </button>
-            <button
-              type="button"
+            </ElButton>
+            <ElButton text
+              native-type="button"
               @click="modelRestrictionMode = 'mapping'"
               :class="[
                 'flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all',
@@ -774,7 +774,7 @@
               ]"
             >
               {{ t('admin.accounts.modelMapping') }}
-            </button>
+            </ElButton>
           </div>
 
           <!-- Whitelist Mode -->
@@ -802,7 +802,7 @@
                 :key="'oauth-' + getModelMappingKey(mapping)"
                 class="flex items-center gap-2"
               >
-                <input
+                <ElementInput
                   v-model="mapping.from"
                   type="text"
                   class="input flex-1"
@@ -821,14 +821,14 @@
                     d="M14 5l7 7m0 0l-7 7m7-7H3"
                   />
                 </svg>
-                <input
+                <ElementInput
                   v-model="mapping.to"
                   type="text"
                   class="input flex-1"
                   :placeholder="t('admin.accounts.actualModel')"
                 />
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   @click="removeModelMapping(index)"
                   class="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
                 >
@@ -840,29 +840,29 @@
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                     />
                   </svg>
-                </button>
+                </ElButton>
               </div>
             </div>
 
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="addModelMapping"
               class="mb-3 w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-2 text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-700 dark:border-dark-500 dark:text-gray-400 dark:hover:border-dark-400 dark:hover:text-gray-300"
             >
               + {{ t('admin.accounts.addMapping') }}
-            </button>
+            </ElButton>
 
             <!-- Quick Add Buttons -->
             <div class="flex flex-wrap gap-2">
-              <button
+              <ElButton text
                 v-for="preset in presetMappings"
                 :key="'oauth-' + preset.label"
-                type="button"
+                native-type="button"
                 @click="addPresetMapping(preset.from, preset.to)"
                 :class="['rounded-lg px-3 py-1 text-xs transition-colors', preset.color]"
               >
                 + {{ preset.label }}
-              </button>
+              </ElButton>
             </div>
           </div>
         </template>
@@ -872,7 +872,7 @@
       <div v-if="account.type === 'upstream'" class="space-y-4">
         <div>
           <label class="input-label">{{ t('admin.accounts.upstream.baseUrl') }}</label>
-          <input
+          <ElementInput
             v-model="editBaseUrl"
             type="text"
             class="input"
@@ -882,7 +882,7 @@
         </div>
         <div>
           <label class="input-label">{{ t('admin.accounts.upstream.apiKey') }}</label>
-          <input
+          <ElementInput
             v-model="editApiKey"
             type="password"
             class="input font-mono"
@@ -897,7 +897,7 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label class="input-label">Project ID</label>
-            <input
+            <ElementInput
               v-model="editVertexProjectId"
               type="text"
               class="input font-mono"
@@ -908,25 +908,25 @@
           </div>
           <div>
             <label class="input-label">Location</label>
-            <select
+            <ElementSelect
               v-model="editVertexLocation"
               required
               class="input font-mono"
             >
-              <optgroup
+              <ElOptionGroup
                 v-for="group in VERTEX_LOCATION_OPTIONS"
                 :key="group.label"
                 :label="group.label"
               >
-                <option
+                <ElOption :label="(option.label)"
                   v-for="option in group.options"
                   :key="option.value"
                   :value="option.value"
                 >
                   {{ option.label }}
-                </option>
-              </optgroup>
-            </select>
+                </ElOption>
+              </ElOptionGroup>
+            </ElementSelect>
             <p class="input-hint">{{ t('admin.accounts.vertexLocationHint') }}</p>
           </div>
         </div>
@@ -937,8 +937,8 @@
 
           <!-- Mode Toggle -->
           <div class="mb-4 flex gap-2">
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="modelRestrictionMode = 'whitelist'"
               :class="[
                 'flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all',
@@ -961,9 +961,9 @@
                 />
               </svg>
               {{ t('admin.accounts.modelWhitelist') }}
-            </button>
-            <button
-              type="button"
+            </ElButton>
+            <ElButton text
+              native-type="button"
               @click="modelRestrictionMode = 'mapping'"
               :class="[
                 'flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all',
@@ -986,7 +986,7 @@
                 />
               </svg>
               {{ t('admin.accounts.modelMapping') }}
-            </button>
+            </ElButton>
           </div>
 
           <!-- Whitelist Mode -->
@@ -1028,7 +1028,7 @@
                 :key="getModelMappingKey(mapping)"
                 class="flex items-center gap-2"
               >
-                <input
+                <ElementInput
                   v-model="mapping.from"
                   type="text"
                   class="input flex-1"
@@ -1047,14 +1047,14 @@
                     d="M14 5l7 7m0 0l-7 7m7-7H3"
                   />
                 </svg>
-                <input
+                <ElementInput
                   v-model="mapping.to"
                   type="text"
                   class="input flex-1"
                   :placeholder="t('admin.accounts.actualModel')"
                 />
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   @click="removeModelMapping(index)"
                   class="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
                 >
@@ -1066,12 +1066,12 @@
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                     />
                   </svg>
-                </button>
+                </ElButton>
               </div>
             </div>
 
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="addModelMapping"
               class="mb-3 w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-2 text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-700 dark:border-dark-500 dark:text-gray-400 dark:hover:border-dark-400 dark:hover:text-gray-300"
             >
@@ -1089,19 +1089,19 @@
                 />
               </svg>
               {{ t('admin.accounts.addMapping') }}
-            </button>
+            </ElButton>
 
             <!-- Quick Add Buttons -->
             <div class="flex flex-wrap gap-2">
-              <button
+              <ElButton text
                 v-for="preset in presetMappings"
                 :key="preset.label"
-                type="button"
+                native-type="button"
                 @click="addPresetMapping(preset.from, preset.to)"
                 :class="['rounded-lg px-3 py-1 text-xs transition-colors', preset.color]"
               >
                 + {{ preset.label }}
-              </button>
+              </ElButton>
             </div>
           </div>
         </div>
@@ -1113,7 +1113,7 @@
         <template v-if="!isBedrockAPIKeyMode">
           <div>
             <label class="input-label">{{ t('admin.accounts.bedrockAccessKeyId') }}</label>
-            <input
+            <ElementInput
               v-model="editBedrockAccessKeyId"
               type="text"
               class="input font-mono"
@@ -1122,7 +1122,7 @@
           </div>
           <div>
             <label class="input-label">{{ t('admin.accounts.bedrockSecretAccessKey') }}</label>
-            <input
+            <ElementInput
               v-model="editBedrockSecretAccessKey"
               type="password"
               class="input font-mono"
@@ -1132,7 +1132,7 @@
           </div>
           <div>
             <label class="input-label">{{ t('admin.accounts.bedrockSessionToken') }}</label>
-            <input
+            <ElementInput
               v-model="editBedrockSessionToken"
               type="password"
               class="input font-mono"
@@ -1145,7 +1145,7 @@
         <!-- API Key field -->
         <div v-if="isBedrockAPIKeyMode">
           <label class="input-label">{{ t('admin.accounts.bedrockApiKeyInput') }}</label>
-          <input
+          <ElementInput
             v-model="editBedrockApiKeyValue"
             type="password"
             class="input font-mono"
@@ -1157,7 +1157,7 @@
         <!-- Shared: Region -->
         <div>
           <label class="input-label">{{ t('admin.accounts.bedrockRegion') }}</label>
-          <input
+          <ElementInput
             v-model="editBedrockRegion"
             type="text"
             class="input"
@@ -1168,14 +1168,7 @@
 
         <!-- Shared: Force Global -->
         <div>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input
-              v-model="editBedrockForceGlobal"
-              type="checkbox"
-              class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-500"
-            />
-            <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.bedrockForceGlobal') }}</span>
-          </label>
+          <ElementCheckbox v-model="editBedrockForceGlobal" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.bedrockForceGlobal') }}</span></ElementCheckbox>
           <p class="input-hint mt-1">{{ t('admin.accounts.bedrockForceGlobalHint') }}</p>
         </div>
 
@@ -1185,8 +1178,8 @@
 
           <!-- Mode Toggle -->
           <div class="mb-4 flex gap-2">
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="modelRestrictionMode = 'whitelist'"
               :class="[
                 'flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all',
@@ -1196,9 +1189,9 @@
               ]"
             >
               {{ t('admin.accounts.modelWhitelist') }}
-            </button>
-            <button
-              type="button"
+            </ElButton>
+            <ElButton text
+              native-type="button"
               @click="modelRestrictionMode = 'mapping'"
               :class="[
                 'flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all',
@@ -1208,7 +1201,7 @@
               ]"
             >
               {{ t('admin.accounts.modelMapping') }}
-            </button>
+            </ElButton>
           </div>
 
           <!-- Whitelist Mode -->
@@ -1223,27 +1216,27 @@
           <!-- Mapping Mode -->
           <div v-else class="space-y-3">
             <div v-for="(mapping, index) in modelMappings" :key="getModelMappingKey(mapping)" class="flex items-center gap-2">
-              <input v-model="mapping.from" type="text" class="input flex-1" :placeholder="t('admin.accounts.fromModel')" />
+              <ElementInput v-model="mapping.from" type="text" class="input flex-1" :placeholder="t('admin.accounts.fromModel')" />
               <span class="text-gray-400">→</span>
-              <input v-model="mapping.to" type="text" class="input flex-1" :placeholder="t('admin.accounts.toModel')" />
-              <button type="button" @click="modelMappings.splice(index, 1)" class="text-red-500 hover:text-red-700">
+              <ElementInput v-model="mapping.to" type="text" class="input flex-1" :placeholder="t('admin.accounts.toModel')" />
+              <ElButton text native-type="button" @click="modelMappings.splice(index, 1)" class="text-red-500 hover:text-red-700">
                 <Icon name="trash" size="sm" />
-              </button>
+              </ElButton>
             </div>
-            <button type="button" @click="modelMappings.push({ from: '', to: '' })" class="btn btn-secondary text-sm">
+            <ElButton native-type="button" @click="modelMappings.push({ from: '', to: '' })" class="text-sm">
               + {{ t('admin.accounts.addMapping') }}
-            </button>
+            </ElButton>
             <!-- Bedrock Preset Mappings -->
             <div class="flex flex-wrap gap-2">
-              <button
+              <ElButton text
                 v-for="preset in bedrockPresets"
                 :key="preset.from"
-                type="button"
+                native-type="button"
                 @click="modelMappings.push({ from: preset.from, to: preset.to })"
                 :class="['rounded-lg px-3 py-1 text-xs transition-colors', preset.color]"
               >
                 + {{ preset.label }}
-              </button>
+              </ElButton>
             </div>
           </div>
         </div>
@@ -1257,8 +1250,8 @@
                 {{ t('admin.accounts.poolModeHint') }}
               </p>
             </div>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="poolModeEnabled = !poolModeEnabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -1271,7 +1264,7 @@
                   poolModeEnabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
           <div v-if="poolModeEnabled" class="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
             <p class="text-xs text-blue-700 dark:text-blue-400">
@@ -1281,7 +1274,7 @@
           </div>
           <div v-if="poolModeEnabled" class="mt-3">
             <label class="input-label">{{ t('admin.accounts.poolModeRetryCount') }}</label>
-            <input
+            <ElementInput
               v-model.number="poolModeRetryCount"
               type="number"
               min="0"
@@ -1300,7 +1293,7 @@
           </div>
           <div v-if="poolModeEnabled" class="mt-3">
             <label class="input-label">{{ t('admin.accounts.poolModeRetryStatusCodes') }}</label>
-            <input
+            <ElementInput
               v-model="poolModeRetryStatusCodesInput"
               type="text"
               class="input"
@@ -1318,7 +1311,7 @@
         class="border-t border-gray-200 pt-4 dark:border-dark-600"
       >
         <label class="input-label">{{ t('admin.accounts.antigravityProjectIdLabel') }}</label>
-        <input
+        <ElementInput
           v-model="antigravityProjectId"
           data-testid="antigravity-project-id-input"
           type="text"
@@ -1340,14 +1333,14 @@
           </div>
 
           <div class="mb-3 flex flex-wrap gap-2">
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="syncAntigravityUpstreamModels"
               :disabled="isSyncingAntigravityUpstream || !account?.id"
               class="rounded-lg border border-emerald-200 px-3 py-1.5 text-sm text-emerald-600 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
             >
               {{ isSyncingAntigravityUpstream ? t('admin.accounts.syncUpstreamModelsLoading') : t('admin.accounts.syncUpstreamModels') }}
-            </button>
+            </ElButton>
           </div>
 
           <div v-if="antigravityModelMappings.length > 0" class="mb-3 space-y-2">
@@ -1357,7 +1350,7 @@
               class="space-y-1"
             >
               <div class="flex items-center gap-2">
-                <input
+                <ElementInput
                   v-model="mapping.from"
                   type="text"
                   :class="[
@@ -1370,7 +1363,7 @@
                 <svg class="h-4 w-4 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
-                <input
+                <ElementInput
                   v-model="mapping.to"
                   type="text"
                   :class="[
@@ -1379,8 +1372,8 @@
                   ]"
                   :placeholder="t('admin.accounts.actualModel')"
                 />
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   @click="removeAntigravityModelMapping(index)"
                   class="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
                 >
@@ -1392,7 +1385,7 @@
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                     />
                   </svg>
-                </button>
+                </ElButton>
               </div>
               <!-- 校验错误提示 -->
               <p v-if="!isValidWildcardPattern(mapping.from)" class="text-xs text-red-500">
@@ -1404,8 +1397,8 @@
             </div>
           </div>
 
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             @click="addAntigravityModelMapping"
             class="mb-3 w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-2 text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-700 dark:border-dark-500 dark:text-gray-400 dark:hover:border-dark-400 dark:hover:text-gray-300"
           >
@@ -1413,18 +1406,18 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
             {{ t('admin.accounts.addMapping') }}
-          </button>
+          </ElButton>
 
           <div class="flex flex-wrap gap-2">
-            <button
+            <ElButton text
               v-for="preset in antigravityPresetMappings"
               :key="preset.label"
-              type="button"
+              native-type="button"
               @click="addAntigravityPresetMapping(preset.from, preset.to)"
               :class="['rounded-lg px-3 py-1 text-xs transition-colors', preset.color]"
             >
               + {{ preset.label }}
-            </button>
+            </ElButton>
           </div>
         </div>
       </div>
@@ -1438,8 +1431,8 @@
               {{ t('admin.accounts.tempUnschedulable.hint') }}
             </p>
           </div>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             @click="tempUnschedEnabled = !tempUnschedEnabled"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -1452,7 +1445,7 @@
                 tempUnschedEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
 
         <div v-if="tempUnschedEnabled" class="space-y-3">
@@ -1464,15 +1457,15 @@
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <button
+            <ElButton text
               v-for="preset in tempUnschedPresets"
               :key="preset.label"
-              type="button"
+              native-type="button"
               @click="addTempUnschedRule(preset.rule)"
               class="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-200 dark:bg-dark-600 dark:text-gray-300 dark:hover:bg-dark-500"
             >
               + {{ preset.label }}
-            </button>
+            </ElButton>
           </div>
 
           <div v-if="tempUnschedRules.length > 0" class="space-y-3">
@@ -1486,16 +1479,16 @@
                   {{ t('admin.accounts.tempUnschedulable.ruleIndex', { index: index + 1 }) }}
                 </span>
                 <div class="flex items-center gap-2">
-                  <button
-                    type="button"
+                  <ElButton text
+                    native-type="button"
                     :disabled="index === 0"
                     @click="moveTempUnschedRule(index, -1)"
                     class="rounded p-1 text-gray-400 transition-colors hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:text-gray-200"
                   >
                     <Icon name="chevronUp" size="sm" :stroke-width="2" />
-                  </button>
-                  <button
-                    type="button"
+                  </ElButton>
+                  <ElButton text
+                    native-type="button"
                     :disabled="index === tempUnschedRules.length - 1"
                     @click="moveTempUnschedRule(index, 1)"
                     class="rounded p-1 text-gray-400 transition-colors hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:text-gray-200"
@@ -1503,21 +1496,21 @@
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
-                  </button>
-                  <button
-                    type="button"
+                  </ElButton>
+                  <ElButton text
+                    native-type="button"
                     @click="removeTempUnschedRule(index)"
                     class="rounded p-1 text-red-500 transition-colors hover:text-red-600"
                   >
                     <Icon name="x" size="sm" :stroke-width="2" />
-                  </button>
+                  </ElButton>
                 </div>
               </div>
 
               <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label class="input-label">{{ t('admin.accounts.tempUnschedulable.errorCode') }}</label>
-                  <input
+                  <ElementInput
                     v-model.number="rule.error_code"
                     type="number"
                     min="100"
@@ -1528,7 +1521,7 @@
                 </div>
                 <div>
                   <label class="input-label">{{ t('admin.accounts.tempUnschedulable.durationMinutes') }}</label>
-                  <input
+                  <ElementInput
                     v-model.number="rule.duration_minutes"
                     type="number"
                     min="1"
@@ -1538,7 +1531,7 @@
                 </div>
                 <div class="sm:col-span-2">
                   <label class="input-label">{{ t('admin.accounts.tempUnschedulable.keywords') }}</label>
-                  <input
+                  <ElementInput
                     v-model="rule.keywords"
                     type="text"
                     class="input"
@@ -1548,7 +1541,7 @@
                 </div>
                 <div class="sm:col-span-2">
                   <label class="input-label">{{ t('admin.accounts.tempUnschedulable.description') }}</label>
-                  <input
+                  <ElementInput
                     v-model="rule.description"
                     type="text"
                     class="input"
@@ -1559,8 +1552,8 @@
             </div>
           </div>
 
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             @click="addTempUnschedRule()"
             class="w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-2 text-sm text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-700 dark:border-dark-500 dark:text-gray-400 dark:hover:border-dark-400 dark:hover:text-gray-300"
           >
@@ -1573,7 +1566,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
             {{ t('admin.accounts.tempUnschedulable.addRule') }}
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -1590,16 +1583,16 @@
               {{ t('admin.accounts.accountSchedulingThresholdOverrideHint') }}
             </p>
           </div>
-          <input
+          <ElementCheckbox
             v-model="accountSchedulingThresholdOverrideEnabled"
             data-testid="account-scheduling-threshold-override-enabled"
-            type="checkbox"
-            class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+
+            class=""
           />
         </div>
         <div v-if="accountSchedulingThresholdOverrideEnabled">
           <label class="input-label">{{ t('admin.accounts.accountSchedulingThresholdOverrideValue') }}</label>
-          <input
+          <ElementInput
             v-model.number="accountSchedulingThresholdOverrideValue"
             data-testid="account-scheduling-threshold-override-value"
             type="number"
@@ -1625,8 +1618,8 @@
               {{ t('admin.accounts.interceptWarmupRequestsDesc') }}
             </p>
           </div>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             @click="interceptWarmupRequests = !interceptWarmupRequests"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -1639,7 +1632,7 @@
                 interceptWarmupRequests ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -1658,15 +1651,15 @@
                 {{ t('admin.accounts.proxyPoolHint') }}
               </p>
             </div>
-            <button
-              type="button"
-              class="btn btn-secondary min-h-10 shrink-0 self-start text-sm focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-dark-800"
+            <ElButton
+              native-type="button"
+              class="min-h-10 shrink-0 self-start text-sm focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-dark-800"
               :disabled="!canAddProxyPoolRow"
               @click="addProxyPoolRow"
             >
               <Icon name="plus" size="sm" class="mr-1.5" aria-hidden="true" />
               {{ t('admin.accounts.addProxy') }}
-            </button>
+            </ElButton>
           </div>
 
           <div v-if="proxyPoolRows.length > 0" class="mt-3 space-y-2">
@@ -1684,7 +1677,7 @@
                   :searchable="true"
                 />
               </div>
-              <input
+              <ElementInput
                 v-model.number="row.concurrency"
                 type="number"
                 inputmode="numeric"
@@ -1696,15 +1689,15 @@
                 :aria-label="t('admin.accounts.proxyConcurrency')"
                 @blur="normalizeProxyPoolConcurrency(row)"
               />
-              <button
-                type="button"
+              <ElButton text
+                native-type="button"
                 class="flex h-10 w-10 items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 dark:hover:bg-red-900/20 dark:hover:text-red-400 dark:focus-visible:ring-offset-dark-800"
                 :aria-label="t('admin.accounts.removeProxy')"
                 :title="t('admin.accounts.removeProxy')"
                 @click="removeProxyPoolRow(row.key)"
               >
                 <Icon name="trash" size="sm" aria-hidden="true" />
-              </button>
+              </ElButton>
             </div>
           </div>
           <p v-else class="mt-4 py-2 text-center text-sm text-gray-500 dark:text-gray-400">
@@ -1729,19 +1722,19 @@
       <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <div>
           <label class="input-label">{{ t('admin.accounts.concurrency') }}</label>
-          <input v-model.number="form.concurrency" type="number" min="1" class="input"
+          <ElementInput v-model.number="form.concurrency" type="number" min="1" class="input"
             @input="form.concurrency = Math.max(1, form.concurrency || 1)" />
         </div>
         <div>
           <label class="input-label">{{ t('admin.accounts.loadFactor') }}</label>
-          <input v-model.number="form.load_factor" type="number" min="1"
+          <ElementInput v-model.number="form.load_factor" type="number" min="1"
             class="input" :placeholder="String(form.concurrency || 1)"
             @input="form.load_factor = (form.load_factor &amp;&amp; form.load_factor >= 1) ? form.load_factor : null" />
           <p class="input-hint">{{ t('admin.accounts.loadFactorHint') }}</p>
         </div>
         <div>
           <label class="input-label">{{ t('admin.accounts.priority') }}</label>
-          <input
+          <ElementInput
             v-model.number="form.priority"
             type="number"
             min="1"
@@ -1752,7 +1745,7 @@
         </div>
         <div>
           <label class="input-label">{{ t('admin.accounts.billingRateMultiplier') }}</label>
-          <input
+          <ElementInput
             v-model.number="form.rate_multiplier"
             type="number"
             min="0"
@@ -1793,14 +1786,14 @@
       </div>
       <div class="border-t border-gray-200 pt-4 dark:border-dark-600">
         <label class="input-label">{{ t('admin.accounts.expiresAt') }}</label>
-        <input v-model="expiresAtInput" type="datetime-local" class="input" />
+        <ElementInput v-model="expiresAtInput" type="datetime-local" class="input" />
         <div class="mt-2 flex gap-2">
-          <button type="button" class="btn btn-secondary btn-sm" @click="form.expires_at = getAccountExpiryTimestamp(1)">
+          <ElButton size="small" native-type="button" class="" @click="form.expires_at = getAccountExpiryTimestamp(1)">
             {{ t('payment.oneMonth') }}
-          </button>
-          <button type="button" class="btn btn-secondary btn-sm" @click="form.expires_at = getAccountExpiryTimestamp(12)">
+          </ElButton>
+          <ElButton size="small" native-type="button" class="" @click="form.expires_at = getAccountExpiryTimestamp(12)">
             {{ t('payment.oneYear') }}
-          </button>
+          </ElButton>
         </div>
         <p class="input-hint">
           {{ t('admin.accounts.expiresAtHint') }}
@@ -1820,8 +1813,8 @@
               {{ t('admin.accounts.openai.oauthPassthroughDesc') }}
             </p>
           </div>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             @click="openaiPassthroughEnabled = !openaiPassthroughEnabled"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -1834,7 +1827,7 @@
                 openaiPassthroughEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -1850,8 +1843,8 @@
               {{ t('admin.accounts.openai.flattenNamespacesDesc') }}
             </p>
           </div>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             data-testid="edit-openai-flatten-namespaces-toggle"
             @click="openaiFlattenNamespacesEnabled = !openaiFlattenNamespacesEnabled"
             :class="[
@@ -1865,7 +1858,7 @@
                 openaiFlattenNamespacesEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -1896,10 +1889,10 @@
           </div>
           <div class="border-t border-sky-100 bg-white/70 p-2 dark:border-sky-900/50 dark:bg-dark-800/70">
             <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <button
+              <ElButton text
                 v-for="option in codexImageToolOptions"
                 :key="option.value"
-                type="button"
+                native-type="button"
                 :data-testid="`codex-image-tool-${option.value}`"
                 @click="codexImageToolMode = option.value"
                 :class="[
@@ -1923,7 +1916,7 @@
                   <span class="block text-sm font-medium">{{ option.label }}</span>
                   <span class="mt-0.5 block text-xs leading-4 text-slate-500 dark:text-slate-400">{{ option.description }}</span>
                 </span>
-              </button>
+              </ElButton>
             </div>
           </div>
         </div>
@@ -1987,20 +1980,7 @@
         <div>
           <label class="input-label mb-2 block">{{ t('admin.accounts.openai.endpointCapabilities') }}</label>
           <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <label
-              v-for="option in openAIEndpointCapabilityOptions"
-              :key="option.value"
-              class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-dark-600"
-            >
-              <input
-                type="checkbox"
-                class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-500"
-                :data-testid="`openai-endpoint-capability-${option.value}`"
-                :checked="openAIEndpointCapabilities.includes(option.value)"
-                @change="toggleOpenAIEndpointCapability(option.value, $event)"
-              />
-              <span class="text-gray-700 dark:text-gray-200">{{ option.label }}</span>
-            </label>
+            <ElementCheckbox v-for="option in openAIEndpointCapabilityOptions" :key="option.value" :data-testid="`openai-endpoint-capability-${option.value}`" :checked="openAIEndpointCapabilities.includes(option.value)" @change="toggleOpenAIEndpointCapability(option.value, $event)" :class="[&quot;flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-dark-600&quot;,&quot;&quot;]"><span class="text-gray-700 dark:text-gray-200">{{ option.label }}</span></ElementCheckbox>
           </div>
           <p class="input-hint">{{ t('admin.accounts.openai.endpointCapabilitiesDesc') }}</p>
         </div>
@@ -2017,24 +1997,7 @@
             {{ t('admin.accounts.openai.imagesUrlToB64JsonDesc') }}
           </p>
         </div>
-        <button
-          type="button"
-          data-testid="openai-images-url-to-b64-json-toggle"
-          role="switch"
-          :aria-checked="openAIImagesUrlToB64JsonEnabled"
-          @click="openAIImagesUrlToB64JsonEnabled = !openAIImagesUrlToB64JsonEnabled"
-          :class="[
-            'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-            openAIImagesUrlToB64JsonEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
-          ]"
-        >
-          <span
-            :class="[
-              'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-              openAIImagesUrlToB64JsonEnabled ? 'translate-x-5' : 'translate-x-0'
-            ]"
-          />
-        </button>
+        <ElSwitch data-testid="openai-images-url-to-b64-json-toggle" :model-value="openAIImagesUrlToB64JsonEnabled" @change="openAIImagesUrlToB64JsonEnabled = !openAIImagesUrlToB64JsonEnabled" />
       </div>
 
       <div
@@ -2073,8 +2036,8 @@
               {{ t('admin.accounts.anthropic.apiKeyPassthroughDesc') }}
             </p>
           </div>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             @click="anthropicPassthroughEnabled = !anthropicPassthroughEnabled"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2087,7 +2050,7 @@
                 anthropicPassthroughEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -2102,10 +2065,10 @@
               {{ t('admin.accounts.anthropic.apiKeyAuthSchemeDesc') }}
             </p>
           </div>
-          <select v-model="anthropicAPIKeyAuthScheme" class="input w-52 text-sm">
-            <option value="x_api_key">{{ t('admin.accounts.anthropic.apiKeyAuthSchemeXApiKey') }}</option>
-            <option value="authorization_bearer">{{ t('admin.accounts.anthropic.apiKeyAuthSchemeBearer') }}</option>
-          </select>
+          <ElementSelect v-model="anthropicAPIKeyAuthScheme" class="input w-52 text-sm">
+            <ElOption :label="(t('admin.accounts.anthropic.apiKeyAuthSchemeXApiKey'))" value="x_api_key">{{ t('admin.accounts.anthropic.apiKeyAuthSchemeXApiKey') }}</ElOption>
+            <ElOption :label="(t('admin.accounts.anthropic.apiKeyAuthSchemeBearer'))" value="authorization_bearer">{{ t('admin.accounts.anthropic.apiKeyAuthSchemeBearer') }}</ElOption>
+          </ElementSelect>
         </div>
       </div>
 
@@ -2121,11 +2084,11 @@
               {{ t('admin.accounts.anthropic.webSearchEmulationDesc') }}
             </p>
           </div>
-          <select v-model="webSearchEmulationMode" class="input w-24 text-sm">
-            <option value="default">{{ t('admin.accounts.anthropic.webSearchDefault') }}</option>
-            <option value="enabled">{{ t('admin.accounts.anthropic.webSearchEnabled') }}</option>
-            <option value="disabled">{{ t('admin.accounts.anthropic.webSearchDisabled') }}</option>
-          </select>
+          <ElementSelect v-model="webSearchEmulationMode" class="input w-24 text-sm">
+            <ElOption :label="(t('admin.accounts.anthropic.webSearchDefault'))" value="default">{{ t('admin.accounts.anthropic.webSearchDefault') }}</ElOption>
+            <ElOption :label="(t('admin.accounts.anthropic.webSearchEnabled'))" value="enabled">{{ t('admin.accounts.anthropic.webSearchEnabled') }}</ElOption>
+            <ElOption :label="(t('admin.accounts.anthropic.webSearchDisabled'))" value="disabled">{{ t('admin.accounts.anthropic.webSearchDisabled') }}</ElOption>
+          </ElementSelect>
         </div>
       </div>
 
@@ -2244,24 +2207,7 @@
               {{ t('admin.accounts.openai.longContextBillingDesc') }}
             </p>
           </div>
-          <button
-            type="button"
-            data-testid="openai-long-context-billing-toggle"
-            role="switch"
-            :aria-checked="openAILongContextBillingEnabled"
-            @click="openAILongContextBillingEnabled = !openAILongContextBillingEnabled"
-            :class="[
-              'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-              openAILongContextBillingEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
-            ]"
-          >
-            <span
-              :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                openAILongContextBillingEnabled ? 'translate-x-5' : 'translate-x-0'
-              ]"
-            />
-          </button>
+          <ElSwitch data-testid="openai-long-context-billing-toggle" :model-value="openAILongContextBillingEnabled" @change="openAILongContextBillingEnabled = !openAILongContextBillingEnabled" />
         </div>
       </div>
 
@@ -2276,8 +2222,8 @@
               {{ t('admin.accounts.openai.codexCLIOnlyDesc') }}
             </p>
           </div>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             @click="codexCLIOnlyEnabled = !codexCLIOnlyEnabled"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2290,7 +2236,7 @@
                 codexCLIOnlyEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
         <div
           v-if="codexCLIOnlyEnabled"
@@ -2302,8 +2248,8 @@
               {{ t('admin.accounts.openai.codexCLIOnlyAppServerDesc') }}
             </p>
           </div>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             @click="codexCLIOnlyAppServerEnabled = !codexCLIOnlyAppServerEnabled"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2316,7 +2262,7 @@
                 codexCLIOnlyAppServerEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -2390,27 +2336,27 @@
               :key="getOpenAICompactModelMappingKey(mapping)"
               class="flex items-center gap-2"
             >
-              <input
+              <ElementInput
                 v-model="mapping.from"
                 type="text"
                 class="input flex-1"
                 :placeholder="t('admin.accounts.fromModel')"
               />
               <span class="text-gray-400">→</span>
-              <input
+              <ElementInput
                 v-model="mapping.to"
                 type="text"
                 class="input flex-1"
                 :placeholder="t('admin.accounts.toModel')"
               />
-              <button type="button" @click="removeOpenAICompactModelMapping(index)" class="text-red-500 hover:text-red-700">
+              <ElButton text native-type="button" @click="removeOpenAICompactModelMapping(index)" class="text-red-500 hover:text-red-700">
                 <Icon name="trash" size="sm" />
-              </button>
+              </ElButton>
             </div>
           </div>
-          <button type="button" @click="addOpenAICompactModelMapping" class="btn btn-secondary text-sm">
+          <ElButton native-type="button" @click="addOpenAICompactModelMapping" class="text-sm">
             + {{ t('admin.accounts.addMapping') }}
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -2424,8 +2370,8 @@
               {{ t('admin.accounts.autoPauseOnExpiredDesc') }}
             </p>
           </div>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             @click="autoPauseOnExpired = !autoPauseOnExpired"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2438,7 +2384,7 @@
                 autoPauseOnExpired ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -2449,8 +2395,8 @@
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <label class="input-label mb-0">{{ t('admin.accounts.autoPause5hDisabled') }}</label>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="autoPause5hDisabled = !autoPause5hDisabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2464,13 +2410,13 @@
                   autoPause5hDisabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
           <p class="input-hint">{{ t('admin.accounts.autoPauseDisabledHint') }}</p>
         </div>
         <div>
           <label class="input-label">{{ t('admin.accounts.autoPause5hThreshold') }}</label>
-          <input
+          <ElementInput
             v-model.number="autoPause5hThreshold"
             type="number"
             min="0"
@@ -2485,8 +2431,8 @@
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <label class="input-label mb-0">{{ t('admin.accounts.autoPause7dDisabled') }}</label>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="autoPause7dDisabled = !autoPause7dDisabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2500,13 +2446,13 @@
                   autoPause7dDisabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
           <p class="input-hint">{{ t('admin.accounts.autoPauseDisabledHint') }}</p>
         </div>
         <div>
           <label class="input-label">{{ t('admin.accounts.autoPause7dThreshold') }}</label>
-          <input
+          <ElementInput
             v-model.number="autoPause7dThreshold"
             type="number"
             min="0"
@@ -2532,8 +2478,8 @@
               {{ t('admin.accounts.autoResetCredit.hint') }}
             </p>
           </div>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             data-testid="auto-reset-credit-enabled"
             @click="autoResetCreditEnabled = !autoResetCreditEnabled"
             :class="[
@@ -2547,12 +2493,12 @@
                 autoResetCreditEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
             <label class="input-label">{{ t('admin.accounts.autoResetCredit.threshold5h') }}</label>
-            <input
+            <ElementInput
               v-model.number="autoResetCredit5hThreshold"
               type="number"
               min="0.1"
@@ -2565,7 +2511,7 @@
           </div>
           <div>
             <label class="input-label">{{ t('admin.accounts.autoResetCredit.threshold7d') }}</label>
-            <input
+            <ElementInput
               v-model.number="autoResetCredit7dThreshold"
               type="number"
               min="0.1"
@@ -2601,8 +2547,8 @@
                 {{ t('admin.accounts.quotaControl.windowCost.hint') }}
               </p>
             </div>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="windowCostEnabled = !windowCostEnabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2615,7 +2561,7 @@
                   windowCostEnabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
 
           <div v-if="windowCostEnabled" class="grid grid-cols-2 gap-4">
@@ -2623,7 +2569,7 @@
               <label class="input-label">{{ t('admin.accounts.quotaControl.windowCost.limit') }}</label>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
-                <input
+                <ElementInput
                   v-model.number="windowCostLimit"
                   type="number"
                   min="0"
@@ -2638,7 +2584,7 @@
               <label class="input-label">{{ t('admin.accounts.quotaControl.windowCost.stickyReserve') }}</label>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
-                <input
+                <ElementInput
                   v-model.number="windowCostStickyReserve"
                   type="number"
                   min="0"
@@ -2661,8 +2607,8 @@
                 {{ t('admin.accounts.quotaControl.sessionLimit.hint') }}
               </p>
             </div>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="sessionLimitEnabled = !sessionLimitEnabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2675,13 +2621,13 @@
                   sessionLimitEnabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
 
           <div v-if="sessionLimitEnabled" class="grid grid-cols-2 gap-4">
             <div>
               <label class="input-label">{{ t('admin.accounts.quotaControl.sessionLimit.maxSessions') }}</label>
-              <input
+              <ElementInput
                 v-model.number="maxSessions"
                 type="number"
                 min="1"
@@ -2694,7 +2640,7 @@
             <div>
               <label class="input-label">{{ t('admin.accounts.quotaControl.sessionLimit.idleTimeout') }}</label>
               <div class="relative">
-                <input
+                <ElementInput
                   v-model.number="sessionIdleTimeout"
                   type="number"
                   min="1"
@@ -2718,8 +2664,8 @@
                 {{ t('admin.accounts.quotaControl.rpmLimit.hint') }}
               </p>
             </div>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="rpmLimitEnabled = !rpmLimitEnabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2732,13 +2678,13 @@
                   rpmLimitEnabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
 
           <div v-if="rpmLimitEnabled" class="space-y-4">
             <div>
               <label class="input-label">{{ t('admin.accounts.quotaControl.rpmLimit.baseRpm') }}</label>
-              <input
+              <ElementInput
                 v-model.number="baseRpm"
                 type="number"
                 min="1"
@@ -2753,8 +2699,8 @@
             <div>
               <label class="input-label">{{ t('admin.accounts.quotaControl.rpmLimit.strategy') }}</label>
               <div class="flex gap-2">
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   @click="rpmStrategy = 'tiered'"
                   :class="[
                     'flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all',
@@ -2767,9 +2713,9 @@
                     <div>{{ t('admin.accounts.quotaControl.rpmLimit.strategyTiered') }}</div>
                     <div class="mt-0.5 text-[10px] opacity-70">{{ t('admin.accounts.quotaControl.rpmLimit.strategyTieredHint') }}</div>
                   </div>
-                </button>
-                <button
-                  type="button"
+                </ElButton>
+                <ElButton text
+                  native-type="button"
                   @click="rpmStrategy = 'sticky_exempt'"
                   :class="[
                     'flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all',
@@ -2782,13 +2728,13 @@
                     <div>{{ t('admin.accounts.quotaControl.rpmLimit.strategyStickyExempt') }}</div>
                     <div class="mt-0.5 text-[10px] opacity-70">{{ t('admin.accounts.quotaControl.rpmLimit.strategyStickyExemptHint') }}</div>
                   </div>
-                </button>
+                </ElButton>
               </div>
             </div>
 
             <div v-if="rpmStrategy === 'tiered'">
               <label class="input-label">{{ t('admin.accounts.quotaControl.rpmLimit.stickyBuffer') }}</label>
-              <input
+              <ElementInput
                 v-model.number="rpmStickyBuffer"
                 type="number"
                 min="1"
@@ -2808,7 +2754,7 @@
               {{ t('admin.accounts.quotaControl.rpmLimit.userMsgQueueHint') }}
             </p>
             <div class="flex space-x-2">
-              <button type="button" v-for="opt in umqModeOptions" :key="opt.value"
+              <ElButton text native-type="button" v-for="opt in umqModeOptions" :key="opt.value"
                 @click="userMsgQueueMode = opt.value"
                 :class="[
                   'px-3 py-1.5 text-sm rounded-md border transition-colors',
@@ -2817,7 +2763,7 @@
                     : 'bg-white dark:bg-dark-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-dark-500 hover:bg-gray-50 dark:hover:bg-dark-600'
                 ]">
                 {{ opt.label }}
-              </button>
+              </ElButton>
             </div>
           </div>
         </div>
@@ -2831,8 +2777,8 @@
                 {{ t('admin.accounts.quotaControl.tlsFingerprint.hint') }}
               </p>
             </div>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="tlsFingerprintEnabled = !tlsFingerprintEnabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2845,15 +2791,15 @@
                   tlsFingerprintEnabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
           <!-- Profile selector -->
           <div v-if="tlsFingerprintEnabled" class="mt-3">
-            <select v-model="tlsFingerprintProfileId" class="input">
-              <option :value="null">{{ t('admin.accounts.quotaControl.tlsFingerprint.defaultProfile') }}</option>
-              <option v-if="tlsFingerprintProfiles.length > 0" :value="-1">{{ t('admin.accounts.quotaControl.tlsFingerprint.randomProfile') }}</option>
-              <option v-for="p in tlsFingerprintProfiles" :key="p.id" :value="p.id">{{ p.name }}</option>
-            </select>
+            <ElementSelect v-model="tlsFingerprintProfileId" class="input">
+              <ElOption :label="(t('admin.accounts.quotaControl.tlsFingerprint.defaultProfile'))" :value="null">{{ t('admin.accounts.quotaControl.tlsFingerprint.defaultProfile') }}</ElOption>
+              <ElOption :label="(t('admin.accounts.quotaControl.tlsFingerprint.randomProfile'))" v-if="tlsFingerprintProfiles.length > 0" :value="-1">{{ t('admin.accounts.quotaControl.tlsFingerprint.randomProfile') }}</ElOption>
+              <ElOption :label="(p.name)" v-for="p in tlsFingerprintProfiles" :key="p.id" :value="p.id">{{ p.name }}</ElOption>
+            </ElementSelect>
           </div>
         </div>
 
@@ -2866,8 +2812,8 @@
                 {{ t('admin.accounts.quotaControl.sessionIdMasking.hint') }}
               </p>
             </div>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="sessionIdMaskingEnabled = !sessionIdMaskingEnabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2880,7 +2826,7 @@
                   sessionIdMaskingEnabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
         </div>
 
@@ -2893,8 +2839,8 @@
                 {{ t('admin.accounts.quotaControl.cacheTTLOverride.hint') }}
               </p>
             </div>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="cacheTTLOverrideEnabled = !cacheTTLOverrideEnabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2907,17 +2853,17 @@
                   cacheTTLOverrideEnabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
           <div v-if="cacheTTLOverrideEnabled" class="mt-3">
             <label class="input-label text-xs">{{ t('admin.accounts.quotaControl.cacheTTLOverride.target') }}</label>
-            <select
+            <ElementSelect
               v-model="cacheTTLOverrideTarget"
               class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-dark-500 dark:bg-dark-700 dark:text-white"
             >
-              <option value="5m">5m</option>
-              <option value="1h">1h</option>
-            </select>
+              <ElOption :label="&quot;5m&quot;" value="5m">5m</ElOption>
+              <ElOption :label="&quot;1h&quot;" value="1h">1h</ElOption>
+            </ElementSelect>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {{ t('admin.accounts.quotaControl.cacheTTLOverride.targetHint') }}
             </p>
@@ -2933,8 +2879,8 @@
                 {{ t('admin.accounts.quotaControl.customBaseUrl.hint') }}
               </p>
             </div>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="customBaseUrlEnabled = !customBaseUrlEnabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -2947,10 +2893,10 @@
                   customBaseUrlEnabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
           <div v-if="customBaseUrlEnabled" class="mt-3">
-            <input
+            <ElementInput
               v-model="customBaseUrl"
               type="text"
               class="input"
@@ -2968,60 +2914,30 @@
 
         <!-- Mixed Scheduling (only for antigravity accounts, read-only in edit mode) -->
         <div v-if="account?.platform === 'antigravity'" class="flex items-center gap-2">
-          <label class="flex cursor-not-allowed items-center gap-2 opacity-60">
-            <input
-              type="checkbox"
-              v-model="mixedScheduling"
-              disabled
-              class="h-4 w-4 cursor-not-allowed rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-dark-500"
-            />
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <ElementCheckbox v-model="mixedScheduling" disabled :class="[&quot;flex cursor-not-allowed items-center gap-2 opacity-60&quot;,&quot;cursor-not-allowed&quot;]"><span class="text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ t('admin.accounts.mixedScheduling') }}
-            </span>
-          </label>
-          <div class="group relative">
-            <span
+            </span></ElementCheckbox>
+          <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative" tabindex="0"><span
               class="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full bg-gray-200 text-xs text-gray-500 hover:bg-gray-300 dark:bg-dark-600 dark:text-gray-400 dark:hover:bg-dark-500"
             >
               ?
-            </span>
-            <!-- Tooltip（向下显示避免被弹窗裁剪） -->
-            <div
-              class="pointer-events-none absolute left-0 top-full z-[100] mt-1.5 w-72 rounded bg-gray-900 px-3 py-2 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-gray-700"
-            >
-              {{ t('admin.accounts.mixedSchedulingTooltip') }}
+            </span><!-- Tooltip（向下显示避免被弹窗裁剪） --></div></template><div class="w-72 rounded bg-gray-900 px-3 py-2 text-xs text-white transition-opacity dark:bg-gray-700">{{ t('admin.accounts.mixedSchedulingTooltip') }}
               <div
                 class="absolute bottom-full left-3 border-4 border-transparent border-b-gray-900 dark:border-b-gray-700"
-              ></div>
-            </div>
-          </div>
+              ></div></div></ElPopover>
         </div>
         <div v-if="account?.platform === 'antigravity'" class="mt-3 flex items-center gap-2">
-          <label class="flex cursor-pointer items-center gap-2">
-            <input
-              type="checkbox"
-              v-model="allowOverages"
-              class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-dark-500"
-            />
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <ElementCheckbox v-model="allowOverages" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ t('admin.accounts.allowOverages') }}
-            </span>
-          </label>
-          <div class="group relative">
-            <span
+            </span></ElementCheckbox>
+          <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative" tabindex="0"><span
               class="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full bg-gray-200 text-xs text-gray-500 hover:bg-gray-300 dark:bg-dark-600 dark:text-gray-400 dark:hover:bg-dark-500"
             >
               ?
-            </span>
-            <div
-              class="pointer-events-none absolute left-0 top-full z-[100] mt-1.5 w-72 rounded bg-gray-900 px-3 py-2 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-gray-700"
-            >
-              {{ t('admin.accounts.allowOveragesTooltip') }}
+            </span></div></template><div class="w-72 rounded bg-gray-900 px-3 py-2 text-xs text-white transition-opacity dark:bg-gray-700">{{ t('admin.accounts.allowOveragesTooltip') }}
               <div
                 class="absolute bottom-full left-3 border-4 border-transparent border-b-gray-900 dark:border-b-gray-700"
-              ></div>
-            </div>
-          </div>
+              ></div></div></ElPopover>
         </div>
       </div>
 
@@ -3034,18 +2950,18 @@
         data-tour="account-form-groups"
       />
 
-    </form>
+    </ElForm>
 
     <template #footer>
       <div v-if="account" class="flex justify-end gap-3">
-        <button @click="handleClose" type="button" class="btn btn-secondary">
+        <ElButton @click="handleClose" native-type="button" class="">
           {{ t('common.cancel') }}
-        </button>
-        <button
-          type="submit"
+        </ElButton>
+        <ElButton type="primary"
+          native-type="submit"
           form="edit-account-form"
           :disabled="submitting"
-          class="btn btn-primary"
+          class=""
           data-tour="account-form-submit"
         >
           <svg
@@ -3069,7 +2985,7 @@
             ></path>
           </svg>
           {{ submitting ? t('admin.accounts.updating') : t('common.update') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

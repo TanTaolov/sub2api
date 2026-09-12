@@ -4,7 +4,7 @@
       <UsageStatsCards :stats="usageStats" />
       <!-- Charts Section -->
       <div class="space-y-4">
-        <div class="card p-4">
+        <ElCard shadow="never" class="element-surface-card p-4">
           <div class="flex flex-wrap items-center gap-4">
             <div class="flex items-center gap-2">
               <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('admin.dashboard.timeRange') }}:</span>
@@ -21,7 +21,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </ElCard>
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <ModelDistributionChart
             v-model:source="modelDistributionSource"
@@ -65,43 +65,23 @@
         </div>
       </div>
       <!-- 明细区：tab 栏 + 筛选 + 内容收进同一张卡片，消除割裂感 -->
-      <div class="card">
-        <div class="flex flex-wrap items-center border-b border-gray-200 px-2 dark:border-dark-700 sm:px-4">
-          <button
-            v-for="tab in detailTabs"
-            :key="tab.key"
-            type="button"
-            data-testid="usage-detail-tab"
-            class="-mb-px inline-flex items-center gap-1.5 border-b-2 px-3 py-3 text-sm font-medium transition-colors sm:px-4"
-            :class="activeTab === tab.key
-              ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-dark-500 dark:hover:text-gray-200'"
-            @click="switchTab(tab.key)"
-          >
-            <Icon :name="tab.icon" size="sm" />
-            {{ tab.label }}
-          </button>
-        </div>
+      <ElCard shadow="never" class="element-surface-card">
+        <ElTabs :model-value="activeTab" @update:model-value="value => switchTab(value as DetailTab)" class="element-page-tabs px-4"><ElTabPane v-for="tab in detailTabs" :key="tab.key" :name="tab.key"><template #label><Icon :name="tab.icon" size="sm" />
+            {{ tab.label }}</template></ElTabPane></ElTabs>
 
         <UsageFilters v-model="filters" ref="usageFiltersRef" flat :mode="activeTab" class="border-b border-gray-100 dark:border-dark-700/50" :start-date="startDate" :end-date="endDate" :exporting="exporting" :model-options="modelNameOptions" @change="applyFilters" @refresh="refreshData" @reset="resetFilters" @cleanup="openCleanupDialog" @export="exportToExcel">
           <template #after-reset>
-            <div v-if="activeTab !== 'ranking'" class="relative" ref="columnDropdownRef">
-              <button
+            <ElementFloatingPanel v-if="activeTab !== 'ranking'" :visible="Boolean(showColumnDropdown)"  width="192" @close="showColumnDropdown = false"><template #reference><div class="relative" ref="columnDropdownRef"><ElButton
                 data-testid="usage-column-settings"
                 @click="showColumnDropdown = !showColumnDropdown"
-                class="btn btn-secondary px-2 md:px-3"
+                class="px-2 md:px-3"
                 :title="t('admin.users.columnSettings')"
               >
                 <svg class="h-4 w-4 md:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" />
                 </svg>
                 <span class="hidden md:inline">{{ t('admin.users.columnSettings') }}</span>
-              </button>
-              <div
-                v-if="showColumnDropdown"
-                class="absolute right-0 top-full z-50 mt-1 max-h-80 w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-dark-600 dark:bg-dark-800"
-              >
-                <button
+              </ElButton></div></template><div  class="max-h-80 overflow-y-auto py-1"><ElButton text
                   v-for="col in currentToggleableColumns"
                   :key="col.key"
                   :data-testid="`usage-column-toggle-${col.key}`"
@@ -116,9 +96,7 @@
                     class="text-primary-500"
                     :stroke-width="2"
                   />
-                </button>
-              </div>
-            </div>
+                </ElButton></div></ElementFloatingPanel>
           </template>
         </UsageFilters>
 
@@ -162,7 +140,7 @@
             @select-user="handleRankingSelectUser"
           />
         </div>
-      </div>
+      </ElCard>
       <OpsErrorDetailModal v-model:show="showErrorModal" :error-id="selectedErrorId" :error-type="'request'" />
     </div>
   </AppLayout>

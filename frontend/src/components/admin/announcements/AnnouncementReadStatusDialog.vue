@@ -8,7 +8,7 @@
     <div class="space-y-4">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex-1">
-          <input
+          <ElementInput
             v-model="search"
             type="text"
             class="input"
@@ -16,9 +16,9 @@
             @input="handleSearch"
           />
         </div>
-        <button @click="load" :disabled="loading" class="btn btn-secondary" :title="t('common.refresh')">
+        <ElButton @click="load" :disabled="loading" class="" :title="t('common.refresh')">
           <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
-        </button>
+        </ElButton>
       </div>
 
       <DataTable
@@ -63,7 +63,7 @@
 
     <template #footer>
       <div class="flex justify-end">
-        <button type="button" class="btn btn-secondary" @click="handleClose">{{ t('common.close') }}</button>
+        <ElButton native-type="button" class="" @click="handleClose">{{ t('common.close') }}</ElButton>
       </div>
     </template>
   </BaseDialog>

@@ -33,30 +33,24 @@
 
       <template #actions>
         <div class="flex justify-end gap-3">
-          <button
+          <ElButton
             @click="loadApiKeys"
             :disabled="loading"
-            class="btn btn-secondary"
+            class=""
             :title="t('common.refresh')"
           >
             <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
-          </button>
-          <div class="relative" ref="columnDropdownRef">
-            <button
+          </ElButton>
+          <ElementFloatingPanel  :visible="Boolean(showColumnDropdown)"  width="192" @close="showColumnDropdown = false"><template #reference><div class="relative" ref="columnDropdownRef"><ElButton
               @click="showColumnDropdown = !showColumnDropdown"
-              class="btn btn-secondary px-2 md:px-3"
+              class="px-2 md:px-3"
               :title="t('keys.columnSettings')"
             >
               <svg class="h-4 w-4 md:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" />
               </svg>
               <span class="hidden md:inline">{{ t('keys.columnSettings') }}</span>
-            </button>
-            <div
-              v-if="showColumnDropdown"
-              class="absolute right-0 top-full z-50 mt-1 max-h-80 w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-dark-600 dark:bg-dark-800"
-            >
-              <button
+            </ElButton></div></template><div  class="max-h-80 overflow-y-auto py-1"><ElButton text
                 v-for="col in toggleableColumns"
                 :key="col.key"
                 @click="toggleColumn(col.key)"
@@ -70,13 +64,11 @@
                   class="text-primary-500"
                   :stroke-width="2"
                 />
-              </button>
-            </div>
-          </div>
-          <button @click="showCreateModal = true" class="btn btn-primary" data-tour="keys-create-btn">
+              </ElButton></div></ElementFloatingPanel>
+          <ElButton type="primary" @click="showCreateModal = true" class="" data-tour="keys-create-btn">
             <Icon name="plus" size="md" class="mr-2" />
             {{ t('keys.createKey') }}
-          </button>
+          </ElButton>
         </div>
       </template>
 
@@ -99,7 +91,7 @@
               <code class="code text-xs">
                 {{ maskApiKey(value) }}
               </code>
-              <button
+              <ElButton text
                 @click="copyToClipboard(value, row.id)"
                 class="rounded-lg p-1 transition-colors hover:bg-gray-100 dark:hover:bg-dark-700"
                 :class="
@@ -116,7 +108,7 @@
                   :stroke-width="2"
                 />
                 <Icon v-else name="clipboard" size="sm" />
-              </button>
+              </ElButton>
             </div>
           </template>
 
@@ -135,7 +127,7 @@
 
           <template #cell-group="{ row }">
             <div class="group/dropdown relative">
-              <button
+              <ElButton text
                 :ref="(el) => setGroupButtonRef(row.id, el)"
                 @click="openGroupSelector(row)"
                 class="-mx-2 -my-1 flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 transition-all duration-200 hover:bg-gray-100 dark:hover:bg-dark-700"
@@ -170,7 +162,7 @@
                     d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
                   />
                 </svg>
-              </button>
+              </ElButton>
             </div>
           </template>
 
@@ -316,7 +308,7 @@
                 </div>
               </div>
               <!-- Reset button -->
-              <button
+              <ElButton text
                 v-if="row.usage_5h > 0 || row.usage_1d > 0 || row.usage_7d > 0"
                 @click.stop="confirmResetRateLimitFromTable(row)"
                 class="mt-0.5 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary-600 dark:hover:bg-dark-700 dark:hover:text-primary-400"
@@ -324,7 +316,7 @@
               >
                 <Icon name="refresh" size="xs" />
                 {{ t('keys.resetUsage') }}
-              </button>
+              </ElButton>
             </div>
             <span v-else class="text-sm text-gray-400 dark:text-dark-500">-</span>
           </template>
@@ -372,24 +364,24 @@
           <template #cell-actions="{ row }">
             <div class="flex items-center gap-1">
               <!-- Use Key Button -->
-              <button
+              <ElButton text
                 @click="openUseKeyModal(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-400"
               >
                 <Icon name="terminal" size="sm" />
                 <span class="text-xs">{{ t('keys.useKey') }}</span>
-              </button>
+              </ElButton>
               <!-- Import to CC Switch Button -->
-              <button
+              <ElButton text
                 v-if="!publicSettings?.hide_ccs_import_button"
                 @click="importToCcswitch(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
               >
                 <Icon name="upload" size="sm" />
                 <span class="text-xs">{{ t('keys.importToCcSwitch') }}</span>
-              </button>
+              </ElButton>
               <!-- Toggle Status Button -->
-              <button
+              <ElButton text
                 @click="toggleKeyStatus(row)"
                 :class="[
                   'flex flex-col items-center gap-0.5 rounded-lg p-1.5 transition-colors',
@@ -401,23 +393,23 @@
                 <Icon v-if="row.status === 'active'" name="ban" size="sm" />
                 <Icon v-else name="checkCircle" size="sm" />
                 <span class="text-xs">{{ row.status === 'active' ? t('keys.disable') : t('keys.enable') }}</span>
-              </button>
+              </ElButton>
               <!-- Edit Button -->
-              <button
+              <ElButton text
                 @click="editKey(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary-600 dark:hover:bg-dark-700 dark:hover:text-primary-400"
               >
                 <Icon name="edit" size="sm" />
                 <span class="text-xs">{{ t('common.edit') }}</span>
-              </button>
+              </ElButton>
               <!-- Delete Button -->
-              <button
+              <ElButton text
                 @click="confirmDelete(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
               >
                 <Icon name="trash" size="sm" />
                 <span class="text-xs">{{ t('common.delete') }}</span>
-              </button>
+              </ElButton>
             </div>
           </template>
 
@@ -451,10 +443,10 @@
       width="normal"
       @close="closeModals"
     >
-      <form id="key-form" @submit.prevent="handleSubmit" class="space-y-5">
+      <ElForm id="key-form" @submit.prevent="handleSubmit" class="space-y-5">
         <div>
           <label class="input-label">{{ t('keys.nameLabel') }}</label>
-          <input
+          <ElementInput
             v-model="formData.name"
             type="text"
             required
@@ -511,8 +503,8 @@
         <div v-if="!showEditModal" class="space-y-3">
           <div class="flex items-center justify-between">
             <label class="input-label mb-0">{{ t('keys.customKeyLabel') }}</label>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="formData.use_custom_key = !formData.use_custom_key"
               :class="[
                 'relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
@@ -525,10 +517,10 @@
                   formData.use_custom_key ? 'translate-x-4' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
           <div v-if="formData.use_custom_key">
-            <input
+            <ElementInput
               v-model="formData.custom_key"
               type="text"
               class="input font-mono"
@@ -553,8 +545,8 @@
         <div class="space-y-3">
           <div class="flex items-center justify-between">
             <label class="input-label mb-0">{{ t('keys.ipRestriction') }}</label>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="formData.enable_ip_restriction = !formData.enable_ip_restriction"
               :class="[
                 'relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
@@ -567,15 +559,15 @@
                   formData.enable_ip_restriction ? 'translate-x-4' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
 
           <div v-if="formData.enable_ip_restriction" class="space-y-4 pt-2">
             <div>
               <label class="input-label">{{ t('keys.ipWhitelist') }}</label>
-              <textarea
+              <ElementInput type="textarea"
                 v-model="formData.ip_whitelist"
-                rows="3"
+                :rows="3"
                 class="input font-mono text-sm"
                 :placeholder="t('keys.ipWhitelistPlaceholder')"
               />
@@ -584,9 +576,9 @@
 
             <div>
               <label class="input-label">{{ t('keys.ipBlacklist') }}</label>
-              <textarea
+              <ElementInput type="textarea"
                 v-model="formData.ip_blacklist"
-                rows="3"
+                :rows="3"
                 class="input font-mono text-sm"
                 :placeholder="t('keys.ipBlacklistPlaceholder')"
               />
@@ -623,7 +615,7 @@
             <div>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                <input
+                <ElementInput
                   v-model.number="formData.quota"
                   type="number"
                   step="0.01"
@@ -648,14 +640,14 @@
                     ${{ selectedKey.quota?.toFixed(2) || '0.00' }}
                   </span>
                 </div>
-                <button
-                  type="button"
+                <ElButton
+                  native-type="button"
                   @click="confirmResetQuota"
-                  class="btn btn-secondary text-sm"
+                  class="text-sm"
                   :title="t('keys.resetQuotaUsed')"
                 >
                   {{ t('keys.reset') }}
-                </button>
+                </ElButton>
               </div>
             </div>
           </div>
@@ -665,8 +657,8 @@
         <div class="space-y-3">
           <div class="flex items-center justify-between">
             <label class="input-label mb-0">{{ t('keys.rateLimitSection') }}</label>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="formData.enable_rate_limit = !formData.enable_rate_limit"
               :class="[
                 'relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
@@ -679,7 +671,7 @@
                   formData.enable_rate_limit ? 'translate-x-4' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
 
           <div v-if="formData.enable_rate_limit" class="space-y-4 pt-2">
@@ -689,7 +681,7 @@
               <label class="input-label">{{ t('keys.rateLimit5h') }}</label>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                <input
+                <ElementInput
                   v-model.number="formData.rate_limit_5h"
                   type="number"
                   step="0.01"
@@ -735,7 +727,7 @@
               <label class="input-label">{{ t('keys.rateLimit1d') }}</label>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                <input
+                <ElementInput
                   v-model.number="formData.rate_limit_1d"
                   type="number"
                   step="0.01"
@@ -781,7 +773,7 @@
               <label class="input-label">{{ t('keys.rateLimit7d') }}</label>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                <input
+                <ElementInput
                   v-model.number="formData.rate_limit_7d"
                   type="number"
                   step="0.01"
@@ -824,13 +816,13 @@
 
             <!-- Reset Rate Limit button (edit mode only) -->
             <div v-if="showEditModal && selectedKey && (selectedKey.rate_limit_5h > 0 || selectedKey.rate_limit_1d > 0 || selectedKey.rate_limit_7d > 0)">
-              <button
-                type="button"
+              <ElButton
+                native-type="button"
                 @click="confirmResetRateLimit"
-                class="btn btn-secondary text-sm"
+                class="text-sm"
               >
                 {{ t('keys.resetRateLimitUsage') }}
-              </button>
+              </ElButton>
             </div>
           </div>
         </div>
@@ -839,8 +831,8 @@
         <div class="space-y-3">
           <div class="flex items-center justify-between">
             <label class="input-label mb-0">{{ t('keys.expiration') }}</label>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="formData.enable_expiration = !formData.enable_expiration"
               :class="[
                 'relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
@@ -853,16 +845,16 @@
                   formData.enable_expiration ? 'translate-x-4' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
 
           <div v-if="formData.enable_expiration" class="space-y-4 pt-2">
             <!-- Quick select buttons (for both create and edit mode) -->
             <div class="flex flex-wrap gap-2">
-              <button
+              <ElButton text
                 v-for="days in ['7', '30', '90']"
                 :key="days"
-                type="button"
+                native-type="button"
                 @click="setExpirationDays(parseInt(days))"
                 :class="[
                   'rounded-lg px-3 py-1.5 text-sm transition-colors',
@@ -872,9 +864,9 @@
                 ]"
               >
                 {{ showEditModal ? t('keys.extendDays', { days }) : t('keys.expiresInDays', { days }) }}
-              </button>
-              <button
-                type="button"
+              </ElButton>
+              <ElButton text
+                native-type="button"
                 @click="formData.expiration_preset = 'custom'"
                 :class="[
                   'rounded-lg px-3 py-1.5 text-sm transition-colors',
@@ -884,13 +876,13 @@
                 ]"
               >
                 {{ t('keys.customDate') }}
-              </button>
+              </ElButton>
             </div>
 
             <!-- Date picker (always show for precise adjustment) -->
             <div>
               <label class="input-label">{{ t('keys.expirationDate') }}</label>
-              <input
+              <ElementInput
                 v-model="formData.expiration_date"
                 type="datetime-local"
                 class="input"
@@ -907,17 +899,17 @@
             </div>
           </div>
         </div>
-      </form>
+      </ElForm>
       <template #footer>
         <div class="flex justify-end gap-3">
-          <button @click="closeModals" type="button" class="btn btn-secondary">
+          <ElButton @click="closeModals" native-type="button" class="">
             {{ t('common.cancel') }}
-          </button>
-          <button
+          </ElButton>
+          <ElButton type="primary"
             form="key-form"
-            type="submit"
+            native-type="submit"
             :disabled="submitting"
-            class="btn btn-primary"
+            class=""
             data-tour="key-form-submit"
           >
             <svg
@@ -947,7 +939,7 @@
                   ? t('common.update')
                   : t('common.create')
             }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>
@@ -1010,7 +1002,7 @@
           {{ t('keys.ccsClientSelect.description') }}
 	        </p>
 	        <div class="grid grid-cols-2 gap-3">
-	          <button
+	          <ElButton text
 	            @click="handleCcsClientSelect('claude')"
 	            class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-gray-200 dark:border-dark-600 hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all"
 	          >
@@ -1021,8 +1013,8 @@
 	            <span class="text-xs text-gray-500 dark:text-gray-400">{{
 	              t('keys.ccsClientSelect.claudeCodeDesc')
 	            }}</span>
-	          </button>
-	          <button
+	          </ElButton>
+	          <ElButton text
 	            @click="handleCcsClientSelect('gemini')"
 	            class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-gray-200 dark:border-dark-600 hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all"
 	          >
@@ -1033,38 +1025,25 @@
 	            <span class="text-xs text-gray-500 dark:text-gray-400">{{
 	              t('keys.ccsClientSelect.geminiCliDesc')
 	            }}</span>
-	          </button>
+	          </ElButton>
 	        </div>
 	      </div>
       <template #footer>
         <div class="flex justify-end">
-          <button @click="closeCcsClientSelect" class="btn btn-secondary">
+          <ElButton @click="closeCcsClientSelect" class="">
             {{ t('common.cancel') }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>
 
     <!-- Group Selector Dropdown (Teleported to body to avoid overflow clipping) -->
-    <Teleport to="body">
-      <div
-        v-if="groupSelectorKeyId !== null && dropdownPosition"
-        ref="dropdownRef"
-        class="animate-in fade-in slide-in-from-top-2 fixed z-[100000020] w-max max-w-[calc(100vw-16px)] overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black/5 duration-200 sm:min-w-[380px] dark:bg-dark-800 dark:ring-white/10"
-        style="pointer-events: auto !important;"
-        :style="{
-          top: dropdownPosition.top !== undefined ? dropdownPosition.top + 'px' : undefined,
-          bottom: dropdownPosition.bottom !== undefined ? dropdownPosition.bottom + 'px' : undefined,
-          left: dropdownPosition.left + 'px'
-        }"
-      >
-        <!-- Search box -->
-        <div class="border-b border-gray-100 p-2 dark:border-dark-700">
+    <ElementFloatingPanel :visible="Boolean(groupSelectorKeyId !== null && dropdownPosition)" :anchor="groupButtonRefs.get(groupSelectorKeyId!)" width="380" :interactive="true" @close="groupSelectorKeyId = null"><div ref="dropdownRef"><!-- Search box --><div class="border-b border-gray-100 p-2 dark:border-dark-700">
           <div class="relative">
             <svg class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input
+            <ElementInput
               v-model="groupSearchQuery"
               type="text"
               class="w-full rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-8 pr-3 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-primary-300 focus:ring-1 focus:ring-primary-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white dark:placeholder-gray-500 dark:focus:border-primary-600 dark:focus:ring-primary-600"
@@ -1072,10 +1051,8 @@
               @click.stop
             />
           </div>
-        </div>
-        <!-- Group list -->
-        <div class="max-h-80 overflow-y-auto p-1.5">
-          <button
+        </div><!-- Group list --><div class="max-h-80 overflow-y-auto p-1.5">
+          <ElButton text
             v-for="option in filteredGroupOptions"
             :key="option.value ?? 'null'"
             @click="changeGroup(selectedKeyForGroup!, option.value)"
@@ -1105,18 +1082,17 @@
                 (!selectedKeyForGroup?.group_id && option.value === null)
               "
             />
-          </button>
+          </ElButton>
           <!-- Empty state when search has no results -->
           <div v-if="filteredGroupOptions.length === 0" class="py-4 text-center text-sm text-gray-400 dark:text-gray-500">
             {{ t('keys.noGroupFound') }}
           </div>
-        </div>
-      </div>
-    </Teleport>
+        </div></div></ElementFloatingPanel>
   </AppLayout>
 </template>
 
 <script setup lang="ts">
+import { resolveControlElement } from '@/utils/elementRef'
 	import { ref, reactive, computed, onMounted, onUnmounted, type ComponentPublicInstance } from 'vue'
 	import { useI18n } from 'vue-i18n'
 	import { useAppStore } from '@/stores/app'
@@ -1320,8 +1296,9 @@ const selectedKeyForGroup = computed(() => {
 })
 
 const setGroupButtonRef = (keyId: number, el: Element | ComponentPublicInstance | null) => {
-  if (el instanceof HTMLElement) {
-    groupButtonRefs.value.set(keyId, el)
+  const element = resolveControlElement(el)
+  if (element) {
+    groupButtonRefs.value.set(keyId, element)
   } else {
     groupButtonRefs.value.delete(keyId)
   }

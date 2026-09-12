@@ -9,15 +9,15 @@
         :class="getPlatformTagClass(props.platform || '')"
       >
         {{ model }}
-        <button
-          type="button"
+        <ElButton text
+          native-type="button"
           @click="removeModel(idx)"
           class="ml-0.5 rounded-full p-0.5 hover:bg-primary-200 dark:hover:bg-primary-800"
         >
           <Icon name="x" size="xs" />
-        </button>
+        </ElButton>
       </span>
-      <input
+      <ElementInput
         ref="inputRef"
         v-model="inputValue"
         type="text"

@@ -8,7 +8,7 @@
           size="md"
           class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
         />
-        <input
+        <ElementInput
           v-model="search"
           type="text"
           :placeholder="t('admin.channelMonitor.searchPlaceholder')"
@@ -36,26 +36,26 @@
 
     <!-- Right: Actions -->
     <div class="flex w-full flex-shrink-0 flex-wrap items-center justify-end gap-3 lg:w-auto">
-      <button
+      <ElButton
         @click="$emit('reload')"
         :disabled="loading"
-        class="btn btn-secondary"
+        class=""
         :title="t('common.refresh')"
       >
         <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
-      </button>
-      <button
+      </ElButton>
+      <ElButton
         @click="$emit('manage-templates')"
-        class="btn btn-secondary"
+        class=""
         :title="t('admin.channelMonitor.template.manageButton')"
       >
         <Icon name="cog" size="md" class="mr-2" />
         {{ t('admin.channelMonitor.template.manageButton') }}
-      </button>
-      <button @click="$emit('create')" class="btn btn-primary">
+      </ElButton>
+      <ElButton type="primary" @click="$emit('create')" class="">
         <Icon name="plus" size="md" class="mr-2" />
         {{ t('admin.channelMonitor.createButton') }}
-      </button>
+      </ElButton>
     </div>
   </div>
 </template>

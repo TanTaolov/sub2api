@@ -5,7 +5,7 @@
         <div class="flex flex-wrap items-center gap-3">
           <!-- Left: Search + Filters -->
           <div class="flex-1 sm:max-w-64">
-            <input
+            <ElementInput
               v-model="searchQuery"
               type="text"
               :placeholder="t('admin.promo.searchCodes')"
@@ -22,18 +22,18 @@
 
           <!-- Right: Action buttons -->
           <div class="flex flex-1 flex-wrap items-center justify-end gap-2">
-            <button
+            <ElButton
               @click="loadCodes"
               :disabled="loading"
-              class="btn btn-secondary"
+              class=""
               :title="t('common.refresh')"
             >
               <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
-            </button>
-            <button @click="showCreateDialog = true" class="btn btn-primary">
+            </ElButton>
+            <ElButton type="primary" @click="showCreateDialog = true" class="">
               <Icon name="plus" size="md" class="mr-1" />
               {{ t('admin.promo.createCode') }}
-            </button>
+            </ElButton>
           </div>
         </div>
       </template>
@@ -51,7 +51,7 @@
           <template #cell-code="{ value }">
             <div class="flex items-center space-x-2">
               <code class="font-mono text-sm text-gray-900 dark:text-gray-100">{{ value }}</code>
-              <button
+              <ElButton text
                 @click="copyToClipboard(value)"
                 :class="[
                   'flex items-center transition-colors',
@@ -70,7 +70,7 @@
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
-              </button>
+              </ElButton>
             </div>
           </template>
 
@@ -111,34 +111,34 @@
 
           <template #cell-actions="{ row }">
             <div class="flex items-center space-x-1">
-              <button
+              <ElButton text
                 @click="copyRegisterLink(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-400"
                 :title="t('admin.promo.copyRegisterLink')"
               >
                 <Icon name="link" size="sm" />
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 @click="handleViewUsages(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
                 :title="t('admin.promo.viewUsages')"
               >
                 <Icon name="eye" size="sm" />
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 @click="handleEdit(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-dark-600 dark:hover:text-gray-300"
                 :title="t('common.edit')"
               >
                 <Icon name="edit" size="sm" />
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 @click="handleDelete(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                 :title="t('common.delete')"
               >
                 <Icon name="trash" size="sm" />
-              </button>
+              </ElButton>
             </div>
           </template>
         </DataTable>
@@ -163,13 +163,13 @@
       width="normal"
       @close="showCreateDialog = false"
     >
-      <form id="create-promo-form" @submit.prevent="handleCreate" class="space-y-4">
+      <ElForm id="create-promo-form" @submit.prevent="handleCreate" class="space-y-4">
         <div>
           <label class="input-label">
             {{ t('admin.promo.code') }}
             <span class="ml-1 text-xs font-normal text-gray-400">({{ t('admin.promo.autoGenerate') }})</span>
           </label>
-          <input
+          <ElementInput
             v-model="createForm.code"
             type="text"
             class="input font-mono uppercase"
@@ -178,7 +178,7 @@
         </div>
         <div>
           <label class="input-label">{{ t('admin.promo.bonusAmount') }}</label>
-          <input
+          <ElementInput
             v-model.number="createForm.bonus_amount"
             type="number"
             step="0.01"
@@ -192,7 +192,7 @@
             {{ t('admin.promo.maxUses') }}
             <span class="ml-1 text-xs font-normal text-gray-400">({{ t('admin.promo.zeroUnlimited') }})</span>
           </label>
-          <input
+          <ElementInput
             v-model.number="createForm.max_uses"
             type="number"
             min="0"
@@ -204,7 +204,7 @@
             {{ t('admin.promo.expiresAt') }}
             <span class="ml-1 text-xs font-normal text-gray-400">({{ t('common.optional') }})</span>
           </label>
-          <input
+          <ElementInput
             v-model="createForm.expires_at_str"
             type="datetime-local"
             class="input"
@@ -215,22 +215,22 @@
             {{ t('admin.promo.notes') }}
             <span class="ml-1 text-xs font-normal text-gray-400">({{ t('common.optional') }})</span>
           </label>
-          <textarea
+          <ElementInput type="textarea"
             v-model="createForm.notes"
-            rows="2"
+            :rows="2"
             class="input"
             :placeholder="t('admin.promo.notesPlaceholder')"
-          ></textarea>
+          ></ElementInput>
         </div>
-      </form>
+      </ElForm>
       <template #footer>
         <div class="flex justify-end gap-3">
-          <button type="button" @click="showCreateDialog = false" class="btn btn-secondary">
+          <ElButton native-type="button" @click="showCreateDialog = false" class="">
             {{ t('common.cancel') }}
-          </button>
-          <button type="submit" form="create-promo-form" :disabled="creating" class="btn btn-primary">
+          </ElButton>
+          <ElButton type="primary" native-type="submit" form="create-promo-form" :disabled="creating" class="">
             {{ creating ? t('common.creating') : t('common.create') }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>
@@ -242,10 +242,10 @@
       width="normal"
       @close="closeEditDialog"
     >
-      <form id="edit-promo-form" @submit.prevent="handleUpdate" class="space-y-4">
+      <ElForm id="edit-promo-form" @submit.prevent="handleUpdate" class="space-y-4">
         <div>
           <label class="input-label">{{ t('admin.promo.code') }}</label>
-          <input
+          <ElementInput
             v-model="editForm.code"
             type="text"
             class="input font-mono uppercase"
@@ -253,7 +253,7 @@
         </div>
         <div>
           <label class="input-label">{{ t('admin.promo.bonusAmount') }}</label>
-          <input
+          <ElementInput
             v-model.number="editForm.bonus_amount"
             type="number"
             step="0.01"
@@ -267,7 +267,7 @@
             {{ t('admin.promo.maxUses') }}
             <span class="ml-1 text-xs font-normal text-gray-400">({{ t('admin.promo.zeroUnlimited') }})</span>
           </label>
-          <input
+          <ElementInput
             v-model.number="editForm.max_uses"
             type="number"
             min="0"
@@ -283,7 +283,7 @@
             {{ t('admin.promo.expiresAt') }}
             <span class="ml-1 text-xs font-normal text-gray-400">({{ t('common.optional') }})</span>
           </label>
-          <input
+          <ElementInput
             v-model="editForm.expires_at_str"
             type="datetime-local"
             class="input"
@@ -294,21 +294,21 @@
             {{ t('admin.promo.notes') }}
             <span class="ml-1 text-xs font-normal text-gray-400">({{ t('common.optional') }})</span>
           </label>
-          <textarea
+          <ElementInput type="textarea"
             v-model="editForm.notes"
-            rows="2"
+            :rows="2"
             class="input"
-          ></textarea>
+          ></ElementInput>
         </div>
-      </form>
+      </ElForm>
       <template #footer>
         <div class="flex justify-end gap-3">
-          <button type="button" @click="closeEditDialog" class="btn btn-secondary">
+          <ElButton native-type="button" @click="closeEditDialog" class="">
             {{ t('common.cancel') }}
-          </button>
-          <button type="submit" form="edit-promo-form" :disabled="updating" class="btn btn-primary">
+          </ElButton>
+          <ElButton type="primary" native-type="submit" form="edit-promo-form" :disabled="updating" class="">
             {{ updating ? t('common.saving') : t('common.save') }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>
@@ -364,9 +364,9 @@
       </div>
       <template #footer>
         <div class="flex justify-end">
-          <button type="button" @click="showUsagesDialog = false" class="btn btn-secondary">
+          <ElButton native-type="button" @click="showUsagesDialog = false" class="">
             {{ t('common.close') }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>

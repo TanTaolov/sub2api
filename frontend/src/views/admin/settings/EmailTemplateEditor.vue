@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <ElCard shadow="never" class="element-surface-card">
     <div
       class="flex flex-col gap-3 border-b border-gray-100 px-6 py-4 dark:border-dark-700 lg:flex-row lg:items-start lg:justify-between"
     >
@@ -12,30 +12,30 @@
         </p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
+        <ElButton size="small"
+          native-type="button"
+          class=""
           :disabled="loadingTemplate || previewing || !canPreview"
           @click="refreshPreview"
         >
           {{ previewing ? t("admin.settings.emailTemplates.previewing") : t("admin.settings.emailTemplates.preview") }}
-        </button>
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
+        </ElButton>
+        <ElButton size="small"
+          native-type="button"
+          class=""
           :disabled="loadingTemplate || restoring || !selectedEvent || !selectedLocale"
           @click="restoreOfficial"
         >
           {{ restoring ? t("admin.settings.emailTemplates.restoring") : t("admin.settings.emailTemplates.restoreOfficial") }}
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
+        </ElButton>
+        <ElButton type="primary" size="small"
+          native-type="button"
+          class=""
           :disabled="loadingTemplate || saving || !canSave"
           @click="saveTemplate"
         >
           {{ saving ? t("admin.settings.emailTemplates.saving") : t("admin.settings.emailTemplates.save") }}
-        </button>
+        </ElButton>
       </div>
     </div>
 
@@ -56,39 +56,39 @@
             <label class="input-label" for="email-template-event">
               {{ t("admin.settings.emailTemplates.event") }}
             </label>
-            <select
+            <ElementSelect
               id="email-template-event"
               v-model="selectedEvent"
               class="input"
               :disabled="loadingTemplate || eventOptions.length === 0"
             >
-              <option
+              <ElOption :label="(formatEventOptionLabel(option))"
                 v-for="option in eventOptions"
                 :key="option.value"
                 :value="option.value"
               >
                 {{ formatEventOptionLabel(option) }}
-              </option>
-            </select>
+              </ElOption>
+            </ElementSelect>
           </div>
           <div>
             <label class="input-label" for="email-template-locale">
               {{ t("admin.settings.emailTemplates.locale") }}
             </label>
-            <select
+            <ElementSelect
               id="email-template-locale"
               v-model="selectedLocale"
               class="input"
               :disabled="loadingTemplate || localeOptions.length === 0"
             >
-              <option
+              <ElOption :label="(formatLocale(localeOption))"
                 v-for="localeOption in localeOptions"
                 :key="localeOption"
                 :value="localeOption"
               >
                 {{ formatLocale(localeOption) }}
-              </option>
-            </select>
+              </ElOption>
+            </ElementSelect>
           </div>
         </div>
 
@@ -140,7 +140,7 @@
               <label class="input-label" for="email-template-subject">
                 {{ t("admin.settings.emailTemplates.subject") }}
               </label>
-              <input
+              <ElementInput
                 id="email-template-subject"
                 v-model="subject"
                 type="text"
@@ -154,14 +154,14 @@
               <label class="input-label" for="email-template-html">
                 {{ t("admin.settings.emailTemplates.html") }}
               </label>
-              <textarea
+              <ElementInput type="textarea"
                 id="email-template-html"
                 v-model="html"
-                rows="18"
+                :rows="18"
                 class="input min-h-[28rem] resize-y font-mono text-sm leading-6"
                 :disabled="loadingTemplate"
                 :placeholder="t('admin.settings.emailTemplates.htmlPlaceholder')"
-              ></textarea>
+              ></ElementInput>
             </div>
 
             <div
@@ -174,15 +174,15 @@
                 {{ t("admin.settings.emailTemplates.placeholdersHelp") }}
               </p>
               <div class="mt-3 flex flex-wrap gap-2">
-                <button
+                <ElButton text
                   v-for="placeholder in placeholderList"
                   :key="placeholder"
-                  type="button"
+                  native-type="button"
                   class="rounded-full border border-gray-200 bg-white px-3 py-1 font-mono text-xs text-gray-700 transition-colors hover:border-primary-300 hover:text-primary-600 dark:border-dark-600 dark:bg-dark-700 dark:text-gray-200 dark:hover:border-primary-500 dark:hover:text-primary-300"
                   @click="copyPlaceholder(placeholder)"
                 >
                   {{ placeholder }}
-                </button>
+                </ElButton>
               </div>
             </div>
           </div>
@@ -226,7 +226,7 @@
         </div>
       </template>
     </div>
-  </div>
+  </ElCard>
 </template>
 
 <script setup lang="ts">

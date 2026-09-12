@@ -243,7 +243,7 @@ onMounted(() => {
         <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ t('admin.ops.runtime.title') }}</h3>
         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.ops.runtime.description') }}</p>
       </div>
-      <button
+      <ElButton text
         class="flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-dark-700 dark:text-gray-300 dark:hover:bg-dark-600"
         :disabled="loading"
         @click="loadSettings"
@@ -252,7 +252,7 @@ onMounted(() => {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
         {{ t('common.refresh') }}
-      </button>
+      </ElButton>
     </div>
 
     <div v-if="!alertSettings" class="text-sm text-gray-500 dark:text-gray-400">
@@ -264,7 +264,7 @@ onMounted(() => {
       <div class="rounded-2xl bg-gray-50 p-4 dark:bg-dark-700/50">
         <div class="mb-3 flex items-center justify-between">
           <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.ops.runtime.alertTitle') }}</h4>
-          <button class="btn btn-sm btn-secondary" @click="openAlertEditor">{{ t('common.edit') }}</button>
+          <ElButton size="small" class="" @click="openAlertEditor">{{ t('common.edit') }}</ElButton>
         </div>
         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div class="text-xs text-gray-600 dark:text-gray-300">
@@ -279,11 +279,7 @@ onMounted(() => {
             <span class="ml-1 font-mono text-gray-900 dark:text-white">{{ alertSettings.silencing.global_until_rfc3339 }}</span>
           </div>
 
-          <details class="col-span-1 md:col-span-2">
-            <summary class="cursor-pointer text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400">
-              {{ t('admin.ops.runtime.showAdvancedDeveloperSettings') }}
-            </summary>
-            <div class="mt-2 grid grid-cols-1 gap-3 rounded-lg bg-gray-100 p-3 dark:bg-dark-800 md:grid-cols-2">
+          <ElCollapse class="col-span-1 md:col-span-2" ><ElCollapseItem name="content"><template #title>{{ t('admin.ops.runtime.showAdvancedDeveloperSettings') }}</template><div class="mt-2 grid grid-cols-1 gap-3 rounded-lg bg-gray-100 p-3 dark:bg-dark-800 md:grid-cols-2">
               <div class="text-xs text-gray-500 dark:text-gray-400">
                 {{ t('admin.ops.runtime.lockEnabled') }}:
                 <span class="ml-1 font-mono text-gray-700 dark:text-gray-300">{{ alertSettings.distributed_lock.enabled }}</span>
@@ -296,8 +292,7 @@ onMounted(() => {
                 {{ t('admin.ops.runtime.lockTTLSeconds') }}:
                 <span class="ml-1 font-mono text-gray-700 dark:text-gray-300">{{ alertSettings.distributed_lock.ttl_seconds }}s</span>
               </div>
-            </div>
-          </details>
+            </div></ElCollapseItem></ElCollapse>
         </div>
       </div>
     </div>
@@ -317,7 +312,7 @@ onMounted(() => {
 
       <div>
         <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.runtime.evalIntervalSeconds') }}</div>
-        <input
+        <ElementInput
           v-model.number="draftAlert.evaluation_interval_seconds"
           type="number"
           min="1"
@@ -335,7 +330,7 @@ onMounted(() => {
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.runtime.slaMinPercent') }}</div>
-            <input
+            <ElementInput
               v-model.number="draftAlert.thresholds.sla_percent_min"
               type="number"
               min="0"
@@ -351,7 +346,7 @@ onMounted(() => {
 
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.runtime.ttftP99MaxMs') }}</div>
-            <input
+            <ElementInput
               v-model.number="draftAlert.thresholds.ttft_p99_ms_max"
               type="number"
               min="0"
@@ -364,7 +359,7 @@ onMounted(() => {
 
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.runtime.requestErrorRateMaxPercent') }}</div>
-            <input
+            <ElementInput
               v-model.number="draftAlert.thresholds.request_error_rate_percent_max"
               type="number"
               min="0"
@@ -378,7 +373,7 @@ onMounted(() => {
 
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.runtime.upstreamErrorRateMaxPercent') }}</div>
-            <input
+            <ElementInput
               v-model.number="draftAlert.thresholds.upstream_error_rate_percent_max"
               type="number"
               min="0"
@@ -395,15 +390,12 @@ onMounted(() => {
       <div class="rounded-2xl bg-gray-50 p-4 dark:bg-dark-700/50">
         <div class="mb-2 text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.ops.runtime.silencing.title') }}</div>
 
-        <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-          <input v-model="draftAlert.silencing.enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
-          <span>{{ t('admin.ops.runtime.silencing.enabled') }}</span>
-        </label>
+        <ElementCheckbox v-model="draftAlert.silencing.enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t('admin.ops.runtime.silencing.enabled') }}</span></ElementCheckbox>
 
         <div v-if="draftAlert.silencing.enabled" class="mt-4 space-y-4">
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.runtime.silencing.globalUntil') }}</div>
-            <input
+            <ElementInput
               v-model="draftAlert.silencing.global_until_rfc3339"
               type="text"
               class="input font-mono text-sm"
@@ -414,7 +406,7 @@ onMounted(() => {
 
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.runtime.silencing.reason') }}</div>
-            <input
+            <ElementInput
               v-model="draftAlert.silencing.global_reason"
               type="text"
               class="input"
@@ -428,9 +420,9 @@ onMounted(() => {
                 <div class="text-xs font-bold text-gray-900 dark:text-white">{{ t('admin.ops.runtime.silencing.entries.title') }}</div>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ t('admin.ops.runtime.silencing.entries.hint') }}</p>
               </div>
-              <button class="btn btn-sm btn-secondary" type="button" @click="addSilenceEntry">
+              <ElButton size="small" class="" native-type="button" @click="addSilenceEntry">
                 {{ t('admin.ops.runtime.silencing.entries.add') }}
-              </button>
+              </ElButton>
             </div>
 
             <div v-if="!draftAlert.silencing.entries?.length" class="mt-3 rounded-lg bg-gray-50 p-3 text-xs text-gray-500 dark:bg-dark-900 dark:text-gray-400">
@@ -447,13 +439,13 @@ onMounted(() => {
                   <div class="text-xs font-bold text-gray-900 dark:text-white">
                     {{ t('admin.ops.runtime.silencing.entries.entryTitle', { n: idx + 1 }) }}
                   </div>
-                  <button class="btn btn-sm btn-danger" type="button" @click="removeSilenceEntry(idx)">{{ t('common.delete') }}</button>
+                  <ElButton type="danger" size="small" class="" native-type="button" @click="removeSilenceEntry(idx)">{{ t('common.delete') }}</ElButton>
                 </div>
 
                 <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <div>
                     <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.runtime.silencing.entries.ruleId') }}</div>
-                    <input
+                    <ElementInput
                       :value="typeof (entry as any).rule_id === 'number' ? String((entry as any).rule_id) : ''"
                       type="text"
                       class="input font-mono text-sm"
@@ -464,7 +456,7 @@ onMounted(() => {
 
                   <div>
                     <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.runtime.silencing.entries.severities') }}</div>
-                    <input
+                    <ElementInput
                       :value="Array.isArray((entry as any).severities) ? (entry as any).severities.join(', ') : ''"
                       type="text"
                       class="input font-mono text-sm"
@@ -475,7 +467,7 @@ onMounted(() => {
 
                   <div>
                     <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.runtime.silencing.entries.until') }}</div>
-                    <input
+                    <ElementInput
                       v-model="(entry as any).until_rfc3339"
                       type="text"
                       class="input font-mono text-sm"
@@ -485,7 +477,7 @@ onMounted(() => {
 
                   <div>
                     <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.runtime.silencing.entries.reason') }}</div>
-                    <input
+                    <ElementInput
                       v-model="(entry as any).reason"
                       type="text"
                       class="input"
@@ -499,36 +491,30 @@ onMounted(() => {
         </div>
       </div>
 
-      <details class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-dark-600 dark:bg-dark-800">
-        <summary class="cursor-pointer text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('admin.ops.runtime.advancedSettingsSummary') }}</summary>
-        <div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <ElCollapse class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-dark-600 dark:bg-dark-800" ><ElCollapseItem name="content"><template #title>{{ t('admin.ops.runtime.advancedSettingsSummary') }}</template><div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
-              <input v-model="draftAlert.distributed_lock.enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
-              <span>{{ t('admin.ops.runtime.lockEnabled') }}</span>
-            </label>
+            <ElementCheckbox v-model="draftAlert.distributed_lock.enabled" :class="[&quot;inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t('admin.ops.runtime.lockEnabled') }}</span></ElementCheckbox>
           </div>
           <div class="md:col-span-2">
             <div class="mb-1 text-xs font-medium text-gray-500">{{ t('admin.ops.runtime.lockKey') }}</div>
-            <input v-model="draftAlert.distributed_lock.key" type="text" class="input text-xs font-mono" />
+            <ElementInput v-model="draftAlert.distributed_lock.key" type="text" class="input text-xs font-mono" />
             <p v-if="draftAlert.distributed_lock.enabled" class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
               {{ t('admin.ops.runtime.validation.lockKeyHint', { prefix: 'ops:' }) }}
             </p>
           </div>
           <div>
             <div class="mb-1 text-xs font-medium text-gray-500">{{ t('admin.ops.runtime.lockTTLSeconds') }}</div>
-            <input v-model.number="draftAlert.distributed_lock.ttl_seconds" type="number" min="1" max="86400" class="input text-xs font-mono" />
+            <ElementInput v-model.number="draftAlert.distributed_lock.ttl_seconds" type="number" min="1" max="86400" class="input text-xs font-mono" />
           </div>
-        </div>
-      </details>
+        </div></ElCollapseItem></ElCollapse>
     </div>
 
     <template #footer>
       <div class="flex justify-end gap-2">
-        <button class="btn btn-secondary" @click="showAlertEditor = false">{{ t('common.cancel') }}</button>
-        <button class="btn btn-primary" :disabled="saving || !alertValidation.valid" @click="saveAlertSettings">
+        <ElButton class="" @click="showAlertEditor = false">{{ t('common.cancel') }}</ElButton>
+        <ElButton type="primary" class="" :disabled="saving || !alertValidation.valid" @click="saveAlertSettings">
           {{ saving ? t('common.saving') : t('common.save') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

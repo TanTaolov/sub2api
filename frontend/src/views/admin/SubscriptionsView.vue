@@ -7,62 +7,45 @@
           <!-- Left: Fuzzy user search + filters (wrap to multiple lines) -->
           <div class="flex flex-1 flex-wrap items-center gap-3">
             <!-- User Search -->
-            <div
-              class="relative w-full sm:w-64"
-              data-filter-user-search
-            >
-              <Icon
+            <ElementFloatingPanel  :visible="Boolean(showFilterUserDropdown && (filterUserResults.length > 0 || filterUserKeyword))" fit-reference width="192" @close="showFilterUserDropdown = false"><template #reference><div class="relative w-full sm:w-64" data-filter-user-search><Icon
                 name="search"
                 size="md"
                 class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
+              /><ElementInput
                 v-model="filterUserKeyword"
                 type="text"
                 :placeholder="t('admin.users.searchUsers')"
                 class="input pl-10 pr-8"
                 @input="debounceSearchFilterUsers"
                 @focus="showFilterUserDropdown = true"
-              />
-              <button
+              /><ElButton text
                 v-if="selectedFilterUser"
                 @click="clearFilterUser"
-                type="button"
+                native-type="button"
                 class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 :title="t('common.clear')"
               >
                 <Icon name="x" size="sm" :stroke-width="2" />
-              </button>
-
-              <!-- User Dropdown -->
-              <div
-                v-if="showFilterUserDropdown && (filterUserResults.length > 0 || filterUserKeyword)"
-                class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-dark-700 dark:bg-dark-800"
-              >
-                <div
+              </ElButton><!-- User Dropdown --></div></template><div  class="max-h-80 overflow-y-auto py-1"><div
                   v-if="filterUserLoading"
                   class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400"
                 >
                   {{ t('common.loading') }}
-                </div>
-                <div
+                </div><div
                   v-else-if="filterUserResults.length === 0 && filterUserKeyword"
                   class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400"
                 >
                   {{ t('common.noOptionsFound') }}
-                </div>
-                <button
+                </div><ElButton text
                   v-for="user in filterUserResults"
                   :key="user.id"
-                  type="button"
+                  native-type="button"
                   @click="selectFilterUser(user)"
                   class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-dark-700"
                 >
                   <span class="font-medium text-gray-900 dark:text-white">{{ user.email }}</span>
                   <span class="ml-2 text-gray-500 dark:text-gray-400">#{{ user.id }}</span>
-                </button>
-              </div>
-            </div>
+                </ElButton></div></ElementFloatingPanel>
 
             <!-- Filters -->
             <div class="w-full sm:w-40">
@@ -93,54 +76,47 @@
 
           <!-- Right: Actions -->
           <div class="ml-auto flex flex-wrap items-center justify-end gap-3">
-            <button
+            <ElButton
               @click="loadSubscriptions"
               :disabled="loading"
-              class="btn btn-secondary"
+              class=""
               :title="t('common.refresh')"
             >
               <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
-            </button>
+            </ElButton>
             <!-- Column Settings Dropdown -->
-            <div class="relative" ref="columnDropdownRef">
-              <button
+            <ElementFloatingPanel  :visible="Boolean(showColumnDropdown)"  width="192" @close="showColumnDropdown = false"><template #reference><div class="relative" ref="columnDropdownRef"><ElButton
                 @click="showColumnDropdown = !showColumnDropdown"
-                class="btn btn-secondary px-2 md:px-3"
+                class="px-2 md:px-3"
                 :title="t('admin.users.columnSettings')"
               >
                 <svg class="h-4 w-4 md:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" />
                 </svg>
                 <span class="hidden md:inline">{{ t('admin.users.columnSettings') }}</span>
-              </button>
-              <!-- Dropdown menu -->
-              <div
-                v-if="showColumnDropdown"
-                class="absolute right-0 z-50 mt-2 w-48 origin-top-right rounded-lg border border-gray-200 bg-white shadow-lg dark:border-dark-700 dark:bg-dark-800"
-              >
-                <div class="p-2">
+              </ElButton><!-- Dropdown menu --></div></template><div  class="max-h-80 overflow-y-auto py-1"><div class="p-2">
                   <!-- User column mode selection -->
                   <div class="mb-2 border-b border-gray-200 pb-2 dark:border-dark-700">
                     <div class="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400">
                       {{ t('admin.subscriptions.columns.user') }}
                     </div>
-                    <button
+                    <ElButton text
                       @click="setUserColumnMode('email')"
                       class="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-dark-700"
                     >
                       <span>{{ t('admin.users.columns.email') }}</span>
                       <Icon v-if="userColumnMode === 'email'" name="check" size="sm" class="text-primary-500" />
-                    </button>
-                    <button
+                    </ElButton>
+                    <ElButton text
                       @click="setUserColumnMode('username')"
                       class="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-dark-700"
                     >
                       <span>{{ t('admin.users.columns.username') }}</span>
                       <Icon v-if="userColumnMode === 'username'" name="check" size="sm" class="text-primary-500" />
-                    </button>
+                    </ElButton>
                   </div>
                   <!-- Other columns toggle -->
-                  <button
+                  <ElButton text
                     v-for="col in toggleableColumns"
                     :key="col.key"
                     @click="toggleColumn(col.key)"
@@ -148,21 +124,19 @@
                   >
                     <span>{{ col.label }}</span>
                     <Icon v-if="isColumnVisible(col.key)" name="check" size="sm" class="text-primary-500" />
-                  </button>
-                </div>
-              </div>
-            </div>
-            <button
+                  </ElButton>
+                </div></div></ElementFloatingPanel>
+            <ElButton
               @click="showGuideModal = true"
-              class="btn btn-secondary"
+              class=""
               :title="t('admin.subscriptions.guide.showGuide')"
             >
               <Icon name="questionCircle" size="md" />
-            </button>
-            <button @click="showAssignModal = true" class="btn btn-primary">
+            </ElButton>
+            <ElButton type="primary" @click="showAssignModal = true" class="">
               <Icon name="plus" size="md" class="mr-2" />
               {{ t('admin.subscriptions.assignSubscription') }}
-            </button>
+            </ElButton>
           </div>
         </div>
       </template>
@@ -387,15 +361,15 @@
 
           <template #cell-actions="{ row }">
             <div class="flex items-center gap-1">
-              <button
+              <ElButton text
                 v-if="row.status === 'active' || row.status === 'expired'"
                 @click="handleExtend(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
               >
                 <Icon name="calendar" size="sm" />
                 <span class="text-xs">{{ t('admin.subscriptions.adjust') }}</span>
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 v-if="row.status === 'active'"
                 @click="handleResetQuota(row)"
                 :disabled="resettingQuota && resettingSubscription?.id === row.id"
@@ -403,23 +377,23 @@
               >
                 <Icon name="refresh" size="sm" />
                 <span class="text-xs">{{ t('admin.subscriptions.resetQuota') }}</span>
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 v-if="row.status === 'active'"
                 @click="handleRevoke(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
               >
                 <Icon name="ban" size="sm" />
                 <span class="text-xs">{{ t('admin.subscriptions.revoke') }}</span>
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 v-if="row.status === 'revoked'"
                 @click="handleRestore(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-400"
               >
                 <Icon name="refresh" size="sm" />
                 <span class="text-xs">{{ t('admin.subscriptions.restore') }}</span>
-              </button>
+              </ElButton>
             </div>
           </template>
 
@@ -454,59 +428,47 @@
       width="normal"
       @close="closeAssignModal"
     >
-      <form
+      <ElForm
         id="assign-subscription-form"
         @submit.prevent="handleAssignSubscription"
         class="space-y-5"
       >
         <div>
           <label class="input-label">{{ t('admin.subscriptions.form.user') }}</label>
-          <div class="relative" data-assign-user-search>
-            <input
+          <ElementFloatingPanel  :visible="Boolean(showUserDropdown && (userSearchResults.length > 0 || userSearchKeyword))" fit-reference width="192" @close="showUserDropdown = false"><template #reference><div class="relative" data-assign-user-search><ElementInput
               v-model="userSearchKeyword"
               type="text"
               class="input pr-8"
               :placeholder="t('admin.usage.searchUserPlaceholder')"
               @input="debounceSearchUsers"
               @focus="showUserDropdown = true"
-            />
-            <button
+            /><ElButton text
               v-if="selectedUser"
               @click="clearUserSelection"
-              type="button"
+              native-type="button"
               class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
               <Icon name="x" size="sm" :stroke-width="2" />
-            </button>
-            <!-- User Dropdown -->
-            <div
-              v-if="showUserDropdown && (userSearchResults.length > 0 || userSearchKeyword)"
-              class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-dark-700 dark:bg-dark-800"
-            >
-              <div
+            </ElButton><!-- User Dropdown --></div></template><div  class="max-h-80 overflow-y-auto py-1"><div
                 v-if="userSearchLoading"
                 class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400"
               >
                 {{ t('common.loading') }}
-              </div>
-              <div
+              </div><div
                 v-else-if="userSearchResults.length === 0 && userSearchKeyword"
                 class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400"
               >
                 {{ t('common.noOptionsFound') }}
-              </div>
-              <button
+              </div><ElButton text
                 v-for="user in userSearchResults"
                 :key="user.id"
-                type="button"
+                native-type="button"
                 @click="selectUser(user)"
                 class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-dark-700"
               >
                 <span class="font-medium text-gray-900 dark:text-white">{{ user.email }}</span>
                 <span class="ml-2 text-gray-500 dark:text-gray-400">#{{ user.id }}</span>
-              </button>
-            </div>
-          </div>
+              </ElButton></div></ElementFloatingPanel>
         </div>
         <div>
           <label class="input-label">{{ t('admin.subscriptions.form.group') }}</label>
@@ -540,20 +502,20 @@
         </div>
         <div>
           <label class="input-label">{{ t('admin.subscriptions.form.validityDays') }}</label>
-          <input v-model.number="assignForm.validity_days" type="number" min="1" class="input" />
+          <ElementInput v-model.number="assignForm.validity_days" type="number" min="1" class="input" />
           <p class="input-hint">{{ t('admin.subscriptions.validityHint') }}</p>
         </div>
-      </form>
+      </ElForm>
       <template #footer>
         <div class="flex justify-end gap-3">
-          <button @click="closeAssignModal" type="button" class="btn btn-secondary">
+          <ElButton @click="closeAssignModal" native-type="button" class="">
             {{ t('common.cancel') }}
-          </button>
-          <button
-            type="submit"
+          </ElButton>
+          <ElButton type="primary"
+            native-type="submit"
             form="assign-subscription-form"
             :disabled="submitting"
-            class="btn btn-primary"
+            class=""
           >
             <svg
               v-if="submitting"
@@ -576,7 +538,7 @@
               ></path>
             </svg>
             {{ submitting ? t('admin.subscriptions.assigning') : t('admin.subscriptions.assign') }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>
@@ -588,7 +550,7 @@
       width="narrow"
       @close="closeExtendModal"
     >
-      <form
+      <ElForm
         v-if="extendingSubscription"
         id="extend-subscription-form"
         @submit.prevent="handleExtendSubscription"
@@ -621,7 +583,7 @@
         <div>
           <label class="input-label">{{ t('admin.subscriptions.form.adjustDays') }}</label>
           <div class="flex items-center gap-2">
-            <input
+            <ElementInput
               v-model.number="extendForm.days"
               type="number"
               required
@@ -631,20 +593,20 @@
           </div>
           <p class="input-hint">{{ t('admin.subscriptions.adjustHint') }}</p>
         </div>
-      </form>
+      </ElForm>
       <template #footer>
         <div v-if="extendingSubscription" class="flex justify-end gap-3">
-          <button @click="closeExtendModal" type="button" class="btn btn-secondary">
+          <ElButton @click="closeExtendModal" native-type="button" class="">
             {{ t('common.cancel') }}
-          </button>
-          <button
-            type="submit"
+          </ElButton>
+          <ElButton type="primary"
+            native-type="submit"
             form="extend-subscription-form"
             :disabled="submitting"
-            class="btn btn-primary"
+            class=""
           >
             {{ submitting ? t('admin.subscriptions.adjusting') : t('admin.subscriptions.adjust') }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>
@@ -683,20 +645,7 @@
       @cancel="showResetQuotaConfirm = false"
     />
     <!-- Subscription Guide Modal -->
-    <teleport to="body">
-      <transition name="modal">
-        <div v-if="showGuideModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @mousedown.self="showGuideModal = false">
-          <div class="fixed inset-0 bg-black/50" @click="showGuideModal = false"></div>
-          <div class="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-2xl dark:bg-dark-800">
-            <button type="button" class="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" @click="showGuideModal = false">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-
-            <h2 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">{{ t('admin.subscriptions.guide.title') }}</h2>
-            <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ t('admin.subscriptions.guide.subtitle') }}</p>
-
-            <!-- Step 1 -->
-            <div class="mb-5">
+    <ElDialog :model-value="Boolean(showGuideModal)" :title="t('admin.subscriptions.guide.title')" width="768px" append-to-body align-center destroy-on-close class="element-dialog " :show-close="true" @update:model-value="visible => { if (!visible) { showGuideModal = false } }" ><template v-if="showGuideModal"><p class="mb-5 text-sm text-gray-500 dark:text-gray-400">{{ t('admin.subscriptions.guide.subtitle') }}</p><!-- Step 1 --><div class="mb-5">
               <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
                 <span class="flex h-6 w-6 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 dark:bg-primary-900/40 dark:text-primary-300">1</span>
                 {{ t('admin.subscriptions.guide.step1.title') }}
@@ -716,10 +665,7 @@
                   <Icon name="arrowRight" size="xs" />
                 </router-link>
               </div>
-            </div>
-
-            <!-- Step 2 -->
-            <div class="mb-5">
+            </div><!-- Step 2 --><div class="mb-5">
               <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
                 <span class="flex h-6 w-6 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 dark:bg-primary-900/40 dark:text-primary-300">2</span>
                 {{ t('admin.subscriptions.guide.step2.title') }}
@@ -729,38 +675,26 @@
                 <li>{{ t('admin.subscriptions.guide.step2.line2') }}</li>
                 <li>{{ t('admin.subscriptions.guide.step2.line3') }}</li>
               </ol>
-            </div>
-
-            <!-- Step 3 -->
-            <div class="mb-5">
+            </div><!-- Step 3 --><div class="mb-5">
               <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
                 <span class="flex h-6 w-6 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 dark:bg-primary-900/40 dark:text-primary-300">3</span>
                 {{ t('admin.subscriptions.guide.step3.title') }}
               </h3>
               <div class="ml-8 overflow-hidden rounded-lg border border-gray-200 dark:border-dark-600">
-                <table class="w-full text-sm">
-                  <tbody>
-                    <tr v-for="(row, i) in guideActionRows" :key="i" class="border-b border-gray-100 dark:border-dark-700 last:border-0">
-                      <td class="whitespace-nowrap bg-gray-50 px-3 py-2 font-medium text-gray-700 dark:bg-dark-700 dark:text-gray-300">{{ row.action }}</td>
-                      <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ row.desc }}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <ElTable  row-class-name="border-b border-gray-100 dark:border-dark-700 last:border-0" :data="guideActionRows" :show-header="false" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #default="{ row: row, $index: i }"><div class="whitespace-nowrap bg-gray-50 px-3 py-2 font-medium text-gray-700 dark:bg-dark-700 dark:text-gray-300" >{{ row.action }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #default="{ row: row, $index: i }"><div class="px-3 py-2 text-gray-600 dark:text-gray-400" >{{ row.desc }}</div></template>
+  </ElTableColumn>
+</ElTable>
               </div>
-            </div>
-
-            <!-- Tip -->
-            <div class="rounded-lg bg-blue-50 p-3 text-xs text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+            </div><!-- Tip --><div class="rounded-lg bg-blue-50 p-3 text-xs text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
               {{ t('admin.subscriptions.guide.tip') }}
-            </div>
-
-            <div class="mt-4 text-right">
-              <button type="button" class="btn btn-primary btn-sm" @click="showGuideModal = false">{{ t('common.close') }}</button>
-            </div>
-          </div>
-        </div>
-      </transition>
-    </teleport>
+            </div><div class="mt-4 text-right">
+              <ElButton type="primary" size="small" native-type="button" class="" @click="showGuideModal = false">{{ t('common.close') }}</ElButton>
+            </div></template></ElDialog>
   </AppLayout>
 </template>
 

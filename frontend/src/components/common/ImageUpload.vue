@@ -52,15 +52,15 @@
           <Icon name="upload" size="sm" class="mr-1.5" :stroke-width="2" />
           {{ resolvedUploadLabel }}
         </label>
-        <button
+        <ElButton size="small"
           v-if="modelValue"
-          type="button"
-          class="btn btn-secondary btn-sm text-red-600 hover:text-red-700 dark:text-red-400"
+          native-type="button"
+          class="text-red-600 hover:text-red-700 dark:text-red-400"
           @click="$emit('update:modelValue', '')"
         >
           <Icon name="trash" size="sm" class="mr-1.5" :stroke-width="2" />
           {{ resolvedRemoveLabel }}
-        </button>
+        </ElButton>
       </div>
       <p v-if="hint" class="text-xs text-gray-500 dark:text-gray-400">{{ hint }}</p>
       <p v-if="error" class="text-xs text-red-500">{{ error }}</p>

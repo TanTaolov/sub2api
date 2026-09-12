@@ -45,8 +45,8 @@
         <!-- Row 1: Main Stats Cards -->
         <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <!-- 30-Day Total Cost -->
-          <div
-            class="card border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4 dark:border-emerald-800/30 dark:from-emerald-900/10 dark:to-dark-700"
+          <ElCard shadow="never"
+            class="element-surface-card border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4 dark:border-emerald-800/30 dark:from-emerald-900/10 dark:to-dark-700"
           >
             <div class="mb-2 flex items-center justify-between">
               <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{
@@ -80,11 +80,11 @@
                 }})
               </span>
             </p>
-          </div>
+          </ElCard>
 
           <!-- 30-Day Total Requests -->
-          <div
-            class="card border-blue-200 bg-gradient-to-br from-blue-50 to-white p-4 dark:border-blue-800/30 dark:from-blue-900/10 dark:to-dark-700"
+          <ElCard shadow="never"
+            class="element-surface-card border-blue-200 bg-gradient-to-br from-blue-50 to-white p-4 dark:border-blue-800/30 dark:from-blue-900/10 dark:to-dark-700"
           >
             <div class="mb-2 flex items-center justify-between">
               <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{
@@ -100,11 +100,11 @@
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {{ t('admin.accounts.stats.totalCalls') }}
             </p>
-          </div>
+          </ElCard>
 
           <!-- Daily Average Cost -->
-          <div
-            class="card border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 dark:border-amber-800/30 dark:from-amber-900/10 dark:to-dark-700"
+          <ElCard shadow="never"
+            class="element-surface-card border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 dark:border-amber-800/30 dark:from-amber-900/10 dark:to-dark-700"
           >
             <div class="mb-2 flex items-center justify-between">
               <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{
@@ -132,11 +132,11 @@
                 ({{ t('usage.userBilled') }}: ${{ formatCost(stats.summary.avg_daily_user_cost) }})
               </span>
             </p>
-          </div>
+          </ElCard>
 
           <!-- Daily Average Requests -->
-          <div
-            class="card border-purple-200 bg-gradient-to-br from-purple-50 to-white p-4 dark:border-purple-800/30 dark:from-purple-900/10 dark:to-dark-700"
+          <ElCard shadow="never"
+            class="element-surface-card border-purple-200 bg-gradient-to-br from-purple-50 to-white p-4 dark:border-purple-800/30 dark:from-purple-900/10 dark:to-dark-700"
           >
             <div class="mb-2 flex items-center justify-between">
               <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{
@@ -164,13 +164,13 @@
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {{ t('admin.accounts.stats.avgDailyUsage') }}
             </p>
-          </div>
+          </ElCard>
         </div>
 
         <!-- Row 2: Today, Highest Cost, Highest Requests -->
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <!-- Today Overview -->
-          <div class="card p-4">
+          <ElCard shadow="never" class="element-surface-card p-4">
             <div class="mb-3 flex items-center gap-2">
               <div class="rounded-lg bg-cyan-100 p-1.5 dark:bg-cyan-900/30">
                 <svg
@@ -221,10 +221,10 @@
                 }}</span>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Highest Cost Day -->
-          <div class="card p-4">
+          <ElCard shadow="never" class="element-surface-card p-4">
             <div class="mb-3 flex items-center gap-2">
               <div class="rounded-lg bg-orange-100 p-1.5 dark:bg-orange-900/30">
                 <Icon
@@ -268,10 +268,10 @@
                 }}</span>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Highest Request Day -->
-          <div class="card p-4">
+          <ElCard shadow="never" class="element-surface-card p-4">
             <div class="mb-3 flex items-center gap-2">
               <div class="rounded-lg bg-indigo-100 p-1.5 dark:bg-indigo-900/30">
                 <Icon
@@ -315,13 +315,13 @@
                 >
               </div>
             </div>
-          </div>
+          </ElCard>
         </div>
 
         <!-- Row 3: Token Stats -->
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <!-- Accumulated Tokens -->
-          <div class="card p-4">
+          <ElCard shadow="never" class="element-surface-card p-4">
             <div class="mb-3 flex items-center gap-2">
               <div class="rounded-lg bg-teal-100 p-1.5 dark:bg-teal-900/30">
                 <Icon name="cube" size="sm" class="text-teal-600 dark:text-teal-400" :stroke-width="2" />
@@ -348,10 +348,10 @@
                 }}</span>
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Performance -->
-          <div class="card p-4">
+          <ElCard shadow="never" class="element-surface-card p-4">
             <div class="mb-3 flex items-center gap-2">
               <div class="rounded-lg bg-rose-100 p-1.5 dark:bg-rose-900/30">
                 <Icon name="bolt" size="sm" class="text-rose-600 dark:text-rose-400" :stroke-width="2" />
@@ -378,10 +378,10 @@
                 >
               </div>
             </div>
-          </div>
+          </ElCard>
 
           <!-- Recent Activity -->
-          <div class="card p-4">
+          <ElCard shadow="never" class="element-surface-card p-4">
             <div class="mb-3 flex items-center gap-2">
               <div class="rounded-lg bg-lime-100 p-1.5 dark:bg-lime-900/30">
                 <Icon
@@ -425,11 +425,11 @@
                 >
               </div>
             </div>
-          </div>
+          </ElCard>
         </div>
 
         <!-- Usage Trend Chart -->
-        <div class="card p-4">
+        <ElCard shadow="never" class="element-surface-card p-4">
           <h3 class="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
             {{ t('admin.accounts.stats.usageTrend') }}
           </h3>
@@ -442,7 +442,7 @@
               {{ t('admin.dashboard.noDataAvailable') }}
             </div>
           </div>
-        </div>
+        </ElCard>
 
         <!-- Model Distribution -->
         <ModelDistributionChart :model-stats="stats.models" :loading="false" />
@@ -472,12 +472,12 @@
 
     <template #footer>
       <div class="flex justify-end">
-        <button
+        <ElButton text
           @click="handleClose"
           class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-dark-600 dark:text-gray-300 dark:hover:bg-dark-500"
         >
           {{ t('common.close') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

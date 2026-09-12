@@ -68,8 +68,8 @@
     <span v-if="hasEffectiveRate && statusLabel" :class="statusClass" class="whitespace-nowrap text-[10px] font-medium">
       {{ statusLabel }}
     </span>
-    <button
-      type="button"
+    <ElButton text
+      native-type="button"
       class="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-blue-600 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
       :disabled="probing"
       :aria-label="t('admin.accounts.upstreamBilling.manualProbe')"
@@ -78,7 +78,7 @@
       @click="$emit('probe')"
     >
       <Icon name="refresh" size="xs" :class="{ 'animate-spin': probing }" />
-    </button>
+    </ElButton>
   </div>
   <span v-else class="text-sm text-gray-400 dark:text-dark-500">-</span>
 </template>

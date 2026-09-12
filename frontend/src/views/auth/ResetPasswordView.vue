@@ -69,7 +69,7 @@
       </div>
 
       <!-- Form State -->
-      <form v-else @submit.prevent="handleSubmit" class="space-y-5">
+      <ElForm v-else @submit.prevent="handleSubmit" class="space-y-5">
         <!-- Email (readonly) -->
         <div>
           <label for="email" class="input-label">
@@ -79,7 +79,7 @@
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
               <Icon name="mail" size="md" class="text-gray-400 dark:text-dark-500" />
             </div>
-            <input
+            <ElementInput
               id="email"
               :value="email"
               type="email"
@@ -99,7 +99,7 @@
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
               <Icon name="lock" size="md" class="text-gray-400 dark:text-dark-500" />
             </div>
-            <input
+            <ElementInput
               id="password"
               v-model="formData.password"
               :type="showPassword ? 'text' : 'password'"
@@ -110,14 +110,14 @@
               :class="{ 'input-error': errors.password }"
               :placeholder="t('auth.newPasswordPlaceholder')"
             />
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="showPassword = !showPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-dark-300"
             >
               <Icon v-if="showPassword" name="eyeOff" size="md" />
               <Icon v-else name="eye" size="md" />
-            </button>
+            </ElButton>
           </div>
         </div>
 
@@ -130,7 +130,7 @@
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
               <Icon name="lock" size="md" class="text-gray-400 dark:text-dark-500" />
             </div>
-            <input
+            <ElementInput
               id="confirmPassword"
               v-model="formData.confirmPassword"
               :type="showConfirmPassword ? 'text' : 'password'"
@@ -141,22 +141,22 @@
               :class="{ 'input-error': errors.confirmPassword }"
               :placeholder="t('auth.confirmPasswordPlaceholder')"
             />
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="showConfirmPassword = !showConfirmPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-dark-300"
             >
               <Icon v-if="showConfirmPassword" name="eyeOff" size="md" />
               <Icon v-else name="eye" size="md" />
-            </button>
+            </ElButton>
           </div>
         </div>
 
         <!-- Submit Button -->
-        <button
-          type="submit"
+        <ElButton type="primary"
+          native-type="submit"
           :disabled="isLoading"
-          class="btn btn-primary w-full"
+          class="w-full"
         >
           <svg
             v-if="isLoading"
@@ -180,8 +180,8 @@
           </svg>
           <Icon v-else name="checkCircle" size="md" class="mr-2" />
           {{ isLoading ? t('auth.resettingPassword') : t('auth.resetPassword') }}
-        </button>
-      </form>
+        </ElButton>
+      </ElForm>
     </div>
 
     <!-- Footer -->

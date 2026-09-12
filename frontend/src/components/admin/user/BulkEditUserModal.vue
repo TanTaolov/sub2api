@@ -5,7 +5,7 @@
     width="normal"
     @close="emit('close')"
   >
-    <form id="bulk-edit-user-limits-form" class="space-y-5" @submit.prevent="handleSubmit">
+    <ElForm id="bulk-edit-user-limits-form" class="space-y-5" @submit.prevent="handleSubmit">
       <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
         {{ t('admin.users.bulkLimits.selectedCount', { count: selectedIds.length }) }}
       </p>
@@ -22,7 +22,7 @@
               data-test="enable-concurrency"
             />
           </div>
-          <input
+          <ElementInput
             v-if="enableConcurrency"
             id="bulk-concurrency"
             v-model="concurrencyValue"
@@ -46,7 +46,7 @@
             />
           </div>
           <div v-if="enableRPMLimit">
-            <input
+            <ElementInput
               id="bulk-rpm-limit"
               v-model="rpmLimitValue"
               type="number"
@@ -68,22 +68,22 @@
       <p v-if="selectionTooLarge" class="text-sm text-red-600 dark:text-red-400">
         {{ t('admin.users.bulkLimits.selectionLimit', { max: MAX_BATCH_USER_IDS }) }}
       </p>
-    </form>
+    </ElForm>
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <button type="button" class="btn btn-secondary" @click="emit('close')">
+        <ElButton native-type="button" class="" @click="emit('close')">
           {{ t('common.cancel') }}
-        </button>
-        <button
-          type="submit"
+        </ElButton>
+        <ElButton type="primary"
+          native-type="submit"
           form="bulk-edit-user-limits-form"
-          class="btn btn-primary"
+          class=""
           :disabled="!canSubmit"
           data-test="submit"
         >
           {{ submitting ? t('admin.users.bulkLimits.applying') : t('admin.users.bulkLimits.apply') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

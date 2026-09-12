@@ -16,8 +16,8 @@ const emit = defineEmits<{
 
 <template>
   <div class="flex items-center gap-1.5">
-    <button
-      type="button"
+    <ElButton text
+      native-type="button"
       @click="emit('update:enabled', !enabled)"
       :class="[
         'relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
@@ -30,9 +30,9 @@ const emit = defineEmits<{
           enabled ? 'translate-x-4' : 'translate-x-0'
         ]"
       />
-    </button>
+    </ElButton>
     <template v-if="enabled">
-      <input
+      <ElementInput
         :value="threshold"
         @input="emit('update:threshold', parseFloat(($event.target as HTMLInputElement).value) || null)"
         type="number"
@@ -41,14 +41,14 @@ const emit = defineEmits<{
         :step="thresholdType === QUOTA_THRESHOLD_TYPE_PERCENTAGE ? 1 : 0.01"
         class="input py-1 text-sm flex-1 min-w-0"
       />
-      <select
+      <ElementSelect
         :value="thresholdType || QUOTA_THRESHOLD_TYPE_FIXED"
         @change="emit('update:thresholdType', ($event.target as HTMLSelectElement).value as QuotaThresholdType)"
         class="input py-1 text-xs w-[4.5rem] flex-shrink-0 text-center"
       >
-        <option :value="QUOTA_THRESHOLD_TYPE_FIXED">$</option>
-        <option :value="QUOTA_THRESHOLD_TYPE_PERCENTAGE">%</option>
-      </select>
+        <ElOption :label="&quot;$&quot;" :value="QUOTA_THRESHOLD_TYPE_FIXED">$</ElOption>
+        <ElOption :label="&quot;%&quot;" :value="QUOTA_THRESHOLD_TYPE_PERCENTAGE">%</ElOption>
+      </ElementSelect>
     </template>
   </div>
 </template>

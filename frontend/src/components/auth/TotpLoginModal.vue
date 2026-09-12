@@ -25,7 +25,7 @@
         <!-- Code Input -->
         <div class="mb-6">
           <!-- Hidden input for password manager autofill (autocomplete="one-time-code") -->
-          <input
+          <ElementInput
             ref="hiddenOtpInputRef"
             type="text"
             inputmode="numeric"
@@ -37,7 +37,7 @@
             @input="handleHiddenOtpInput"
           />
           <div class="flex justify-center gap-2">
-            <input
+            <ElementInput
               v-for="(_, index) in 6"
               :key="index"
               :ref="(el) => setInputRef(el, index)"
@@ -61,14 +61,14 @@
         </div>
 
         <!-- Cancel button only -->
-        <button
-          type="button"
-          class="btn btn-secondary w-full"
+        <ElButton
+          native-type="button"
+          class="w-full"
           :disabled="verifying"
           @click="$emit('cancel')"
         >
           {{ t('common.cancel') }}
-        </button>
+        </ElButton>
       </div>
     </div>
   </div>

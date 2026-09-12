@@ -29,13 +29,13 @@
       </div>
 
       <!-- Verification Form -->
-      <form v-else @submit.prevent="handleVerify" class="space-y-5">
+      <ElForm v-else @submit.prevent="handleVerify" class="space-y-5">
         <!-- Verification Code Input -->
         <div>
           <label for="code" class="input-label text-center">
             {{ t('auth.verificationCode') }}
           </label>
-          <input
+          <ElementInput
             id="code"
             v-model="verifyCode"
             type="text"
@@ -106,10 +106,10 @@
         </div>
 
         <!-- Submit Button -->
-        <button
-          type="submit"
+        <ElButton type="primary"
+          native-type="submit"
           :disabled="isLoading || !verifyCode || (pendingOAuthCreateTurnstileRequired && !createAccountTurnstileToken)"
-          class="btn btn-primary w-full"
+          class="w-full"
         >
           <svg
             v-if="isLoading"
@@ -133,21 +133,21 @@
           </svg>
           <Icon v-else name="checkCircle" size="md" class="mr-2" />
           {{ isLoading ? t('auth.verifying') : t('auth.verifyAndCreate') }}
-        </button>
+        </ElButton>
 
         <!-- Resend Code -->
         <div class="text-center">
-          <button
+          <ElButton text
             v-if="countdown > 0"
-            type="button"
+            native-type="button"
             disabled
             class="cursor-not-allowed text-sm text-gray-400 dark:text-dark-500"
           >
             {{ t('auth.resendCountdown', { countdown }) }}
-          </button>
-          <button
+          </ElButton>
+          <ElButton text
             v-else
-            type="button"
+            native-type="button"
             @click="handleResendCode"
             :disabled="
               isSendingCode || (turnstileEnabled && showResendTurnstile && !resendTurnstileToken)
@@ -159,20 +159,20 @@
               {{ t('auth.clickToResend') }}
             </span>
             <span v-else>{{ t('auth.resendCode') }}</span>
-          </button>
+          </ElButton>
         </div>
-      </form>
+      </ElForm>
     </div>
 
     <!-- Footer -->
     <template #footer>
-      <button
+      <ElButton text
         @click="handleBack"
         class="flex items-center gap-2 text-gray-500 transition-colors hover:text-gray-700 dark:text-dark-400 dark:hover:text-gray-300"
       >
         <Icon name="arrowLeft" size="sm" />
         {{ t('auth.backToRegistration') }}
-      </button>
+      </ElButton>
     </template>
   </AuthLayout>
 </template>

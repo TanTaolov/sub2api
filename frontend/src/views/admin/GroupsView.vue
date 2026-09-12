@@ -13,7 +13,7 @@
                 size="md"
                 class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
               />
-              <input
+              <ElementInput
                 v-model="searchQuery"
                 type="text"
                 :placeholder="t('admin.groups.searchGroups')"
@@ -49,10 +49,10 @@
           <div
             class="flex w-full flex-shrink-0 flex-wrap items-center justify-end gap-3 lg:w-auto"
           >
-            <button
+            <ElButton
               @click="loadGroups"
               :disabled="loading"
-              class="btn btn-secondary"
+              class=""
               :title="t('common.refresh')"
             >
               <Icon
@@ -60,23 +60,17 @@
                 size="md"
                 :class="loading ? 'animate-spin' : ''"
               />
-            </button>
-            <div class="relative" ref="columnDropdownRef">
-              <button
+            </ElButton>
+            <ElementFloatingPanel  :visible="Boolean(showColumnDropdown)"  width="192" @close="showColumnDropdown = false"><template #reference><div class="relative" ref="columnDropdownRef"><ElButton
                 @click="showColumnDropdown = !showColumnDropdown"
-                class="btn btn-secondary"
+                class=""
                 :title="t('admin.groups.columnSettings')"
               >
                 <Icon name="grid" size="md" class="mr-2" />
                 <span class="hidden md:inline">{{
                   t("admin.groups.columnSettings")
                 }}</span>
-              </button>
-              <div
-                v-if="showColumnDropdown"
-                class="absolute right-0 top-full z-50 mt-1 max-h-80 w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-dark-600 dark:bg-dark-800"
-              >
-                <button
+              </ElButton></div></template><div  class="max-h-80 overflow-y-auto py-1"><ElButton text
                   v-for="col in toggleableColumns"
                   :key="col.key"
                   @click="toggleColumn(col.key)"
@@ -90,26 +84,24 @@
                     class="text-primary-500"
                     :stroke-width="2"
                   />
-                </button>
-              </div>
-            </div>
-            <button
+                </ElButton></div></ElementFloatingPanel>
+            <ElButton
               v-if="!authStore.isSimpleMode"
               @click="openSortModal"
-              class="btn btn-secondary"
+              class=""
               :title="t('admin.groups.sortOrder')"
             >
               <Icon name="arrowsUpDown" size="md" class="mr-2" />
               {{ t("admin.groups.sortOrder") }}
-            </button>
-            <button
+            </ElButton>
+            <ElButton type="primary"
               @click="openCreateModal"
-              class="btn btn-primary"
+              class=""
               data-tour="groups-create-btn"
             >
               <Icon name="plus" size="md" class="mr-2" />
               {{ t("admin.groups.createGroup") }}
-            </button>
+            </ElButton>
           </div>
         </div>
       </template>
@@ -381,14 +373,14 @@
 
           <template #cell-actions="{ row }">
             <div class="flex items-center gap-1">
-              <button
+              <ElButton text
                 @click="handleEdit(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary-600 dark:hover:bg-dark-700 dark:hover:text-primary-400"
               >
                 <Icon name="edit" size="sm" />
                 <span class="text-xs">{{ t("common.edit") }}</span>
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 v-if="!authStore.isSimpleMode"
                 data-testid="group-duplicate"
                 :title="
@@ -408,8 +400,8 @@
                       : t("admin.groups.duplicate")
                   }}
                 </span>
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 v-if="!authStore.isSimpleMode && row.platform === 'composite'"
                 data-testid="group-composite-routes"
                 @click="handleCompositeRoutes(row)"
@@ -419,8 +411,8 @@
                 <span class="text-xs">{{
                   t("admin.groups.compositeRoutes.action")
                 }}</span>
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 v-if="!authStore.isSimpleMode"
                 data-testid="group-rate-multipliers"
                 @click="handleRateMultipliers(row)"
@@ -430,8 +422,8 @@
                 <span class="text-xs">{{
                   t("admin.groups.rateMultipliers")
                 }}</span>
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 v-if="!authStore.isSimpleMode"
                 data-testid="group-rpm-overrides"
                 @click="handleRPMOverrides(row)"
@@ -441,14 +433,14 @@
                 <span class="text-xs">{{
                   t("admin.groups.rpmOverrides")
                 }}</span>
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 @click="handleDelete(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
               >
                 <Icon name="trash" size="sm" />
                 <span class="text-xs">{{ t("common.delete") }}</span>
-              </button>
+              </ElButton>
             </div>
           </template>
 
@@ -482,14 +474,14 @@
       width="wide"
       @close="closeCreateModal"
     >
-      <form
+      <ElForm
         id="create-group-form"
         @submit.prevent="handleCreateGroup"
         class="space-y-5"
       >
         <div>
           <label class="input-label">{{ t("admin.groups.form.name") }}</label>
-          <input
+          <ElementInput
             v-model="createForm.name"
             type="text"
             required
@@ -502,12 +494,12 @@
           <label class="input-label">{{
             t("admin.groups.form.description")
           }}</label>
-          <textarea
+          <ElementInput type="textarea"
             v-model="createForm.description"
-            rows="3"
+            :rows="3"
             class="input"
             :placeholder="t('admin.groups.optionalDescription')"
-          ></textarea>
+          ></ElementInput>
         </div>
         <div>
           <label class="input-label">{{
@@ -527,17 +519,12 @@
             <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ t("admin.groups.copyAccounts.title") }}
             </label>
-            <div class="group relative inline-flex">
-              <Icon
+            <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative inline-flex" tabindex="0"><Icon
                 name="questionCircle"
                 size="sm"
                 :stroke-width="2"
                 class="cursor-help text-gray-400 transition-colors hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400"
-              />
-              <div
-                class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-72 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
-              >
-                <div
+              /></div></template><div class="w-72 transition-all duration-200"><div
                   class="rounded-lg bg-gray-900 p-3 text-white shadow-lg dark:bg-gray-800"
                 >
                   <p class="text-xs leading-relaxed text-gray-300">
@@ -546,9 +533,7 @@
                   <div
                     class="absolute -bottom-1.5 left-3 h-3 w-3 rotate-45 bg-gray-900 dark:bg-gray-800"
                   ></div>
-                </div>
-              </div>
-            </div>
+                </div></div></ElPopover>
           </div>
           <!-- 已选分组标签 -->
           <div
@@ -564,8 +549,8 @@
                 copyAccountsGroupOptions.find((o) => o.value === groupId)
                   ?.label || `#${groupId}`
               }}
-              <button
-                type="button"
+              <ElButton text
+                native-type="button"
                 @click="
                   createForm.copy_accounts_from_group_ids =
                     createForm.copy_accounts_from_group_ids.filter(
@@ -575,11 +560,11 @@
                 class="ml-0.5 text-primary-500 hover:text-primary-700 dark:hover:text-primary-200"
               >
                 <Icon name="x" size="xs" />
-              </button>
+              </ElButton>
             </span>
           </div>
           <!-- 分组选择下拉 -->
-          <select
+          <ElementSelect
             class="input"
             @change="
               (e) => {
@@ -594,10 +579,10 @@
               }
             "
           >
-            <option value="">
+            <ElOption :label="(t(&quot;admin.groups.copyAccounts.selectPlaceholder&quot;))" value="">
               {{ t("admin.groups.copyAccounts.selectPlaceholder") }}
-            </option>
-            <option
+            </ElOption>
+            <ElOption :label="(opt.label)"
               v-for="opt in copyAccountsGroupOptions"
               :key="opt.value"
               :value="opt.value"
@@ -606,8 +591,8 @@
               "
             >
               {{ opt.label }}
-            </option>
-          </select>
+            </ElOption>
+          </ElementSelect>
           <p class="input-hint">{{ t("admin.groups.copyAccounts.hint") }}</p>
         </div>
         <template v-if="!authStore.isSimpleMode">
@@ -615,7 +600,7 @@
           <label class="input-label">{{
             t("admin.groups.form.rateMultiplier")
           }}</label>
-          <input
+          <ElementInput
             v-model.number="createForm.rate_multiplier"
             type="number"
             step="0.001"
@@ -628,7 +613,7 @@
         </div>
         <div>
           <label class="input-label">{{ t("admin.groups.form.rpmLimit") }}</label>
-          <input
+          <ElementInput
             v-model.number="createForm.rpm_limit"
             type="number"
             min="0"
@@ -656,18 +641,12 @@
               {{ t("admin.groups.form.exclusive") }}
             </label>
             <!-- Help Tooltip -->
-            <div class="group relative inline-flex">
-              <Icon
+            <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative inline-flex" tabindex="0"><Icon
                 name="questionCircle"
                 size="sm"
                 :stroke-width="2"
                 class="cursor-help text-gray-400 transition-colors hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400"
-              />
-              <!-- Tooltip Popover -->
-              <div
-                class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-72 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
-              >
-                <div
+              /><!-- Tooltip Popover --></div></template><div class="w-72 transition-all duration-200"><div
                   class="rounded-lg bg-gray-900 p-3 text-white shadow-lg dark:bg-gray-800"
                 >
                   <p class="mb-2 text-xs font-medium">
@@ -690,9 +669,7 @@
                   <div
                     class="absolute -bottom-1.5 left-3 h-3 w-3 rotate-45 bg-gray-900 dark:bg-gray-800"
                   ></div>
-                </div>
-              </div>
-            </div>
+                </div></div></ElPopover>
           </div>
           <div class="flex items-center gap-3">
             <Toggle v-model="createForm.is_exclusive" />
@@ -730,7 +707,7 @@
               <label class="input-label">{{
                 t("admin.groups.subscription.dailyLimit")
               }}</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.daily_limit_usd"
                 type="number"
                 step="0.01"
@@ -743,7 +720,7 @@
               <label class="input-label">{{
                 t("admin.groups.subscription.weeklyLimit")
               }}</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.weekly_limit_usd"
                 type="number"
                 step="0.01"
@@ -756,7 +733,7 @@
               <label class="input-label">{{
                 t("admin.groups.subscription.monthlyLimit")
               }}</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.monthly_limit_usd"
                 type="number"
                 step="0.01"
@@ -797,20 +774,20 @@
                 }}
               </span>
               <div class="flex items-center gap-1.5">
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   class="rounded px-2 py-1 font-medium text-primary-600 transition-colors hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/20"
                   @click="selectAllModelAllowlistItems(createModelAllowlistState)"
                 >
                   {{ t("admin.groups.modelAllowlist.selectAll") }}
-                </button>
-                <button
-                  type="button"
+                </ElButton>
+                <ElButton text
+                  native-type="button"
                   class="rounded px-2 py-1 font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700"
                   @click="invertModelAllowlistSelection(createModelAllowlistState)"
                 >
                   {{ t("admin.groups.modelAllowlist.invertSelection") }}
-                </button>
+                </ElButton>
               </div>
             </div>
             <div
@@ -830,10 +807,10 @@
                 :key="item.id"
                 class="flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 dark:border-dark-600 dark:bg-dark-800"
               >
-                <input
+                <ElementCheckbox
                   v-model="item.selected"
-                  type="checkbox"
-                  class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+
+                  class=""
                 />
                 <span class="min-w-0 flex-1 break-all text-sm text-gray-700 dark:text-gray-300">
                   {{ item.id }}
@@ -844,40 +821,40 @@
                     {{ t("admin.groups.modelAllowlist.wildcardTag") }}
                   </span>
                 </span>
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   :disabled="index === 0"
                   class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 dark:hover:bg-dark-600 dark:hover:text-gray-200"
                   @click="moveCreateModelAllowlistItem(index, index - 1)"
                 >
                   <Icon name="arrowUp" size="sm" />
-                </button>
-                <button
-                  type="button"
+                </ElButton>
+                <ElButton text
+                  native-type="button"
                   :disabled="index === createModelAllowlistState.items.length - 1"
                   class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 dark:hover:bg-dark-600 dark:hover:text-gray-200"
                   @click="moveCreateModelAllowlistItem(index, index + 1)"
                 >
                   <Icon name="arrowDown" size="sm" />
-                </button>
+                </ElButton>
               </div>
             </div>
             <div class="border-t border-gray-200 px-3 py-2 dark:border-dark-600">
               <div class="flex items-center gap-2">
-                <input
+                <ElementInput
                   v-model="createAllowlistCustomEntry"
                   type="text"
                   :placeholder="t('admin.groups.modelAllowlist.customPlaceholder')"
                   class="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none dark:border-dark-500 dark:bg-dark-700 dark:text-gray-200"
                   @keydown.enter.prevent="submitCreateAllowlistCustomEntry"
                 />
-                <button
-                  type="button"
+                <ElButton type="primary"
+                  native-type="button"
                   class="rounded bg-primary-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary-700"
                   @click="submitCreateAllowlistCustomEntry"
                 >
                   {{ t("admin.groups.modelAllowlist.addCustom") }}
-                </button>
+                </ElButton>
               </div>
               <p
                 v-if="createAllowlistCustomErrorKey"
@@ -903,22 +880,10 @@
             {{ t(imagePricingI18nKey(createForm.platform, "description")) }}
           </p>
           <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input
-                v-model="createForm.allow_image_generation"
-                type="checkbox"
-                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              {{ t(imagePricingI18nKey(createForm.platform, "allowImageGeneration")) }}
-            </label>
-            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input
-                v-model="createForm.image_rate_independent"
-                type="checkbox"
-                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              {{ t(imagePricingI18nKey(createForm.platform, "independentMultiplier")) }}
-            </label>
+            <ElementCheckbox v-model="createForm.allow_image_generation" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              {{ t(imagePricingI18nKey(createForm.platform, "allowImageGeneration")) }}</ElementCheckbox>
+            <ElementCheckbox v-model="createForm.image_rate_independent" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              {{ t(imagePricingI18nKey(createForm.platform, "independentMultiplier")) }}</ElementCheckbox>
           </div>
           <div
             v-if="createForm.image_rate_independent"
@@ -927,7 +892,7 @@
             <label class="input-label">{{
               t(imagePricingI18nKey(createForm.platform, "imageMultiplier"))
             }}</label>
-            <input
+            <ElementInput
               v-model.number="createForm.image_rate_multiplier"
               type="number"
               step="0.0001"
@@ -939,7 +904,7 @@
           <div class="grid grid-cols-3 gap-3">
             <div>
               <label class="input-label">1K ($)</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.image_price_1k"
                 type="number"
                 step="0.001"
@@ -950,7 +915,7 @@
             </div>
             <div>
               <label class="input-label">2K ($)</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.image_price_2k"
                 type="number"
                 step="0.001"
@@ -961,7 +926,7 @@
             </div>
             <div>
               <label class="input-label">4K ($)</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.image_price_4k"
                 type="number"
                 step="0.001"
@@ -988,16 +953,8 @@
             </div>
           </div>
           <div v-if="createForm.platform === 'gemini' && createForm.allow_image_generation" class="mt-4 border-t border-dashed border-gray-200 pt-4 dark:border-dark-700">
-            <label
-              class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              <input
-                v-model="createForm.allow_batch_image_generation"
-                type="checkbox"
-                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              {{ t("admin.groups.imagePricing.allowBatchImageGeneration") }}
-            </label>
+            <ElementCheckbox v-model="createForm.allow_batch_image_generation" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              {{ t("admin.groups.imagePricing.allowBatchImageGeneration") }}</ElementCheckbox>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
               {{ t("admin.groups.imagePricing.batchSectionHint") }}
             </p>
@@ -1009,7 +966,7 @@
                 <label class="input-label">{{
                   t("admin.groups.imagePricing.batchDiscountMultiplier")
                 }}</label>
-                <input
+                <ElementInput
                   v-model.number="createForm.batch_image_discount_multiplier"
                   type="number"
                   step="0.0001"
@@ -1022,7 +979,7 @@
                 <label class="input-label">{{
                   t("admin.groups.imagePricing.batchHoldMultiplier")
                 }}</label>
-                <input
+                <ElementInput
                   v-model.number="createForm.batch_image_hold_multiplier"
                   type="number"
                   step="0.0001"
@@ -1055,14 +1012,8 @@
             {{ t(videoPricingI18nKey("description")) }}
           </p>
           <div class="mb-4">
-            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input
-                v-model="createForm.video_rate_independent"
-                type="checkbox"
-                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              {{ t(videoPricingI18nKey("independentMultiplier")) }}
-            </label>
+            <ElementCheckbox v-model="createForm.video_rate_independent" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              {{ t(videoPricingI18nKey("independentMultiplier")) }}</ElementCheckbox>
           </div>
           <div
             v-if="createForm.video_rate_independent"
@@ -1071,7 +1022,7 @@
             <label class="input-label">{{
               t(videoPricingI18nKey("videoMultiplier"))
             }}</label>
-            <input
+            <ElementInput
               v-model.number="createForm.video_rate_multiplier"
               type="number"
               step="0.0001"
@@ -1083,7 +1034,7 @@
           <div class="grid grid-cols-3 gap-3">
             <div>
               <label class="input-label">480p ($/s)</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.video_price_480p"
                 type="number"
                 step="0.001"
@@ -1094,7 +1045,7 @@
             </div>
             <div>
               <label class="input-label">720p ($/s)</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.video_price_720p"
                 type="number"
                 step="0.001"
@@ -1105,7 +1056,7 @@
             </div>
             <div>
               <label class="input-label">1080p ($/s)</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.video_price_1080p"
                 type="number"
                 step="0.001"
@@ -1142,7 +1093,7 @@
                   <span class="mb-1 block text-xs text-gray-500 dark:text-gray-400">
                     {{ resolution.label }} ($/s)
                   </span>
-                  <input
+                  <ElementInput
                     v-model.number="createForm.video_model_prices[family.key][resolution.key]"
                     type="number"
                     step="0.001"
@@ -1175,14 +1126,7 @@
         <!-- 高峰时段倍率配置（仅订阅类型分组） -->
         <div v-if="createForm.subscription_type === 'subscription'" class="border-t pt-4">
           <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input
-                v-model="createForm.peak_rate_enabled"
-                type="checkbox"
-                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span>{{ t("admin.groups.peakRate.enable") }}</span>
-            </label>
+            <ElementCheckbox v-model="createForm.peak_rate_enabled" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t("admin.groups.peakRate.enable") }}</span></ElementCheckbox>
           </div>
           <div
             v-if="createForm.peak_rate_enabled"
@@ -1190,7 +1134,7 @@
           >
             <div>
               <label class="input-label">{{ t("admin.groups.peakRate.peakStart") }}</label>
-              <input
+              <ElementInput
                 v-model="createForm.peak_start"
                 type="time"
                 class="input"
@@ -1198,7 +1142,7 @@
             </div>
             <div>
               <label class="input-label">{{ t("admin.groups.peakRate.peakEnd") }}</label>
-              <input
+              <ElementInput
                 v-model="createForm.peak_end"
                 type="time"
                 class="input"
@@ -1206,7 +1150,7 @@
             </div>
             <div>
               <label class="input-label">{{ t("admin.groups.peakRate.peakMultiplier") }}</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.peak_rate_multiplier"
                 type="number"
                 step="0.001"
@@ -1221,14 +1165,7 @@
 
         <!-- 分组利润控制（五个平台 token 请求） -->
         <div v-if="isProfitControlPlatform(createForm.platform)" class="border-t pt-4">
-          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-            <input
-              v-model="createForm.profit_control_enabled"
-              type="checkbox"
-              class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <span>{{ t("admin.groups.profitControl.enable") }}</span>
-          </label>
+          <ElementCheckbox v-model="createForm.profit_control_enabled" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t("admin.groups.profitControl.enable") }}</span></ElementCheckbox>
           <p class="mb-3 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
             {{
               createForm.profit_control_enabled
@@ -1242,7 +1179,7 @@
           >
             <div>
               <label class="input-label">{{ t("admin.groups.profitControl.minMargin") }}</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.profit_min_margin_percent"
                 type="number"
                 step="0.1"
@@ -1255,7 +1192,7 @@
             </div>
             <div>
               <label class="input-label">{{ t("admin.groups.profitControl.safetyBuffer") }}</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.profit_safety_buffer_percent"
                 type="number"
                 step="0.1"
@@ -1276,17 +1213,12 @@
               {{ t("admin.groups.supportedScopes.title") }}
             </label>
             <!-- Help Tooltip -->
-            <div class="group relative inline-flex">
-              <Icon
+            <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative inline-flex" tabindex="0"><Icon
                 name="questionCircle"
                 size="sm"
                 :stroke-width="2"
                 class="cursor-help text-gray-400 transition-colors hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400"
-              />
-              <div
-                class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-72 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
-              >
-                <div
+              /></div></template><div class="w-72 transition-all duration-200"><div
                   class="rounded-lg bg-gray-900 p-3 text-white shadow-lg dark:bg-gray-800"
                 >
                   <p class="text-xs leading-relaxed text-gray-300">
@@ -1295,48 +1227,22 @@
                   <div
                     class="absolute -bottom-1.5 left-3 h-3 w-3 rotate-45 bg-gray-900 dark:bg-gray-800"
                   ></div>
-                </div>
-              </div>
-            </div>
+                </div></div></ElPopover>
           </div>
           <div class="space-y-2">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                :checked="createForm.supported_model_scopes.includes('claude')"
-                @change="toggleCreateScope('claude')"
-                class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-700"
-              />
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{
+            <ElementCheckbox :checked="createForm.supported_model_scopes.includes('claude')" @change="toggleCreateScope('claude')" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
                 t("admin.groups.supportedScopes.claude")
-              }}</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                :checked="
+              }}</span></ElementCheckbox>
+            <ElementCheckbox :checked="
                   createForm.supported_model_scopes.includes('gemini_text')
-                "
-                @change="toggleCreateScope('gemini_text')"
-                class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-700"
-              />
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{
+                " @change="toggleCreateScope('gemini_text')" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
                 t("admin.groups.supportedScopes.geminiText")
-              }}</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                :checked="
+              }}</span></ElementCheckbox>
+            <ElementCheckbox :checked="
                   createForm.supported_model_scopes.includes('gemini_image')
-                "
-                @change="toggleCreateScope('gemini_image')"
-                class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-700"
-              />
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{
+                " @change="toggleCreateScope('gemini_image')" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
                 t("admin.groups.supportedScopes.geminiImage")
-              }}</span>
-            </label>
+              }}</span></ElementCheckbox>
           </div>
           <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
             {{ t("admin.groups.supportedScopes.hint") }}
@@ -1349,17 +1255,12 @@
             <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ t("admin.groups.mcpXml.title") }}
             </label>
-            <div class="group relative inline-flex">
-              <Icon
+            <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative inline-flex" tabindex="0"><Icon
                 name="questionCircle"
                 size="sm"
                 :stroke-width="2"
                 class="cursor-help text-gray-400 transition-colors hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400"
-              />
-              <div
-                class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-72 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
-              >
-                <div
+              /></div></template><div class="w-72 transition-all duration-200"><div
                   class="rounded-lg bg-gray-900 p-3 text-white shadow-lg dark:bg-gray-800"
                 >
                   <p class="text-xs leading-relaxed text-gray-300">
@@ -1368,9 +1269,7 @@
                   <div
                     class="absolute -bottom-1.5 left-3 h-3 w-3 rotate-45 bg-gray-900 dark:bg-gray-800"
                   ></div>
-                </div>
-              </div>
-            </div>
+                </div></div></ElPopover>
           </div>
           <div class="flex items-center gap-3">
             <Toggle v-model="createForm.mcp_xml_inject" />
@@ -1391,17 +1290,12 @@
               {{ t("admin.groups.claudeCode.title") }}
             </label>
             <!-- Help Tooltip -->
-            <div class="group relative inline-flex">
-              <Icon
+            <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative inline-flex" tabindex="0"><Icon
                 name="questionCircle"
                 size="sm"
                 :stroke-width="2"
                 class="cursor-help text-gray-400 transition-colors hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400"
-              />
-              <div
-                class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-72 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
-              >
-                <div
+              /></div></template><div class="w-72 transition-all duration-200"><div
                   class="rounded-lg bg-gray-900 p-3 text-white shadow-lg dark:bg-gray-800"
                 >
                   <p class="text-xs leading-relaxed text-gray-300">
@@ -1410,9 +1304,7 @@
                   <div
                     class="absolute -bottom-1.5 left-3 h-3 w-3 rotate-45 bg-gray-900 dark:bg-gray-800"
                   ></div>
-                </div>
-              </div>
-            </div>
+                </div></div></ElPopover>
           </div>
           <div class="flex items-center gap-3">
             <Toggle v-model="createForm.claude_code_only" />
@@ -1452,7 +1344,7 @@
             <label class="input-label">{{
               t("admin.groups.webSearchPricing.pricePerCall")
             }}</label>
-            <input
+            <ElementInput
               v-model.number="createForm.web_search_price_per_call"
               type="number"
               step="0.001"
@@ -1482,14 +1374,11 @@
               <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t("admin.groups.modelPricing.title") }}</h4>
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t("admin.groups.modelPricing.description") }}</p>
             </div>
-            <button type="button" class="btn btn-secondary shrink-0 whitespace-nowrap" @click="addGroupPricing(createForm.model_pricing)">
+            <ElButton native-type="button" class="shrink-0 whitespace-nowrap" @click="addGroupPricing(createForm.model_pricing)">
               <Icon name="plus" size="sm" class="mr-1" />{{ t("admin.groups.modelPricing.add") }}
-            </button>
+            </ElButton>
           </div>
-          <label class="mt-3 flex items-start gap-2">
-            <input v-model="createForm.long_context_pricing_enabled" type="checkbox" class="mt-0.5" />
-            <span><span class="block text-sm text-gray-700 dark:text-gray-300">{{ t("admin.groups.modelPricing.longContext") }}</span><span class="block text-xs text-gray-500">{{ t("admin.groups.modelPricing.longContextHint") }}</span></span>
-          </label>
+          <ElementCheckbox v-model="createForm.long_context_pricing_enabled" :class="[&quot;mt-3 flex items-start gap-2&quot;,&quot;mt-0.5&quot;]"><span><span class="block text-sm text-gray-700 dark:text-gray-300">{{ t("admin.groups.modelPricing.longContext") }}</span><span class="block text-xs text-gray-500">{{ t("admin.groups.modelPricing.longContextHint") }}</span></span></ElementCheckbox>
           <div class="mt-3 space-y-2">
             <PricingEntryCard v-for="(entry, index) in createForm.model_pricing" :key="index" :entry="entry" :platform="createForm.platform" hide-token-intervals @update="createForm.model_pricing[index] = $event" @remove="createForm.model_pricing.splice(index, 1)" />
           </div>
@@ -1509,7 +1398,7 @@
           <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div>
               <label class="input-label">{{ t("admin.groups.explicitPricing.searchPricePer1k") }}</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.search_price_per_1k"
                 type="number"
                 step="0.000001"
@@ -1521,7 +1410,7 @@
             </div>
             <div>
               <label class="input-label">{{ t("admin.groups.voicePricing.audioRealtimePerMin") }}</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.audio_realtime_price_per_min"
                 type="number"
                 step="0.000001"
@@ -1533,7 +1422,7 @@
             </div>
             <div>
               <label class="input-label">{{ t("admin.groups.voicePricing.audioTtsPerMillionChars") }}</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.audio_tts_price_per_million_chars"
                 type="number"
                 step="0.000001"
@@ -1545,7 +1434,7 @@
             </div>
             <div>
               <label class="input-label">{{ t("admin.groups.voicePricing.audioSttPerHour") }}</label>
-              <input
+              <ElementInput
                 v-model.number="createForm.audio_stt_price_per_hour"
                 type="number"
                 step="0.000001"
@@ -1667,7 +1556,7 @@
                     <label class="input-label">{{
                       t("admin.groups.openaiMessages.opusModel")
                     }}</label>
-                    <input
+                    <ElementInput
                       v-model="createForm.opus_mapped_model"
                       type="text"
                       :placeholder="
@@ -1680,7 +1569,7 @@
                     <label class="input-label">{{
                       t("admin.groups.openaiMessages.sonnetModel")
                     }}</label>
-                    <input
+                    <ElementInput
                       v-model="createForm.sonnet_mapped_model"
                       type="text"
                       :placeholder="
@@ -1693,7 +1582,7 @@
                     <label class="input-label">{{
                       t("admin.groups.openaiMessages.haikuModel")
                     }}</label>
-                    <input
+                    <ElementInput
                       v-model="createForm.haiku_mapped_model"
                       type="text"
                       :placeholder="
@@ -1740,14 +1629,14 @@
                   <span>{{
                     t("admin.groups.openaiMessages.noExactMappings")
                   }}</span>
-                  <button
-                    type="button"
+                  <ElButton text
+                    native-type="button"
                     @click="addCreateMessagesDispatchMapping"
                     class="flex items-center gap-1.5 text-sm font-medium text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                   >
                     <Icon name="plus" size="sm" />
                     {{ t("admin.groups.openaiMessages.addExactMapping") }}
-                  </button>
+                  </ElButton>
                 </div>
 
                 <div v-else class="space-y-3">
@@ -1764,7 +1653,7 @@
                           <label class="input-label">{{
                             t("admin.groups.openaiMessages.claudeModel")
                           }}</label>
-                          <input
+                          <ElementInput
                             v-model="row.claude_model"
                             type="text"
                             :placeholder="
@@ -1788,7 +1677,7 @@
                           <label class="input-label">{{
                             t("admin.groups.openaiMessages.targetModel")
                           }}</label>
-                          <input
+                          <ElementInput
                             v-model="row.target_model"
                             type="text"
                             :placeholder="
@@ -1800,8 +1689,8 @@
                           />
                         </div>
                       </div>
-                      <button
-                        type="button"
+                      <ElButton text
+                        native-type="button"
                         @click="removeCreateMessagesDispatchMapping(row)"
                         class="mt-6 flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                         :title="
@@ -1809,18 +1698,18 @@
                         "
                       >
                         <Icon name="trash" size="sm" />
-                      </button>
+                      </ElButton>
                     </div>
                   </div>
 
-                  <button
-                    type="button"
+                  <ElButton text
+                    native-type="button"
                     @click="addCreateMessagesDispatchMapping"
                     class="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white py-3 text-sm font-medium text-gray-500 transition-all hover:border-primary-300 hover:bg-primary-50/50 hover:text-primary-600 dark:border-dark-600 dark:bg-dark-800 dark:text-gray-400 dark:hover:border-primary-800 dark:hover:bg-primary-900/20 dark:hover:text-primary-400"
                   >
                     <Icon name="plus" size="sm" />
                     {{ t("admin.groups.openaiMessages.addExactMapping") }}
-                  </button>
+                  </ElButton>
                 </div>
               </div>
             </div>
@@ -1903,17 +1792,12 @@
               {{ t("admin.groups.modelRouting.title") }}
             </label>
             <!-- Help Tooltip -->
-            <div class="group relative inline-flex">
-              <Icon
+            <ElPopover  :trigger="['hover', 'focus']"  :width="320" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative inline-flex" tabindex="0"><Icon
                 name="questionCircle"
                 size="sm"
                 :stroke-width="2"
                 class="cursor-help text-gray-400 transition-colors hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400"
-              />
-              <div
-                class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-80 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
-              >
-                <div
+              /></div></template><div class="w-80 transition-all duration-200"><div
                   class="rounded-lg bg-gray-900 p-3 text-white shadow-lg dark:bg-gray-800"
                 >
                   <p class="text-xs leading-relaxed text-gray-300">
@@ -1922,9 +1806,7 @@
                   <div
                     class="absolute -bottom-1.5 left-3 h-3 w-3 rotate-45 bg-gray-900 dark:bg-gray-800"
                   ></div>
-                </div>
-              </div>
-            </div>
+                </div></div></ElPopover>
           </div>
           <!-- 启用开关 -->
           <div class="flex items-center gap-3 mb-3">
@@ -1959,7 +1841,7 @@
                     <label class="input-label text-xs">{{
                       t("admin.groups.modelRouting.modelPattern")
                     }}</label>
-                    <input
+                    <ElementInput
                       v-model="rule.pattern"
                       type="text"
                       class="input text-sm"
@@ -1983,18 +1865,21 @@
                         class="inline-flex items-center gap-1 rounded-full bg-primary-100 px-2.5 py-1 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-300"
                       >
                         {{ account.name }}
-                        <button
-                          type="button"
+                        <ElButton text
+                          native-type="button"
                           @click="removeSelectedAccount(rule, account.id)"
                           class="ml-0.5 text-primary-500 hover:text-primary-700 dark:hover:text-primary-200"
                         >
                           <Icon name="x" size="xs" />
-                        </button>
+                        </ElButton>
                       </span>
                     </div>
                     <!-- 账号搜索输入框 -->
-                    <div class="relative account-search-container">
-                      <input
+                    <ElementFloatingPanel  :visible="Boolean(
+                          showAccountDropdown[getCreateRuleSearchKey(rule)] &&
+                          accountSearchResults[getCreateRuleSearchKey(rule)]
+                            ?.length > 0
+                        )" fit-reference width="192" @close="showAccountDropdown[getCreateRuleSearchKey(rule)] = false"><template #reference><div class="relative account-search-container"><ElementInput
                         v-model="
                           accountSearchKeyword[getCreateRuleSearchKey(rule)]
                         "
@@ -2007,22 +1892,12 @@
                         "
                         @input="searchAccountsByRule(rule)"
                         @focus="onAccountSearchFocus(rule)"
-                      />
-                      <!-- 搜索结果下拉框 -->
-                      <div
-                        v-if="
-                          showAccountDropdown[getCreateRuleSearchKey(rule)] &&
-                          accountSearchResults[getCreateRuleSearchKey(rule)]
-                            ?.length > 0
-                        "
-                        class="absolute z-50 mt-1 max-h-48 w-full overflow-auto rounded-lg border bg-white shadow-lg dark:border-dark-600 dark:bg-dark-800"
-                      >
-                        <button
+                      /><!-- 搜索结果下拉框 --></div></template><div  class="max-h-80 overflow-y-auto py-1"><ElButton text
                           v-for="account in accountSearchResults[
                             getCreateRuleSearchKey(rule)
                           ]"
                           :key="account.id"
-                          type="button"
+                          native-type="button"
                           @click="selectAccount(rule, account)"
                           class="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-dark-700"
                           :class="{
@@ -2038,53 +1913,51 @@
                           <span class="ml-2 text-xs text-gray-400"
                             >#{{ account.id }}</span
                           >
-                        </button>
-                      </div>
-                    </div>
+                        </ElButton></div></ElementFloatingPanel>
                     <p class="text-xs text-gray-400 mt-1">
                       {{ t("admin.groups.modelRouting.accountsHint") }}
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   @click="removeCreateRoutingRule(rule)"
                   class="mt-5 p-1.5 text-gray-400 hover:text-red-500 transition-colors"
                   :title="t('admin.groups.modelRouting.removeRule')"
                 >
                   <Icon name="trash" size="sm" />
-                </button>
+                </ElButton>
               </div>
             </div>
           </div>
           <!-- 添加规则按钮（仅在启用时显示） -->
-          <button
+          <ElButton text
             v-if="createForm.model_routing_enabled"
-            type="button"
+            native-type="button"
             @click="addCreateRoutingRule"
             class="mt-3 flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
           >
             <Icon name="plus" size="sm" />
             {{ t("admin.groups.modelRouting.addRule") }}
-          </button>
+          </ElButton>
         </div>
         </template>
-      </form>
+      </ElForm>
 
       <template #footer>
         <div class="flex justify-end gap-3 pt-4">
-          <button
+          <ElButton
             @click="closeCreateModal"
-            type="button"
-            class="btn btn-secondary"
+            native-type="button"
+            class=""
           >
             {{ t("common.cancel") }}
-          </button>
-          <button
-            type="submit"
+          </ElButton>
+          <ElButton type="primary"
+            native-type="submit"
             form="create-group-form"
             :disabled="submitting"
-            class="btn btn-primary"
+            class=""
             data-tour="group-form-submit"
           >
             <svg
@@ -2108,7 +1981,7 @@
               ></path>
             </svg>
             {{ submitting ? t("admin.groups.creating") : t("common.create") }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>
@@ -2120,7 +1993,7 @@
       width="wide"
       @close="closeEditModal"
     >
-      <form
+      <ElForm
         v-if="editingGroup"
         id="edit-group-form"
         @submit.prevent="handleUpdateGroup"
@@ -2128,7 +2001,7 @@
       >
         <div>
           <label class="input-label">{{ t("admin.groups.form.name") }}</label>
-          <input
+          <ElementInput
             v-model="editForm.name"
             type="text"
             required
@@ -2140,11 +2013,11 @@
           <label class="input-label">{{
             t("admin.groups.form.description")
           }}</label>
-          <textarea
+          <ElementInput type="textarea"
             v-model="editForm.description"
-            rows="3"
+            :rows="3"
             class="input"
-          ></textarea>
+          ></ElementInput>
         </div>
         <div>
           <label class="input-label">{{
@@ -2165,17 +2038,12 @@
             <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ t("admin.groups.copyAccounts.title") }}
             </label>
-            <div class="group relative inline-flex">
-              <Icon
+            <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative inline-flex" tabindex="0"><Icon
                 name="questionCircle"
                 size="sm"
                 :stroke-width="2"
                 class="cursor-help text-gray-400 transition-colors hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400"
-              />
-              <div
-                class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-72 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
-              >
-                <div
+              /></div></template><div class="w-72 transition-all duration-200"><div
                   class="rounded-lg bg-gray-900 p-3 text-white shadow-lg dark:bg-gray-800"
                 >
                   <p class="text-xs leading-relaxed text-gray-300">
@@ -2184,9 +2052,7 @@
                   <div
                     class="absolute -bottom-1.5 left-3 h-3 w-3 rotate-45 bg-gray-900 dark:bg-gray-800"
                   ></div>
-                </div>
-              </div>
-            </div>
+                </div></div></ElPopover>
           </div>
           <!-- 已选分组标签 -->
           <div
@@ -2202,8 +2068,8 @@
                 copyAccountsGroupOptionsForEdit.find((o) => o.value === groupId)
                   ?.label || `#${groupId}`
               }}
-              <button
-                type="button"
+              <ElButton text
+                native-type="button"
                 @click="
                   editForm.copy_accounts_from_group_ids =
                     editForm.copy_accounts_from_group_ids.filter(
@@ -2213,11 +2079,11 @@
                 class="ml-0.5 text-primary-500 hover:text-primary-700 dark:hover:text-primary-200"
               >
                 <Icon name="x" size="xs" />
-              </button>
+              </ElButton>
             </span>
           </div>
           <!-- 分组选择下拉 -->
-          <select
+          <ElementSelect
             class="input"
             @change="
               (e) => {
@@ -2232,10 +2098,10 @@
               }
             "
           >
-            <option value="">
+            <ElOption :label="(t(&quot;admin.groups.copyAccounts.selectPlaceholder&quot;))" value="">
               {{ t("admin.groups.copyAccounts.selectPlaceholder") }}
-            </option>
-            <option
+            </ElOption>
+            <ElOption :label="(opt.label)"
               v-for="opt in copyAccountsGroupOptionsForEdit"
               :key="opt.value"
               :value="opt.value"
@@ -2244,8 +2110,8 @@
               "
             >
               {{ opt.label }}
-            </option>
-          </select>
+            </ElOption>
+          </ElementSelect>
           <p class="input-hint">
             {{ t("admin.groups.copyAccounts.hintEdit") }}
           </p>
@@ -2254,7 +2120,7 @@
           <label class="input-label">{{
             t("admin.groups.form.rateMultiplier")
           }}</label>
-          <input
+          <ElementInput
             v-model.number="editForm.rate_multiplier"
             type="number"
             step="0.001"
@@ -2266,7 +2132,7 @@
         </div>
         <div>
           <label class="input-label">{{ t("admin.groups.form.rpmLimit") }}</label>
-          <input
+          <ElementInput
             v-model.number="editForm.rpm_limit"
             type="number"
             min="0"
@@ -2291,18 +2157,12 @@
               {{ t("admin.groups.form.exclusive") }}
             </label>
             <!-- Help Tooltip -->
-            <div class="group relative inline-flex">
-              <Icon
+            <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative inline-flex" tabindex="0"><Icon
                 name="questionCircle"
                 size="sm"
                 :stroke-width="2"
                 class="cursor-help text-gray-400 transition-colors hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400"
-              />
-              <!-- Tooltip Popover -->
-              <div
-                class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-72 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
-              >
-                <div
+              /><!-- Tooltip Popover --></div></template><div class="w-72 transition-all duration-200"><div
                   class="rounded-lg bg-gray-900 p-3 text-white shadow-lg dark:bg-gray-800"
                 >
                   <p class="mb-2 text-xs font-medium">
@@ -2325,9 +2185,7 @@
                   <div
                     class="absolute -bottom-1.5 left-3 h-3 w-3 rotate-45 bg-gray-900 dark:bg-gray-800"
                   ></div>
-                </div>
-              </div>
-            </div>
+                </div></div></ElPopover>
           </div>
           <div class="flex items-center gap-3">
             <Toggle v-model="editForm.is_exclusive" />
@@ -2370,7 +2228,7 @@
               <label class="input-label">{{
                 t("admin.groups.subscription.dailyLimit")
               }}</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.daily_limit_usd"
                 type="number"
                 step="0.01"
@@ -2383,7 +2241,7 @@
               <label class="input-label">{{
                 t("admin.groups.subscription.weeklyLimit")
               }}</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.weekly_limit_usd"
                 type="number"
                 step="0.01"
@@ -2396,7 +2254,7 @@
               <label class="input-label">{{
                 t("admin.groups.subscription.monthlyLimit")
               }}</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.monthly_limit_usd"
                 type="number"
                 step="0.01"
@@ -2437,20 +2295,20 @@
                 }}
               </span>
               <div class="flex items-center gap-1.5">
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   class="rounded px-2 py-1 font-medium text-primary-600 transition-colors hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/20"
                   @click="selectAllModelAllowlistItems(editModelAllowlistState)"
                 >
                   {{ t("admin.groups.modelAllowlist.selectAll") }}
-                </button>
-                <button
-                  type="button"
+                </ElButton>
+                <ElButton text
+                  native-type="button"
                   class="rounded px-2 py-1 font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700"
                   @click="invertModelAllowlistSelection(editModelAllowlistState)"
                 >
                   {{ t("admin.groups.modelAllowlist.invertSelection") }}
-                </button>
+                </ElButton>
               </div>
             </div>
             <div
@@ -2470,10 +2328,10 @@
                 :key="item.id"
                 class="flex items-center gap-2 rounded border border-gray-200 bg-white px-3 py-2 dark:border-dark-600 dark:bg-dark-800"
               >
-                <input
+                <ElementCheckbox
                   v-model="item.selected"
-                  type="checkbox"
-                  class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+
+                  class=""
                 />
                 <span class="min-w-0 flex-1 break-all text-sm text-gray-700 dark:text-gray-300">
                   {{ item.id }}
@@ -2484,40 +2342,40 @@
                     {{ t("admin.groups.modelAllowlist.wildcardTag") }}
                   </span>
                 </span>
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   :disabled="index === 0"
                   class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 dark:hover:bg-dark-600 dark:hover:text-gray-200"
                   @click="moveEditModelAllowlistItem(index, index - 1)"
                 >
                   <Icon name="arrowUp" size="sm" />
-                </button>
-                <button
-                  type="button"
+                </ElButton>
+                <ElButton text
+                  native-type="button"
                   :disabled="index === editModelAllowlistState.items.length - 1"
                   class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 dark:hover:bg-dark-600 dark:hover:text-gray-200"
                   @click="moveEditModelAllowlistItem(index, index + 1)"
                 >
                   <Icon name="arrowDown" size="sm" />
-                </button>
+                </ElButton>
               </div>
             </div>
             <div class="border-t border-gray-200 px-3 py-2 dark:border-dark-600">
               <div class="flex items-center gap-2">
-                <input
+                <ElementInput
                   v-model="editAllowlistCustomEntry"
                   type="text"
                   :placeholder="t('admin.groups.modelAllowlist.customPlaceholder')"
                   class="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none dark:border-dark-500 dark:bg-dark-700 dark:text-gray-200"
                   @keydown.enter.prevent="submitEditAllowlistCustomEntry"
                 />
-                <button
-                  type="button"
+                <ElButton type="primary"
+                  native-type="button"
                   class="rounded bg-primary-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary-700"
                   @click="submitEditAllowlistCustomEntry"
                 >
                   {{ t("admin.groups.modelAllowlist.addCustom") }}
-                </button>
+                </ElButton>
               </div>
               <p
                 v-if="editAllowlistCustomErrorKey"
@@ -2543,22 +2401,10 @@
             {{ t(imagePricingI18nKey(editForm.platform, "description")) }}
           </p>
           <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input
-                v-model="editForm.allow_image_generation"
-                type="checkbox"
-                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              {{ t(imagePricingI18nKey(editForm.platform, "allowImageGeneration")) }}
-            </label>
-            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input
-                v-model="editForm.image_rate_independent"
-                type="checkbox"
-                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              {{ t(imagePricingI18nKey(editForm.platform, "independentMultiplier")) }}
-            </label>
+            <ElementCheckbox v-model="editForm.allow_image_generation" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              {{ t(imagePricingI18nKey(editForm.platform, "allowImageGeneration")) }}</ElementCheckbox>
+            <ElementCheckbox v-model="editForm.image_rate_independent" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              {{ t(imagePricingI18nKey(editForm.platform, "independentMultiplier")) }}</ElementCheckbox>
           </div>
           <div
             v-if="editForm.image_rate_independent"
@@ -2567,7 +2413,7 @@
             <label class="input-label">{{
               t(imagePricingI18nKey(editForm.platform, "imageMultiplier"))
             }}</label>
-            <input
+            <ElementInput
               v-model.number="editForm.image_rate_multiplier"
               type="number"
               step="0.0001"
@@ -2579,7 +2425,7 @@
           <div class="grid grid-cols-3 gap-3">
             <div>
               <label class="input-label">1K ($)</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.image_price_1k"
                 type="number"
                 step="0.001"
@@ -2590,7 +2436,7 @@
             </div>
             <div>
               <label class="input-label">2K ($)</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.image_price_2k"
                 type="number"
                 step="0.001"
@@ -2601,7 +2447,7 @@
             </div>
             <div>
               <label class="input-label">4K ($)</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.image_price_4k"
                 type="number"
                 step="0.001"
@@ -2628,16 +2474,8 @@
             </div>
           </div>
           <div v-if="editForm.platform === 'gemini' && editForm.allow_image_generation" class="mt-4 border-t border-dashed border-gray-200 pt-4 dark:border-dark-700">
-            <label
-              class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              <input
-                v-model="editForm.allow_batch_image_generation"
-                type="checkbox"
-                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              {{ t("admin.groups.imagePricing.allowBatchImageGeneration") }}
-            </label>
+            <ElementCheckbox v-model="editForm.allow_batch_image_generation" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              {{ t("admin.groups.imagePricing.allowBatchImageGeneration") }}</ElementCheckbox>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
               {{ t("admin.groups.imagePricing.batchSectionHint") }}
             </p>
@@ -2649,7 +2487,7 @@
                 <label class="input-label">{{
                   t("admin.groups.imagePricing.batchDiscountMultiplier")
                 }}</label>
-                <input
+                <ElementInput
                   v-model.number="editForm.batch_image_discount_multiplier"
                   type="number"
                   step="0.0001"
@@ -2662,7 +2500,7 @@
                 <label class="input-label">{{
                   t("admin.groups.imagePricing.batchHoldMultiplier")
                 }}</label>
-                <input
+                <ElementInput
                   v-model.number="editForm.batch_image_hold_multiplier"
                   type="number"
                   step="0.0001"
@@ -2695,14 +2533,8 @@
             {{ t(videoPricingI18nKey("description")) }}
           </p>
           <div class="mb-4">
-            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input
-                v-model="editForm.video_rate_independent"
-                type="checkbox"
-                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              {{ t(videoPricingI18nKey("independentMultiplier")) }}
-            </label>
+            <ElementCheckbox v-model="editForm.video_rate_independent" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+              {{ t(videoPricingI18nKey("independentMultiplier")) }}</ElementCheckbox>
           </div>
           <div
             v-if="editForm.video_rate_independent"
@@ -2711,7 +2543,7 @@
             <label class="input-label">{{
               t(videoPricingI18nKey("videoMultiplier"))
             }}</label>
-            <input
+            <ElementInput
               v-model.number="editForm.video_rate_multiplier"
               type="number"
               step="0.0001"
@@ -2723,7 +2555,7 @@
           <div class="grid grid-cols-3 gap-3">
             <div>
               <label class="input-label">480p ($/s)</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.video_price_480p"
                 type="number"
                 step="0.001"
@@ -2734,7 +2566,7 @@
             </div>
             <div>
               <label class="input-label">720p ($/s)</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.video_price_720p"
                 type="number"
                 step="0.001"
@@ -2745,7 +2577,7 @@
             </div>
             <div>
               <label class="input-label">1080p ($/s)</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.video_price_1080p"
                 type="number"
                 step="0.001"
@@ -2782,7 +2614,7 @@
                   <span class="mb-1 block text-xs text-gray-500 dark:text-gray-400">
                     {{ resolution.label }} ($/s)
                   </span>
-                  <input
+                  <ElementInput
                     v-model.number="editForm.video_model_prices[family.key][resolution.key]"
                     type="number"
                     step="0.001"
@@ -2815,14 +2647,7 @@
         <!-- 高峰时段倍率配置（仅订阅类型分组） -->
         <div v-if="editForm.subscription_type === 'subscription'" class="border-t pt-4">
           <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input
-                v-model="editForm.peak_rate_enabled"
-                type="checkbox"
-                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span>{{ t("admin.groups.peakRate.enable") }}</span>
-            </label>
+            <ElementCheckbox v-model="editForm.peak_rate_enabled" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t("admin.groups.peakRate.enable") }}</span></ElementCheckbox>
           </div>
           <div
             v-if="editForm.peak_rate_enabled"
@@ -2830,7 +2655,7 @@
           >
             <div>
               <label class="input-label">{{ t("admin.groups.peakRate.peakStart") }}</label>
-              <input
+              <ElementInput
                 v-model="editForm.peak_start"
                 type="time"
                 class="input"
@@ -2838,7 +2663,7 @@
             </div>
             <div>
               <label class="input-label">{{ t("admin.groups.peakRate.peakEnd") }}</label>
-              <input
+              <ElementInput
                 v-model="editForm.peak_end"
                 type="time"
                 class="input"
@@ -2846,7 +2671,7 @@
             </div>
             <div>
               <label class="input-label">{{ t("admin.groups.peakRate.peakMultiplier") }}</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.peak_rate_multiplier"
                 type="number"
                 step="0.001"
@@ -2861,14 +2686,7 @@
 
         <!-- 分组利润控制（五个平台 token 请求） -->
         <div v-if="isProfitControlPlatform(editForm.platform)" class="border-t pt-4">
-          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-            <input
-              v-model="editForm.profit_control_enabled"
-              type="checkbox"
-              class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <span>{{ t("admin.groups.profitControl.enable") }}</span>
-          </label>
+          <ElementCheckbox v-model="editForm.profit_control_enabled" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ t("admin.groups.profitControl.enable") }}</span></ElementCheckbox>
           <p class="mb-3 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
             {{
               editForm.profit_control_enabled
@@ -2882,7 +2700,7 @@
           >
             <div>
               <label class="input-label">{{ t("admin.groups.profitControl.minMargin") }}</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.profit_min_margin_percent"
                 type="number"
                 step="0.1"
@@ -2895,7 +2713,7 @@
             </div>
             <div>
               <label class="input-label">{{ t("admin.groups.profitControl.safetyBuffer") }}</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.profit_safety_buffer_percent"
                 type="number"
                 step="0.1"
@@ -2916,17 +2734,12 @@
               {{ t("admin.groups.supportedScopes.title") }}
             </label>
             <!-- Help Tooltip -->
-            <div class="group relative inline-flex">
-              <Icon
+            <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative inline-flex" tabindex="0"><Icon
                 name="questionCircle"
                 size="sm"
                 :stroke-width="2"
                 class="cursor-help text-gray-400 transition-colors hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400"
-              />
-              <div
-                class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-72 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
-              >
-                <div
+              /></div></template><div class="w-72 transition-all duration-200"><div
                   class="rounded-lg bg-gray-900 p-3 text-white shadow-lg dark:bg-gray-800"
                 >
                   <p class="text-xs leading-relaxed text-gray-300">
@@ -2935,48 +2748,22 @@
                   <div
                     class="absolute -bottom-1.5 left-3 h-3 w-3 rotate-45 bg-gray-900 dark:bg-gray-800"
                   ></div>
-                </div>
-              </div>
-            </div>
+                </div></div></ElPopover>
           </div>
           <div class="space-y-2">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                :checked="editForm.supported_model_scopes.includes('claude')"
-                @change="toggleEditScope('claude')"
-                class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-700"
-              />
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{
+            <ElementCheckbox :checked="editForm.supported_model_scopes.includes('claude')" @change="toggleEditScope('claude')" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
                 t("admin.groups.supportedScopes.claude")
-              }}</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                :checked="
+              }}</span></ElementCheckbox>
+            <ElementCheckbox :checked="
                   editForm.supported_model_scopes.includes('gemini_text')
-                "
-                @change="toggleEditScope('gemini_text')"
-                class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-700"
-              />
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{
+                " @change="toggleEditScope('gemini_text')" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
                 t("admin.groups.supportedScopes.geminiText")
-              }}</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                :checked="
+              }}</span></ElementCheckbox>
+            <ElementCheckbox :checked="
                   editForm.supported_model_scopes.includes('gemini_image')
-                "
-                @change="toggleEditScope('gemini_image')"
-                class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-700"
-              />
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{
+                " @change="toggleEditScope('gemini_image')" :class="[&quot;flex items-center gap-2 cursor-pointer&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
                 t("admin.groups.supportedScopes.geminiImage")
-              }}</span>
-            </label>
+              }}</span></ElementCheckbox>
           </div>
           <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
             {{ t("admin.groups.supportedScopes.hint") }}
@@ -2989,17 +2776,12 @@
             <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
               {{ t("admin.groups.mcpXml.title") }}
             </label>
-            <div class="group relative inline-flex">
-              <Icon
+            <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative inline-flex" tabindex="0"><Icon
                 name="questionCircle"
                 size="sm"
                 :stroke-width="2"
                 class="cursor-help text-gray-400 transition-colors hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400"
-              />
-              <div
-                class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-72 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
-              >
-                <div
+              /></div></template><div class="w-72 transition-all duration-200"><div
                   class="rounded-lg bg-gray-900 p-3 text-white shadow-lg dark:bg-gray-800"
                 >
                   <p class="text-xs leading-relaxed text-gray-300">
@@ -3008,9 +2790,7 @@
                   <div
                     class="absolute -bottom-1.5 left-3 h-3 w-3 rotate-45 bg-gray-900 dark:bg-gray-800"
                   ></div>
-                </div>
-              </div>
-            </div>
+                </div></div></ElPopover>
           </div>
           <div class="flex items-center gap-3">
             <Toggle v-model="editForm.mcp_xml_inject" />
@@ -3031,17 +2811,12 @@
               {{ t("admin.groups.claudeCode.title") }}
             </label>
             <!-- Help Tooltip -->
-            <div class="group relative inline-flex">
-              <Icon
+            <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative inline-flex" tabindex="0"><Icon
                 name="questionCircle"
                 size="sm"
                 :stroke-width="2"
                 class="cursor-help text-gray-400 transition-colors hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400"
-              />
-              <div
-                class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-72 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
-              >
-                <div
+              /></div></template><div class="w-72 transition-all duration-200"><div
                   class="rounded-lg bg-gray-900 p-3 text-white shadow-lg dark:bg-gray-800"
                 >
                   <p class="text-xs leading-relaxed text-gray-300">
@@ -3050,9 +2825,7 @@
                   <div
                     class="absolute -bottom-1.5 left-3 h-3 w-3 rotate-45 bg-gray-900 dark:bg-gray-800"
                   ></div>
-                </div>
-              </div>
-            </div>
+                </div></div></ElPopover>
           </div>
           <div class="flex items-center gap-3">
             <Toggle v-model="editForm.claude_code_only" />
@@ -3092,7 +2865,7 @@
             <label class="input-label">{{
               t("admin.groups.webSearchPricing.pricePerCall")
             }}</label>
-            <input
+            <ElementInput
               v-model.number="editForm.web_search_price_per_call"
               type="number"
               step="0.001"
@@ -3132,14 +2905,11 @@
               <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t("admin.groups.modelPricing.title") }}</h4>
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t("admin.groups.modelPricing.description") }}</p>
             </div>
-            <button type="button" class="btn btn-secondary shrink-0 whitespace-nowrap" @click="addGroupPricing(editForm.model_pricing)">
+            <ElButton native-type="button" class="shrink-0 whitespace-nowrap" @click="addGroupPricing(editForm.model_pricing)">
               <Icon name="plus" size="sm" class="mr-1" />{{ t("admin.groups.modelPricing.add") }}
-            </button>
+            </ElButton>
           </div>
-          <label class="mt-3 flex items-start gap-2">
-            <input v-model="editForm.long_context_pricing_enabled" type="checkbox" class="mt-0.5" />
-            <span><span class="block text-sm text-gray-700 dark:text-gray-300">{{ t("admin.groups.modelPricing.longContext") }}</span><span class="block text-xs text-gray-500">{{ t("admin.groups.modelPricing.longContextHint") }}</span></span>
-          </label>
+          <ElementCheckbox v-model="editForm.long_context_pricing_enabled" :class="[&quot;mt-3 flex items-start gap-2&quot;,&quot;mt-0.5&quot;]"><span><span class="block text-sm text-gray-700 dark:text-gray-300">{{ t("admin.groups.modelPricing.longContext") }}</span><span class="block text-xs text-gray-500">{{ t("admin.groups.modelPricing.longContextHint") }}</span></span></ElementCheckbox>
           <div class="mt-3 space-y-2">
             <PricingEntryCard v-for="(entry, index) in editForm.model_pricing" :key="index" :entry="entry" :platform="editForm.platform" hide-token-intervals @update="editForm.model_pricing[index] = $event" @remove="editForm.model_pricing.splice(index, 1)" />
           </div>
@@ -3159,7 +2929,7 @@
           <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div>
               <label class="input-label">{{ t("admin.groups.explicitPricing.searchPricePer1k") }}</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.search_price_per_1k"
                 type="number"
                 step="0.000001"
@@ -3171,7 +2941,7 @@
             </div>
             <div>
               <label class="input-label">{{ t("admin.groups.voicePricing.audioRealtimePerMin") }}</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.audio_realtime_price_per_min"
                 type="number"
                 step="0.000001"
@@ -3183,7 +2953,7 @@
             </div>
             <div>
               <label class="input-label">{{ t("admin.groups.voicePricing.audioTtsPerMillionChars") }}</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.audio_tts_price_per_million_chars"
                 type="number"
                 step="0.000001"
@@ -3195,7 +2965,7 @@
             </div>
             <div>
               <label class="input-label">{{ t("admin.groups.voicePricing.audioSttPerHour") }}</label>
-              <input
+              <ElementInput
                 v-model.number="editForm.audio_stt_price_per_hour"
                 type="number"
                 step="0.000001"
@@ -3316,7 +3086,7 @@
                     <label class="input-label">{{
                       t("admin.groups.openaiMessages.opusModel")
                     }}</label>
-                    <input
+                    <ElementInput
                       v-model="editForm.opus_mapped_model"
                       type="text"
                       :placeholder="
@@ -3329,7 +3099,7 @@
                     <label class="input-label">{{
                       t("admin.groups.openaiMessages.sonnetModel")
                     }}</label>
-                    <input
+                    <ElementInput
                       v-model="editForm.sonnet_mapped_model"
                       type="text"
                       :placeholder="
@@ -3342,7 +3112,7 @@
                     <label class="input-label">{{
                       t("admin.groups.openaiMessages.haikuModel")
                     }}</label>
-                    <input
+                    <ElementInput
                       v-model="editForm.haiku_mapped_model"
                       type="text"
                       :placeholder="
@@ -3389,14 +3159,14 @@
                   <span>{{
                     t("admin.groups.openaiMessages.noExactMappings")
                   }}</span>
-                  <button
-                    type="button"
+                  <ElButton text
+                    native-type="button"
                     @click="addEditMessagesDispatchMapping"
                     class="flex items-center gap-1.5 text-sm font-medium text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                   >
                     <Icon name="plus" size="sm" />
                     {{ t("admin.groups.openaiMessages.addExactMapping") }}
-                  </button>
+                  </ElButton>
                 </div>
 
                 <div v-else class="space-y-3">
@@ -3413,7 +3183,7 @@
                           <label class="input-label">{{
                             t("admin.groups.openaiMessages.claudeModel")
                           }}</label>
-                          <input
+                          <ElementInput
                             v-model="row.claude_model"
                             type="text"
                             :placeholder="
@@ -3437,7 +3207,7 @@
                           <label class="input-label">{{
                             t("admin.groups.openaiMessages.targetModel")
                           }}</label>
-                          <input
+                          <ElementInput
                             v-model="row.target_model"
                             type="text"
                             :placeholder="
@@ -3449,8 +3219,8 @@
                           />
                         </div>
                       </div>
-                      <button
-                        type="button"
+                      <ElButton text
+                        native-type="button"
                         @click="removeEditMessagesDispatchMapping(row)"
                         class="mt-6 flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                         :title="
@@ -3458,18 +3228,18 @@
                         "
                       >
                         <Icon name="trash" size="sm" />
-                      </button>
+                      </ElButton>
                     </div>
                   </div>
 
-                  <button
-                    type="button"
+                  <ElButton text
+                    native-type="button"
                     @click="addEditMessagesDispatchMapping"
                     class="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white py-3 text-sm font-medium text-gray-500 transition-all hover:border-primary-300 hover:bg-primary-50/50 hover:text-primary-600 dark:border-dark-600 dark:bg-dark-800 dark:text-gray-400 dark:hover:border-primary-800 dark:hover:bg-primary-900/20 dark:hover:text-primary-400"
                   >
                     <Icon name="plus" size="sm" />
                     {{ t("admin.groups.openaiMessages.addExactMapping") }}
-                  </button>
+                  </ElButton>
                 </div>
               </div>
             </div>
@@ -3552,17 +3322,12 @@
               {{ t("admin.groups.modelRouting.title") }}
             </label>
             <!-- Help Tooltip -->
-            <div class="group relative inline-flex">
-              <Icon
+            <ElPopover  :trigger="['hover', 'focus']"  :width="320" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative inline-flex" tabindex="0"><Icon
                 name="questionCircle"
                 size="sm"
                 :stroke-width="2"
                 class="cursor-help text-gray-400 transition-colors hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400"
-              />
-              <div
-                class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-80 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100"
-              >
-                <div
+              /></div></template><div class="w-80 transition-all duration-200"><div
                   class="rounded-lg bg-gray-900 p-3 text-white shadow-lg dark:bg-gray-800"
                 >
                   <p class="text-xs leading-relaxed text-gray-300">
@@ -3571,9 +3336,7 @@
                   <div
                     class="absolute -bottom-1.5 left-3 h-3 w-3 rotate-45 bg-gray-900 dark:bg-gray-800"
                   ></div>
-                </div>
-              </div>
-            </div>
+                </div></div></ElPopover>
           </div>
           <!-- 启用开关 -->
           <div class="flex items-center gap-3 mb-3">
@@ -3608,7 +3371,7 @@
                     <label class="input-label text-xs">{{
                       t("admin.groups.modelRouting.modelPattern")
                     }}</label>
-                    <input
+                    <ElementInput
                       v-model="rule.pattern"
                       type="text"
                       class="input text-sm"
@@ -3632,18 +3395,21 @@
                         class="inline-flex items-center gap-1 rounded-full bg-primary-100 px-2.5 py-1 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-300"
                       >
                         {{ account.name }}
-                        <button
-                          type="button"
+                        <ElButton text
+                          native-type="button"
                           @click="removeSelectedAccount(rule, account.id, true)"
                           class="ml-0.5 text-primary-500 hover:text-primary-700 dark:hover:text-primary-200"
                         >
                           <Icon name="x" size="xs" />
-                        </button>
+                        </ElButton>
                       </span>
                     </div>
                     <!-- 账号搜索输入框 -->
-                    <div class="relative account-search-container">
-                      <input
+                    <ElementFloatingPanel  :visible="Boolean(
+                          showAccountDropdown[getEditRuleSearchKey(rule)] &&
+                          accountSearchResults[getEditRuleSearchKey(rule)]
+                            ?.length > 0
+                        )" fit-reference width="192" @close="showAccountDropdown[getEditRuleSearchKey(rule)] = false"><template #reference><div class="relative account-search-container"><ElementInput
                         v-model="
                           accountSearchKeyword[getEditRuleSearchKey(rule)]
                         "
@@ -3656,22 +3422,12 @@
                         "
                         @input="searchAccountsByRule(rule, true)"
                         @focus="onAccountSearchFocus(rule, true)"
-                      />
-                      <!-- 搜索结果下拉框 -->
-                      <div
-                        v-if="
-                          showAccountDropdown[getEditRuleSearchKey(rule)] &&
-                          accountSearchResults[getEditRuleSearchKey(rule)]
-                            ?.length > 0
-                        "
-                        class="absolute z-50 mt-1 max-h-48 w-full overflow-auto rounded-lg border bg-white shadow-lg dark:border-dark-600 dark:bg-dark-800"
-                      >
-                        <button
+                      /><!-- 搜索结果下拉框 --></div></template><div  class="max-h-80 overflow-y-auto py-1"><ElButton text
                           v-for="account in accountSearchResults[
                             getEditRuleSearchKey(rule)
                           ]"
                           :key="account.id"
-                          type="button"
+                          native-type="button"
                           @click="selectAccount(rule, account, true)"
                           class="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-dark-700"
                           :class="{
@@ -3687,53 +3443,51 @@
                           <span class="ml-2 text-xs text-gray-400"
                             >#{{ account.id }}</span
                           >
-                        </button>
-                      </div>
-                    </div>
+                        </ElButton></div></ElementFloatingPanel>
                     <p class="text-xs text-gray-400 mt-1">
                       {{ t("admin.groups.modelRouting.accountsHint") }}
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   @click="removeEditRoutingRule(rule)"
                   class="mt-5 p-1.5 text-gray-400 hover:text-red-500 transition-colors"
                   :title="t('admin.groups.modelRouting.removeRule')"
                 >
                   <Icon name="trash" size="sm" />
-                </button>
+                </ElButton>
               </div>
             </div>
           </div>
           <!-- 添加规则按钮（仅在启用时显示） -->
-          <button
+          <ElButton text
             v-if="editForm.model_routing_enabled"
-            type="button"
+            native-type="button"
             @click="addEditRoutingRule"
             class="mt-3 flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
           >
             <Icon name="plus" size="sm" />
             {{ t("admin.groups.modelRouting.addRule") }}
-          </button>
+          </ElButton>
         </div>
         </template>
-      </form>
+      </ElForm>
 
       <template #footer>
         <div class="flex justify-end gap-3 pt-4">
-          <button
+          <ElButton
             @click="closeEditModal"
-            type="button"
-            class="btn btn-secondary"
+            native-type="button"
+            class=""
           >
             {{ t("common.cancel") }}
-          </button>
-          <button
-            type="submit"
+          </ElButton>
+          <ElButton type="primary"
+            native-type="submit"
             form="edit-group-form"
             :disabled="submitting"
-            class="btn btn-primary"
+            class=""
             data-tour="group-form-submit"
           >
             <svg
@@ -3757,7 +3511,7 @@
               ></path>
             </svg>
             {{ submitting ? t("admin.groups.updating") : t("common.update") }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>
@@ -3849,17 +3603,17 @@
 
       <template #footer>
         <div class="flex justify-end gap-3 pt-4">
-          <button
+          <ElButton
             @click="closeSortModal"
-            type="button"
-            class="btn btn-secondary"
+            native-type="button"
+            class=""
           >
             {{ t("common.cancel") }}
-          </button>
-          <button
+          </ElButton>
+          <ElButton type="primary"
             @click="saveSortOrder"
             :disabled="sortSubmitting"
-            class="btn btn-primary"
+            class=""
           >
             <svg
               v-if="sortSubmitting"
@@ -3882,7 +3636,7 @@
               ></path>
             </svg>
             {{ sortSubmitting ? t("common.saving") : t("common.save") }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>
@@ -3906,9 +3660,9 @@
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
               {{ t("admin.groups.compositeRoutes.routes") }}
             </h3>
-            <button
-              type="button"
-              class="btn btn-secondary btn-sm"
+            <ElButton size="small"
+              native-type="button"
+              class=""
               :disabled="compositeRoutesLoading"
               @click="loadCompositeRoutes"
             >
@@ -3917,7 +3671,7 @@
                 size="sm"
                 :class="compositeRoutesLoading ? 'animate-spin' : ''"
               />
-            </button>
+            </ElButton>
           </div>
 
           <div
@@ -3936,34 +3690,12 @@
               {{ t("admin.groups.compositeRoutes.empty") }}
             </div>
             <div v-else class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-dark-600">
-                <thead class="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:bg-dark-800 dark:text-gray-400">
-                  <tr>
-                    <th class="px-3 py-2">
-                      {{ t("admin.groups.compositeRoutes.publicModel") }}
-                    </th>
-                    <th class="px-3 py-2">
-                      {{ t("admin.groups.compositeRoutes.target") }}
-                    </th>
-                    <th class="px-3 py-2">
-                      {{ t("admin.groups.compositeRoutes.scope") }}
-                    </th>
-                    <th class="px-3 py-2 text-right">
-                      {{ t("admin.groups.columns.actions") }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 bg-white dark:divide-dark-700 dark:bg-dark-900">
-                  <tr
-                    v-for="route in compositeRoutes"
-                    :key="route.id"
-                    :class="!route.enabled && 'opacity-60'"
-                  >
-                    <td class="max-w-[15rem] px-3 py-2">
-                      <div class="break-all font-medium text-gray-900 dark:text-white">
+              <ElTable  row-key="id" :row-class-name="({ row: route }) => '' + ' ' + (!route.enabled && 'opacity-60')" :data="compositeRoutes" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2">{{ t("admin.groups.compositeRoutes.publicModel") }}</div></template>
+    <template #default="{ row: route, $index: rowIndex }"><div class="max-w-[15rem] px-3 py-2" ><div class="break-all font-medium text-gray-900 dark:text-white">
                         {{ route.public_model }}
-                      </div>
-                      <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                      </div><div class="mt-1 flex flex-wrap items-center gap-1.5">
                         <span class="badge badge-gray">{{
                           compositeRouteMatchLabel(route.match_type)
                         }}</span>
@@ -3973,55 +3705,54 @@
                         >
                           {{ t("admin.accounts.status.inactive") }}
                         </span>
-                      </div>
-                    </td>
-                    <td class="px-3 py-2">
-                      <div class="flex items-center gap-1.5 text-gray-900 dark:text-white">
+                      </div></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2">{{ t("admin.groups.compositeRoutes.target") }}</div></template>
+    <template #default="{ row: route, $index: rowIndex }"><div class="px-3 py-2" ><div class="flex items-center gap-1.5 text-gray-900 dark:text-white">
                         <PlatformIcon :platform="route.target_platform" size="xs" />
                         <span>{{ formatCompositePlatform(route.target_platform) }}</span>
-                      </div>
-                      <div class="mt-1 break-all text-xs text-gray-500 dark:text-gray-400">
+                      </div><div class="mt-1 break-all text-xs text-gray-500 dark:text-gray-400">
                         {{ route.upstream_model || route.public_model }}
-                      </div>
-                    </td>
-                    <td class="px-3 py-2">
-                      <div class="text-gray-700 dark:text-gray-300">
+                      </div></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2">{{ t("admin.groups.compositeRoutes.scope") }}</div></template>
+    <template #default="{ row: route, $index: rowIndex }"><div class="px-3 py-2" ><div class="text-gray-700 dark:text-gray-300">
                         {{ formatCompositeEndpoint(route.endpoint) }}
-                      </div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">
+                      </div><div class="text-xs text-gray-500 dark:text-gray-400">
                         {{ t("admin.groups.compositeRoutes.priority") }}:
                         {{ route.priority }}
-                      </div>
-                    </td>
-                    <td class="px-3 py-2">
-                      <div class="flex justify-end gap-1">
-                        <button
-                          type="button"
+                      </div></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="right">
+    <template #header><div class="px-3 py-2 text-right">{{ t("admin.groups.columns.actions") }}</div></template>
+    <template #default="{ row: route, $index: rowIndex }"><div class="px-3 py-2" ><div class="flex justify-end gap-1">
+                        <ElButton text
+                          native-type="button"
                           class="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-primary-600 dark:hover:bg-dark-700 dark:hover:text-primary-400"
                           :title="t('common.edit')"
                           @click="editCompositeRoute(route)"
                         >
                           <Icon name="edit" size="sm" />
-                        </button>
-                        <button
-                          type="button"
+                        </ElButton>
+                        <ElButton text
+                          native-type="button"
                           class="rounded p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                           :title="t('common.delete')"
                           @click="deleteCompositeRoute(route)"
                         >
                           <Icon name="trash" size="sm" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                        </ElButton>
+                      </div></div></template>
+  </ElTableColumn>
+</ElTable>
             </div>
           </div>
         </section>
 
         <section class="space-y-5">
-          <form class="space-y-3" @submit.prevent="saveCompositeRoute">
+          <ElForm class="space-y-3" @submit.prevent="saveCompositeRoute">
             <div class="flex items-center justify-between gap-3">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
                 {{
@@ -4030,21 +3761,21 @@
                     : t("admin.groups.compositeRoutes.addRoute")
                 }}
               </h3>
-              <button
+              <ElButton text
                 v-if="compositeRouteEditingId"
-                type="button"
+                native-type="button"
                 class="text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 @click="resetCompositeRouteForm"
               >
                 {{ t("common.cancel") }}
-              </button>
+              </ElButton>
             </div>
 
             <div>
               <label class="input-label">{{
                 t("admin.groups.compositeRoutes.publicModel")
               }}</label>
-              <input
+              <ElementInput
                 v-model.trim="compositeRouteForm.public_model"
                 type="text"
                 class="input"
@@ -4088,7 +3819,7 @@
                 <label class="input-label">{{
                   t("admin.groups.compositeRoutes.priority")
                 }}</label>
-                <input
+                <ElementInput
                   v-model.number="compositeRouteForm.priority"
                   type="number"
                   min="1"
@@ -4102,7 +3833,7 @@
               <label class="input-label">{{
                 t("admin.groups.compositeRoutes.upstreamModel")
               }}</label>
-              <input
+              <ElementInput
                 v-model.trim="compositeRouteForm.upstream_model"
                 type="text"
                 class="input"
@@ -4117,25 +3848,19 @@
               <label class="input-label">{{
                 t("admin.groups.compositeRoutes.notes")
               }}</label>
-              <textarea
+              <ElementInput type="textarea"
                 v-model.trim="compositeRouteForm.notes"
-                rows="2"
+                :rows="2"
                 class="input"
-              ></textarea>
+              ></ElementInput>
             </div>
 
             <div class="flex items-center justify-between gap-3">
-              <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                <input
-                  v-model="compositeRouteForm.enabled"
-                  type="checkbox"
-                  class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-700"
-                />
-                {{ t("admin.groups.compositeRoutes.enabled") }}
-              </label>
-              <button
-                type="submit"
-                class="btn btn-primary"
+              <ElementCheckbox v-model="compositeRouteForm.enabled" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+                {{ t("admin.groups.compositeRoutes.enabled") }}</ElementCheckbox>
+              <ElButton type="primary"
+                native-type="submit"
+                class=""
                 :disabled="compositeRouteSaving"
               >
                 <Icon
@@ -4145,16 +3870,16 @@
                   class="mr-2"
                 />
                 {{ compositeRouteEditingId ? t("common.update") : t("common.create") }}
-              </button>
+              </ElButton>
             </div>
-          </form>
+          </ElForm>
 
           <div class="border-t border-gray-200 pt-4 dark:border-dark-600">
             <h3 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">
               {{ t("admin.groups.compositeRoutes.preview") }}
             </h3>
             <div class="space-y-3">
-              <input
+              <ElementInput
                 v-model.trim="compositePreviewModel"
                 type="text"
                 class="input"
@@ -4167,14 +3892,14 @@
                   :options="compositeRouteEndpointOptions"
                   class="min-w-0 flex-1"
                 />
-                <button
-                  type="button"
-                  class="btn btn-secondary"
+                <ElButton
+                  native-type="button"
+                  class=""
                   :disabled="compositePreviewLoading || !compositePreviewModel"
                   @click="previewCompositeRoute"
                 >
                   <Icon name="play" size="sm" />
-                </button>
+                </ElButton>
               </div>
 
               <div
@@ -4235,13 +3960,13 @@
 
       <template #footer>
         <div class="flex justify-end pt-4">
-          <button
-            type="button"
-            class="btn btn-secondary"
+          <ElButton
+            native-type="button"
+            class=""
             @click="closeCompositeRoutesModal"
           >
             {{ t("common.close") }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>

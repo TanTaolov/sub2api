@@ -399,10 +399,10 @@ function cancelDelete() {
       </div>
 
       <div class="flex items-center gap-2">
-        <button class="btn btn-sm btn-primary" :disabled="loading" @click="openCreate">
+        <ElButton type="primary" size="small" class="" :disabled="loading" @click="openCreate">
           {{ t('admin.ops.alertRules.create') }}
-        </button>
-        <button
+        </ElButton>
+        <ElButton text
           class="flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-dark-700 dark:text-gray-300 dark:hover:bg-dark-600"
           :disabled="loading"
           @click="load"
@@ -411,7 +411,7 @@ function cancelDelete() {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
           {{ t('common.refresh') }}
-        </button>
+        </ElButton>
       </div>
     </div>
 
@@ -446,8 +446,8 @@ function cancelDelete() {
                 {{ row.enabled ? t('common.enabled') : t('common.disabled') }}
               </span>
               <div class="flex items-center gap-2">
-                <button class="btn btn-sm btn-secondary" @click="openEdit(row)">{{ t('common.edit') }}</button>
-                <button class="btn btn-sm btn-danger" @click="requestDelete(row)">{{ t('common.delete') }}</button>
+                <ElButton size="small" class="" @click="openEdit(row)">{{ t('common.edit') }}</ElButton>
+                <ElButton type="danger" size="small" class="" @click="requestDelete(row)">{{ t('common.delete') }}</ElButton>
               </div>
             </div>
             <div v-if="row.updated_at" class="text-[10px] text-gray-400">
@@ -455,55 +455,32 @@ function cancelDelete() {
             </div>
           </div>
         </div>
-        <table v-else class="min-w-full divide-y divide-gray-200 dark:divide-dark-700">
-          <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-dark-900">
-            <tr>
-              <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertRules.table.name') }}
-              </th>
-              <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertRules.table.metric') }}
-              </th>
-              <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertRules.table.severity') }}
-              </th>
-              <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertRules.table.enabled') }}
-              </th>
-              <th class="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertRules.table.actions') }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200 bg-white dark:divide-dark-700 dark:bg-dark-800">
-            <tr v-for="row in sortedRules" :key="row.id" class="hover:bg-gray-50 dark:hover:bg-dark-700/50">
-              <td class="px-4 py-3">
-                <div class="text-xs font-bold text-gray-900 dark:text-white">{{ row.name }}</div>
-                <div v-if="row.description" class="mt-0.5 line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">
+        <ElTable v-else row-key="id" row-class-name="hover:bg-gray-50 dark:hover:bg-dark-700/50" :data="sortedRules" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertRules.table.name') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="px-4 py-3" ><div class="text-xs font-bold text-gray-900 dark:text-white">{{ row.name }}</div><div v-if="row.description" class="mt-0.5 line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">
                   {{ row.description }}
-                </div>
-                <div v-if="row.updated_at" class="mt-1 text-[10px] text-gray-400">
+                </div><div v-if="row.updated_at" class="mt-1 text-[10px] text-gray-400">
                   {{ formatDateTime(row.updated_at) }}
-                </div>
-              </td>
-              <td class="whitespace-nowrap px-4 py-3 text-xs text-gray-700 dark:text-gray-200">
-                <span class="font-mono">{{ row.metric_type }}</span>
-                <span class="mx-1 text-gray-400">{{ row.operator }}</span>
-                <span class="font-mono">{{ row.threshold }}</span>
-              </td>
-              <td class="whitespace-nowrap px-4 py-3 text-xs font-bold text-gray-700 dark:text-gray-200">
-                {{ row.severity }}
-              </td>
-              <td class="whitespace-nowrap px-4 py-3 text-xs text-gray-700 dark:text-gray-200">
-                {{ row.enabled ? t('common.enabled') : t('common.disabled') }}
-              </td>
-              <td class="whitespace-nowrap px-4 py-3 text-right text-xs">
-                <button class="btn btn-sm btn-secondary" @click="openEdit(row)">{{ t('common.edit') }}</button>
-                <button class="ml-2 btn btn-sm btn-danger" @click="requestDelete(row)">{{ t('common.delete') }}</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </div></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertRules.table.metric') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-700 dark:text-gray-200" ><span class="font-mono">{{ row.metric_type }}</span><span class="mx-1 text-gray-400">{{ row.operator }}</span><span class="font-mono">{{ row.threshold }}</span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertRules.table.severity') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs font-bold text-gray-700 dark:text-gray-200" >{{ row.severity }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertRules.table.enabled') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-700 dark:text-gray-200" >{{ row.enabled ? t('common.enabled') : t('common.disabled') }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="right">
+    <template #header><div class="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertRules.table.actions') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-right text-xs" ><ElButton size="small" class="" @click="openEdit(row)">{{ t('common.edit') }}</ElButton><ElButton type="danger" size="small" class="ml-2" @click="requestDelete(row)">{{ t('common.delete') }}</ElButton></div></template>
+  </ElTableColumn>
+</ElTable>
       </div>
     </div>
 
@@ -524,12 +501,12 @@ function cancelDelete() {
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div class="md:col-span-2">
             <label class="input-label">{{ t('admin.ops.alertRules.form.name') }}</label>
-            <input v-model="draft!.name" class="input" type="text" />
+            <ElementInput v-model="draft!.name" class="input" type="text" />
           </div>
 
           <div class="md:col-span-2">
             <label class="input-label">{{ t('admin.ops.alertRules.form.description') }}</label>
-            <input v-model="draft!.description" class="input" type="text" />
+            <ElementInput v-model="draft!.description" class="input" type="text" />
           </div>
 
           <div>
@@ -573,7 +550,7 @@ function cancelDelete() {
 
           <div>
             <label class="input-label">{{ t('admin.ops.alertRules.form.threshold') }}</label>
-            <input v-model.number="draft!.threshold" class="input" type="number" />
+            <ElementInput v-model.number="draft!.threshold" class="input" type="number" />
           </div>
 
           <div>
@@ -588,34 +565,34 @@ function cancelDelete() {
 
           <div>
             <label class="input-label">{{ t('admin.ops.alertRules.form.sustained') }}</label>
-            <input v-model.number="draft!.sustained_minutes" class="input" type="number" min="1" max="1440" />
+            <ElementInput v-model.number="draft!.sustained_minutes" class="input" type="number" min="1" max="1440" />
           </div>
 
           <div>
             <label class="input-label">{{ t('admin.ops.alertRules.form.cooldown') }}</label>
-            <input v-model.number="draft!.cooldown_minutes" class="input" type="number" min="0" max="1440" />
+            <ElementInput v-model.number="draft!.cooldown_minutes" class="input" type="number" min="0" max="1440" />
           </div>
 
           <div class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 dark:bg-dark-800/50 md:col-span-2">
             <span class="text-xs font-bold text-gray-700 dark:text-gray-200">{{ t('admin.ops.alertRules.form.enabled') }}</span>
-            <input v-model="draft!.enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+            <ElementCheckbox v-model="draft!.enabled"  class="" />
           </div>
 
           <div class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 dark:bg-dark-800/50 md:col-span-2">
             <span class="text-xs font-bold text-gray-700 dark:text-gray-200">{{ t('admin.ops.alertRules.form.notifyEmail') }}</span>
-            <input v-model="draft!.notify_email" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+            <ElementCheckbox v-model="draft!.notify_email"  class="" />
           </div>
         </div>
       </div>
 
       <template #footer>
         <div class="flex items-center justify-end gap-2">
-          <button class="btn btn-secondary" :disabled="saving" @click="showEditor = false">
+          <ElButton class="" :disabled="saving" @click="showEditor = false">
             {{ t('common.cancel') }}
-          </button>
-          <button class="btn btn-primary" :disabled="saving" @click="save">
+          </ElButton>
+          <ElButton type="primary" class="" :disabled="saving" @click="save">
             {{ saving ? t('common.saving') : t('common.save') }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>

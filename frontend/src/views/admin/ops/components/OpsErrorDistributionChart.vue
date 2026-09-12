@@ -123,15 +123,15 @@ const options = computed(() => ({
         {{ t('admin.ops.errorDistribution') }}
         <HelpTooltip :content="t('admin.ops.tooltips.errorDistribution')" />
       </h3>
-      <button
-        type="button"
+      <ElButton text
+        native-type="button"
         class="inline-flex items-center rounded-lg border border-gray-200 bg-white px-2 py-1 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50 dark:border-dark-700 dark:bg-dark-900 dark:text-gray-300 dark:hover:bg-dark-800"
         :disabled="state !== 'ready'"
         :title="t('admin.ops.errorTrend')"
         @click="emit('openDetails')"
       >
         {{ t('admin.ops.requestDetails.details') }}
-      </button>
+      </ElButton>
     </div>
 
     <div class="relative min-h-0 flex-1">

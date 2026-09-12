@@ -43,14 +43,14 @@
             {{ t("admin.groups.form.reasoningEffortMappingsHint") }}
           </p>
         </div>
-        <button
-          type="button"
+        <ElButton text
+          native-type="button"
           class="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50 hover:text-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:text-primary-400 dark:hover:bg-primary-900/20 dark:hover:text-primary-300"
           @click="addGroup"
         >
           <Icon name="plus" size="sm" />
           {{ t("admin.groups.form.addReasoningEffortMapping") }}
-        </button>
+        </ElButton>
       </div>
 
       <div v-if="mappings.length > 0" class="space-y-2">
@@ -92,7 +92,7 @@
               <label :for="`${idPrefix}-${group.id}-model`" class="input-label">
                 {{ t("admin.groups.form.reasoningEffortModel") }}
               </label>
-              <input
+              <ElementInput
                 :id="`${idPrefix}-${group.id}-model`"
                 :value="group.model"
                 type="text"
@@ -105,15 +105,15 @@
               />
             </div>
 
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               class="flex h-11 w-11 items-center justify-center self-end rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 dark:hover:bg-red-900/20 dark:hover:text-red-400"
               :title="t('admin.groups.form.removeReasoningEffortMapping')"
               :aria-label="t('admin.groups.form.removeReasoningEffortMapping')"
               @click="removeGroup(group.id)"
             >
               <Icon name="trash" size="sm" />
-            </button>
+            </ElButton>
           </div>
 
           <p
@@ -181,25 +181,25 @@
               </p>
             </div>
 
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               class="flex h-11 w-11 items-center justify-center self-end rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 dark:hover:bg-red-900/20 dark:hover:text-red-400"
               :title="t('admin.groups.form.removeReasoningEffortPair')"
               :aria-label="t('admin.groups.form.removeReasoningEffortPair')"
               @click="removePair(group.id, pair.id)"
             >
               <Icon name="trash" size="sm" />
-            </button>
+            </ElButton>
           </div>
 
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             class="inline-flex min-h-9 items-center gap-1.5 text-sm font-medium text-primary-600 transition-colors hover:text-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:text-primary-400 dark:hover:text-primary-300"
             @click="addPair(group.id)"
           >
             <Icon name="plus" size="sm" />
             {{ t("admin.groups.form.addReasoningEffortPair") }}
-          </button>
+          </ElButton>
         </div>
       </div>
     </div>

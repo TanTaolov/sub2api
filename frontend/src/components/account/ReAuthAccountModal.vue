@@ -48,28 +48,12 @@
       <fieldset v-if="isAnthropic" class="border-0 p-0">
         <legend class="input-label">{{ t('admin.accounts.oauth.authMethod') }}</legend>
         <div class="mt-2 flex gap-4">
-          <label class="flex cursor-pointer items-center">
-            <input
-              v-model="addMethod"
-              type="radio"
-              value="oauth"
-              class="mr-2 text-primary-600 focus:ring-primary-500"
-            />
-            <span class="text-sm text-gray-700 dark:text-gray-300">{{
+          <ElementRadio v-model="addMethod" value="oauth" :class="[&quot;flex cursor-pointer items-center&quot;,&quot;mr-2&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
               t('admin.accounts.types.oauth')
-            }}</span>
-          </label>
-          <label class="flex cursor-pointer items-center">
-            <input
-              v-model="addMethod"
-              type="radio"
-              value="setup-token"
-              class="mr-2 text-primary-600 focus:ring-primary-500"
-            />
-            <span class="text-sm text-gray-700 dark:text-gray-300">{{
+            }}</span></ElementRadio>
+          <ElementRadio v-model="addMethod" value="setup-token" :class="[&quot;flex cursor-pointer items-center&quot;,&quot;mr-2&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{
               t('admin.accounts.setupTokenLongLived')
-            }}</span>
-          </label>
+            }}</span></ElementRadio>
         </div>
       </fieldset>
 
@@ -138,14 +122,14 @@
 
     <template #footer>
       <div v-if="account" class="flex justify-between gap-3">
-        <button type="button" class="btn btn-secondary" @click="handleClose">
+        <ElButton native-type="button" class="" @click="handleClose">
           {{ t('common.cancel') }}
-        </button>
-        <button
+        </ElButton>
+        <ElButton type="primary"
           v-if="isManualInputMethod"
-          type="button"
+          native-type="button"
           :disabled="!canExchangeCode"
-          class="btn btn-primary"
+          class=""
           @click="handleExchangeCode"
         >
           <svg
@@ -173,7 +157,7 @@
               ? t('admin.accounts.oauth.verifying')
               : t('admin.accounts.oauth.completeAuth')
           }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

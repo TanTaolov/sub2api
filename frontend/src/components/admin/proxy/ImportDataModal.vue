@@ -6,7 +6,7 @@
     close-on-click-outside
     @close="handleClose"
   >
-    <form id="import-proxy-data-form" class="space-y-4" @submit.prevent="handleImport">
+    <ElForm id="import-proxy-data-form" class="space-y-4" @submit.prevent="handleImport">
       <div class="text-sm text-gray-600 dark:text-dark-300">
         {{ t('admin.proxies.dataImportHint') }}
       </div>
@@ -27,9 +27,9 @@
             </div>
             <div class="text-xs text-gray-500 dark:text-dark-400">JSON (.json)</div>
           </div>
-          <button type="button" class="btn btn-secondary shrink-0" @click="openFilePicker">
+          <ElButton native-type="button" class="shrink-0" @click="openFilePicker">
             {{ t('common.chooseFile') }}
-          </button>
+          </ElButton>
         </div>
         <input
           ref="fileInput"
@@ -64,21 +64,21 @@
           </div>
         </div>
       </div>
-    </form>
+    </ElForm>
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <button class="btn btn-secondary" type="button" :disabled="importing" @click="handleClose">
+        <ElButton class="" native-type="button" :disabled="importing" @click="handleClose">
           {{ t('common.cancel') }}
-        </button>
-        <button
-          class="btn btn-primary"
-          type="submit"
+        </ElButton>
+        <ElButton type="primary"
+          class=""
+          native-type="submit"
           form="import-proxy-data-form"
           :disabled="importing"
         >
           {{ importing ? t('admin.proxies.dataImporting') : t('admin.proxies.dataImportButton') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

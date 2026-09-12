@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50 px-4 py-10 dark:bg-dark-900">
     <div class="mx-auto max-w-2xl">
-      <div class="card p-6">
+      <ElCard shadow="never" class="element-surface-card p-6">
         <h1 class="text-lg font-semibold text-gray-900 dark:text-white">
           {{ callbackTitleText }}
         </h1>
@@ -25,15 +25,15 @@
           <p class="text-sm text-gray-700 dark:text-gray-300">
             {{ errorMessage }}
           </p>
-          <button
-            class="btn btn-primary mt-4"
-            type="button"
+          <ElButton type="primary"
+            class="mt-4"
+            native-type="button"
             @click="goBackToPayment"
           >
             {{ backToPaymentText }}
-          </button>
+          </ElButton>
         </div>
-      </div>
+      </ElCard>
     </div>
   </div>
 </template>

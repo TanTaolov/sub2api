@@ -73,7 +73,7 @@
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label class="input-label">{{ t('setup.database.host') }}</label>
-              <input
+              <ElementInput
                 v-model="formData.database.host"
                 type="text"
                 class="input"
@@ -82,7 +82,7 @@
             </div>
             <div>
               <label class="input-label">{{ t('setup.database.port') }}</label>
-              <input
+              <ElementInput
                 v-model.number="formData.database.port"
                 type="number"
                 class="input"
@@ -106,7 +106,7 @@
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label class="input-label">{{ t('setup.database.username') }}</label>
-              <input
+              <ElementInput
                 v-model="formData.database.user"
                 type="text"
                 class="input"
@@ -115,7 +115,7 @@
             </div>
             <div>
               <label class="input-label">{{ t('setup.database.password') }}</label>
-              <input
+              <ElementInput
                 v-model="formData.database.password"
                 type="password"
                 class="input"
@@ -127,7 +127,7 @@
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label class="input-label">{{ t('setup.database.databaseName') }}</label>
-              <input
+              <ElementInput
                 v-model="formData.database.dbname"
                 type="text"
                 class="input"
@@ -148,10 +148,10 @@
             </div>
           </div>
 
-          <button
+          <ElButton
             @click="testDatabaseConnection"
             :disabled="testingDb"
-            class="btn btn-secondary w-full"
+            class="w-full"
           >
             <svg
               v-if="testingDb"
@@ -181,7 +181,7 @@
                   ? t('setup.status.success')
                   : t('setup.status.testConnection')
             }}
-          </button>
+          </ElButton>
         </div>
 
         <!-- Step 2: Redis -->
@@ -198,7 +198,7 @@
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label class="input-label">{{ t('setup.redis.host') }}</label>
-              <input
+              <ElementInput
                 v-model="formData.redis.host"
                 type="text"
                 class="input"
@@ -207,7 +207,7 @@
             </div>
             <div>
               <label class="input-label">{{ t('setup.redis.port') }}</label>
-              <input
+              <ElementInput
                 v-model.number="formData.redis.port"
                 type="number"
                 class="input"
@@ -219,7 +219,7 @@
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label class="input-label">{{ t('setup.redis.username') }}</label>
-              <input
+              <ElementInput
                 v-model="formData.redis.username"
                 type="text"
                 class="input"
@@ -228,7 +228,7 @@
             </div>
             <div>
               <label class="input-label">{{ t('setup.redis.password') }}</label>
-              <input
+              <ElementInput
                 v-model="formData.redis.password"
                 type="password"
                 class="input"
@@ -237,7 +237,7 @@
             </div>
             <div>
               <label class="input-label">{{ t('setup.redis.database') }}</label>
-              <input
+              <ElementInput
                 v-model.number="formData.redis.db"
                 type="number"
                 class="input"
@@ -258,10 +258,10 @@
             <Toggle v-model="formData.redis.enable_tls" />
           </div>
 
-          <button
+          <ElButton
             @click="testRedisConnection"
             :disabled="testingRedis"
-            class="btn btn-secondary w-full"
+            class="w-full"
           >
             <svg
               v-if="testingRedis"
@@ -297,7 +297,7 @@
                   ? t('setup.status.success')
                   : t('setup.status.testConnection')
             }}
-          </button>
+          </ElButton>
         </div>
 
         <!-- Step 3: Admin -->
@@ -313,7 +313,7 @@
 
           <div>
             <label class="input-label">{{ t('setup.admin.email') }}</label>
-            <input
+            <ElementInput
               v-model="formData.admin.email"
               type="email"
               class="input"
@@ -323,7 +323,7 @@
 
           <div>
             <label class="input-label">{{ t('setup.admin.password') }}</label>
-            <input
+            <ElementInput
               v-model="formData.admin.password"
               type="password"
               class="input"
@@ -333,7 +333,7 @@
 
           <div>
             <label class="input-label">{{ t('setup.admin.confirmPassword') }}</label>
-            <input
+            <ElementInput
               v-model="confirmPassword"
               type="password"
               class="input"
@@ -444,31 +444,31 @@
 
         <!-- Navigation Buttons -->
         <div class="mt-8 flex justify-between">
-          <button
+          <ElButton
             v-if="currentStep > 0 && !installSuccess"
             @click="currentStep--"
-            class="btn btn-secondary"
+            class=""
           >
             <Icon name="chevronLeft" size="sm" class="mr-2" :stroke-width="2" />
             {{ t('common.back') }}
-          </button>
+          </ElButton>
           <div v-else></div>
 
-          <button
+          <ElButton type="primary"
             v-if="currentStep < 3"
             @click="nextStep"
             :disabled="!canProceed"
-            class="btn btn-primary"
+            class=""
           >
             {{ t('common.next') }}
             <Icon name="chevronRight" size="sm" class="ml-2" :stroke-width="2" />
-          </button>
+          </ElButton>
 
-          <button
+          <ElButton type="primary"
             v-else-if="!installSuccess"
             @click="performInstall"
             :disabled="installing"
-            class="btn btn-primary"
+            class=""
           >
             <svg
               v-if="installing"
@@ -491,7 +491,7 @@
               ></path>
             </svg>
             {{ installing ? t('setup.status.installing') : t('setup.status.completeInstallation') }}
-          </button>
+          </ElButton>
         </div>
       </div>
     </div>

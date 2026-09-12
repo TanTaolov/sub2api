@@ -31,126 +31,61 @@
 
     <!-- Navigation -->
     <nav ref="sidebarNavRef" class="sidebar-nav scrollbar-hide">
-      <!-- Admin View: Admin menu first, then personal menu -->
-      <template v-if="isAdmin">
-        <!-- Admin Section -->
-        <div class="sidebar-section">
+      <ElMenu :default-active="activeMenuPath" :collapse="sidebarCollapsed" :default-openeds="openedMenuPaths"
+        :collapse-transition="false" class="element-sidebar-menu" @open="openMenuGroup" @close="closeMenuGroup">
+        <template v-if="isAdmin">
           <template v-for="item in adminNavItems" :key="item.path">
-            <!-- Collapsible group (has children) -->
-            <template v-if="item.children?.length">
-              <button
-                type="button"
-                class="sidebar-link mb-1 w-full"
-                :class="{
-                  'sidebar-link-active': isGroupActive(item) && !isGroupExpanded(item),
-                  'sidebar-link-collapsed': sidebarCollapsed
-                }"
-                :title="sidebarCollapsed ? item.label : undefined"
-                @click="handleGroupClick(item)"
-              >
-                <component :is="item.icon" class="h-5 w-5 flex-shrink-0" />
-                <span
-                  class="sidebar-label sidebar-label-flex"
-                  :class="{ 'sidebar-label-collapsed': sidebarCollapsed }"
-                  :aria-hidden="sidebarCollapsed ? 'true' : 'false'"
-                >
-                  <span class="min-w-0 truncate">{{ item.label }}</span>
-                  <ChevronDownIcon
-                    class="h-4 w-4 flex-shrink-0 transition-transform duration-200"
-                    :class="isGroupExpanded(item) ? 'rotate-180' : ''"
-                  />
-                </span>
-              </button>
-              <!-- Children -->
-              <div v-if="!sidebarCollapsed && isGroupExpanded(item)" class="mb-1 ml-4 border-l border-gray-200 pl-2 dark:border-dark-600">
-                <router-link
-                  v-for="child in item.children"
-                  :key="child.path"
-                  :to="child.path"
-                  class="sidebar-link mb-0.5 py-1.5 text-sm"
-                  :class="{ 'sidebar-link-active': route.path === child.path }"
-                  @click="handleMenuItemClick(child.path)"
-                >
-                  <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
-                  <span>{{ child.label }}</span>
+            <ElSubMenu v-if="item.children?.length" :index="item.path">
+              <template #title><component :is="item.icon" class="mr-3 h-5 w-5 shrink-0" aria-hidden="true" /><span>{{ item.label }}</span></template>
+              <ElMenuItem v-for="child in item.children" :key="child.path" :index="child.path" @click="navigateMenuItem(child.path)">
+                <router-link :to="child.path" class="element-sidebar-link" @click.stop="handleMenuItemClick(child.path)">
+                  <component :is="child.icon" class="h-4 w-4 shrink-0" aria-hidden="true" /><span>{{ child.label }}</span>
                 </router-link>
-              </div>
-            </template>
-            <!-- Normal item (no children) -->
-            <router-link
-              v-else
-              :to="item.path"
-              class="sidebar-link mb-1"
-              :class="{ 'sidebar-link-active': isActive(item.path), 'sidebar-link-collapsed': sidebarCollapsed }"
-              :title="sidebarCollapsed ? item.label : undefined"
-              :id="
-                item.path === '/admin/accounts'
-                  ? 'sidebar-channel-manage'
-                  : item.path === '/admin/groups'
-                    ? 'sidebar-group-manage'
-                    : item.path === '/admin/redeem'
-                      ? 'sidebar-wallet'
-                      : undefined
-              "
-              @click="handleMenuItemClick(item.path)"
-            >
-              <span v-if="item.iconSvg" class="h-5 w-5 flex-shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
-              <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
-              <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
-            </router-link>
+              </ElMenuItem>
+            </ElSubMenu>
+            <ElMenuItem v-else :index="item.path" @click="navigateMenuItem(item.path)">
+              <router-link :to="item.path" class="element-sidebar-link" :aria-label="item.label"
+                :id="item.path === '/admin/accounts' ? 'sidebar-channel-manage' : item.path === '/admin/groups' ? 'sidebar-group-manage' : item.path === '/admin/redeem' ? 'sidebar-wallet' : undefined"
+                @click.stop="handleMenuItemClick(item.path)">
+                <span v-if="item.iconSvg" class="h-5 w-5 shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
+                <component v-else :is="item.icon" class="h-5 w-5 shrink-0" aria-hidden="true" />
+                <span v-if="!sidebarCollapsed" class="min-w-0 truncate">{{ item.label }}</span>
+              </router-link>
+              <template v-if="sidebarCollapsed" #title>{{ item.label }}</template>
+            </ElMenuItem>
           </template>
-        </div>
-
-        <!-- Personal Section for Admin (hidden in simple mode) -->
-        <div v-if="!authStore.isSimpleMode" class="sidebar-section">
-          <div class="sidebar-section-title" :class="{ 'sidebar-section-title-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">
-            <span class="sidebar-section-title-text" :class="{ 'sidebar-section-title-text-collapsed': sidebarCollapsed }">
-              {{ t('nav.myAccount') }}
-            </span>
-          </div>
-
-          <router-link
-            v-for="item in personalNavItems"
-            :key="item.path"
-            :to="item.path"
-            class="sidebar-link mb-1"
-            :class="{ 'sidebar-link-active': isActive(item.path), 'sidebar-link-collapsed': sidebarCollapsed }"
-            :title="sidebarCollapsed ? item.label : undefined"
-            :data-tour="item.path === '/keys' ? 'sidebar-my-keys' : undefined"
-            @click="handleMenuItemClick(item.path)"
-          >
-            <span v-if="item.iconSvg" class="h-5 w-5 flex-shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
-            <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
-            <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
-          </router-link>
-        </div>
-      </template>
-
-      <!-- Regular User View -->
-      <template v-else-if="!appStore.backendModeEnabled">
-        <div class="sidebar-section">
-          <router-link
-            v-for="item in userNavItems"
-            :key="item.path"
-            :to="item.path"
-            class="sidebar-link mb-1"
-            :class="{ 'sidebar-link-active': isActive(item.path), 'sidebar-link-collapsed': sidebarCollapsed }"
-            :title="sidebarCollapsed ? item.label : undefined"
-            :data-tour="item.path === '/keys' ? 'sidebar-my-keys' : undefined"
-            @click="handleMenuItemClick(item.path)"
-          >
-            <span v-if="item.iconSvg" class="h-5 w-5 flex-shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
-            <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
-            <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
-          </router-link>
-        </div>
-      </template>
+          <ElMenuItemGroup v-if="!authStore.isSimpleMode" :title="sidebarCollapsed ? '' : t('nav.myAccount')">
+            <ElMenuItem v-for="item in personalNavItems" :key="item.path" :index="item.path" @click="navigateMenuItem(item.path)">
+            <router-link :to="item.path" class="element-sidebar-link" :aria-label="item.label"
+              :id="item.path === '/admin/accounts' ? 'sidebar-channel-manage' : item.path === '/admin/groups' ? 'sidebar-group-manage' : item.path === '/admin/redeem' ? 'sidebar-wallet' : undefined"
+              :data-tour="item.path === '/keys' ? 'sidebar-my-keys' : undefined" @click.stop="handleMenuItemClick(item.path)">
+              <span v-if="item.iconSvg" class="h-5 w-5 shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
+              <component v-else :is="item.icon" class="h-5 w-5 shrink-0" aria-hidden="true" />
+              <span v-if="!sidebarCollapsed" class="min-w-0 truncate">{{ item.label }}</span>
+            </router-link>
+            <template v-if="sidebarCollapsed" #title>{{ item.label }}</template>
+          </ElMenuItem>
+          </ElMenuItemGroup>
+        </template>
+        <template v-else-if="!appStore.backendModeEnabled">
+          <ElMenuItem v-for="item in userNavItems" :key="item.path" :index="item.path" @click="navigateMenuItem(item.path)">
+            <router-link :to="item.path" class="element-sidebar-link" :aria-label="item.label"
+              :id="item.path === '/admin/accounts' ? 'sidebar-channel-manage' : item.path === '/admin/groups' ? 'sidebar-group-manage' : item.path === '/admin/redeem' ? 'sidebar-wallet' : undefined"
+              :data-tour="item.path === '/keys' ? 'sidebar-my-keys' : undefined" @click.stop="handleMenuItemClick(item.path)">
+              <span v-if="item.iconSvg" class="h-5 w-5 shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
+              <component v-else :is="item.icon" class="h-5 w-5 shrink-0" aria-hidden="true" />
+              <span v-if="!sidebarCollapsed" class="min-w-0 truncate">{{ item.label }}</span>
+            </router-link>
+            <template v-if="sidebarCollapsed" #title>{{ item.label }}</template>
+          </ElMenuItem>
+        </template>
+      </ElMenu>
     </nav>
 
     <!-- Bottom Section -->
     <div class="mt-auto border-t border-gray-100 p-3 dark:border-dark-800">
       <!-- Theme Toggle -->
-      <button
+      <ElButton text
         @click="toggleTheme"
         class="sidebar-link mb-2 w-full"
         :class="{ 'sidebar-link-collapsed': sidebarCollapsed }"
@@ -161,10 +96,10 @@
         <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{
           isDark ? t('nav.lightMode') : t('nav.darkMode')
         }}</span>
-      </button>
+      </ElButton>
 
       <!-- Collapse Button -->
-      <button
+      <ElButton text
         @click="toggleSidebar"
         class="sidebar-link w-full"
         :class="{ 'sidebar-link-collapsed': sidebarCollapsed }"
@@ -173,7 +108,7 @@
         <ChevronDoubleLeftIcon v-if="!sidebarCollapsed" class="h-5 w-5 flex-shrink-0" />
         <ChevronDoubleRightIcon v-else class="h-5 w-5 flex-shrink-0" />
         <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ t('nav.collapse') }}</span>
-      </button>
+      </ElButton>
     </div>
   </aside>
 
@@ -190,6 +125,7 @@
 <script setup lang="ts">
 import { computed, h, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMenu, ElMenuItem, ElSubMenu, ElMenuItemGroup } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { useAdminSettingsStore, useAppStore, useAuthStore, useOnboardingStore } from '@/stores'
 import VersionBadge from '@/components/common/VersionBadge.vue'
@@ -671,20 +607,7 @@ const PriceTagIcon = {
     )
 }
 
-const ChevronDownIcon = {
-  render: () =>
-    h(
-      'svg',
-      { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': '1.5' },
-      [
-        h('path', {
-          'stroke-linecap': 'round',
-          'stroke-linejoin': 'round',
-          d: 'm19.5 8.25-7.5 7.5-7.5-7.5'
-        })
-      ]
-    )
-}
+
 
 // Public-settings flags go through the registry in utils/featureFlags.ts,
 // which handles the opt-in vs opt-out fallback when settings haven't loaded
@@ -908,9 +831,7 @@ function isGroupExpanded(item: NavItem): boolean {
   return isGroupActive(item)
 }
 
-function toggleGroup(item: NavItem) {
-  groupExpandOverrides.value.set(item.path, !isGroupExpanded(item))
-}
+
 
 /**
  * Click handler for collapsible parent items.
@@ -919,18 +840,20 @@ function toggleGroup(item: NavItem) {
  * - Otherwise (default, e.g. /admin/orders): navigate to the parent path
  *   (router-link semantics) and ensure the group is expanded.
  */
-function handleGroupClick(item: NavItem) {
-  if (sidebarCollapsed.value) return
-  if (item.expandOnly) {
-    toggleGroup(item)
-    return
-  }
-  // Push to path and ensure expanded
-  if (route.path !== item.path) {
-    router.push(item.path)
-  }
-  groupExpandOverrides.value.set(item.path, true)
+
+
+const activeMenuPath = computed(() => {
+  const items = [...adminNavItems.value.flatMap(item => item.children?.length ? item.children : [item]), ...personalNavItems.value, ...userNavItems.value]
+  return items.filter(item => isActive(item.path)).sort((left, right) => right.path.length - left.path.length)[0]?.path ?? route.path
+})
+const openedMenuPaths = computed(() => adminNavItems.value.filter(item => item.children?.length && isGroupExpanded(item)).map(item => item.path))
+function navigateMenuItem(path: string) { handleMenuItemClick(path); router.push(path) }
+function openMenuGroup(path: string) {
+  const item = adminNavItems.value.find(item => item.path === path)
+  groupExpandOverrides.value.set(path, true)
+  if (item && !item.expandOnly && route.path !== path) router.push(path)
 }
+function closeMenuGroup(path: string) { groupExpandOverrides.value.set(path, false) }
 
 // Initialize theme
 const savedTheme = localStorage.getItem('theme')

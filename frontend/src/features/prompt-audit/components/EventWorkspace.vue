@@ -6,34 +6,34 @@
         <p class="mt-1 text-sm text-gray-500 dark:text-dark-300">{{ t('admin.promptAudit.events.description') }}</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="btn btn-secondary btn-sm" :disabled="selectedIds.length === 0" @click="$emit('batch-delete')">
+        <ElButton size="small" native-type="button" class="" :disabled="selectedIds.length === 0" @click="$emit('batch-delete')">
           {{ t('admin.promptAudit.events.deleteSelected', { count: selectedIds.length }) }}
-        </button>
-        <button type="button" class="btn btn-danger btn-sm" data-test="filter-delete" @click="$emit('preview-delete')">
+        </ElButton>
+        <ElButton type="danger" size="small" native-type="button" class="" data-test="filter-delete" @click="$emit('preview-delete')">
           {{ t('admin.promptAudit.events.deleteByFilter') }}
-        </button>
+        </ElButton>
       </div>
     </div>
 
-    <form class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5" @submit.prevent="applyFilters">
+    <ElForm class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5" @submit.prevent="applyFilters">
       <label class="text-xs text-gray-600 dark:text-dark-200">
         <span>{{ t('admin.promptAudit.events.decision') }}</span>
-        <select v-model="localFilters.decision" class="input mt-1 w-full" :aria-label="t('admin.promptAudit.events.decision')" @change="filtersChanged">
-          <option value="">{{ t('common.all') }}</option>
-          <option value="pass">{{ t('admin.promptAudit.decisions.pass') }}</option>
-          <option value="flag">{{ t('admin.promptAudit.decisions.flag') }}</option>
-          <option value="critical">{{ t('admin.promptAudit.decisions.critical') }}</option>
-        </select>
+        <ElementSelect v-model="localFilters.decision" class="input mt-1 w-full" :aria-label="t('admin.promptAudit.events.decision')" @change="filtersChanged">
+          <ElOption :label="(t('common.all'))" value="">{{ t('common.all') }}</ElOption>
+          <ElOption :label="(t('admin.promptAudit.decisions.pass'))" value="pass">{{ t('admin.promptAudit.decisions.pass') }}</ElOption>
+          <ElOption :label="(t('admin.promptAudit.decisions.flag'))" value="flag">{{ t('admin.promptAudit.decisions.flag') }}</ElOption>
+          <ElOption :label="(t('admin.promptAudit.decisions.critical'))" value="critical">{{ t('admin.promptAudit.decisions.critical') }}</ElOption>
+        </ElementSelect>
       </label>
       <label class="text-xs text-gray-600 dark:text-dark-200">
         <span>{{ t('admin.promptAudit.events.risk') }}</span>
-        <select v-model="localFilters.risk_level" class="input mt-1 w-full" :aria-label="t('admin.promptAudit.events.risk')" @change="filtersChanged">
-          <option value="">{{ t('common.all') }}</option>
-          <option value="low">{{ t('admin.promptAudit.riskLevels.low') }}</option>
-          <option value="medium">{{ t('admin.promptAudit.riskLevels.medium') }}</option>
-          <option value="high">{{ t('admin.promptAudit.riskLevels.high') }}</option>
-          <option value="critical">{{ t('admin.promptAudit.riskLevels.critical') }}</option>
-        </select>
+        <ElementSelect v-model="localFilters.risk_level" class="input mt-1 w-full" :aria-label="t('admin.promptAudit.events.risk')" @change="filtersChanged">
+          <ElOption :label="(t('common.all'))" value="">{{ t('common.all') }}</ElOption>
+          <ElOption :label="(t('admin.promptAudit.riskLevels.low'))" value="low">{{ t('admin.promptAudit.riskLevels.low') }}</ElOption>
+          <ElOption :label="(t('admin.promptAudit.riskLevels.medium'))" value="medium">{{ t('admin.promptAudit.riskLevels.medium') }}</ElOption>
+          <ElOption :label="(t('admin.promptAudit.riskLevels.high'))" value="high">{{ t('admin.promptAudit.riskLevels.high') }}</ElOption>
+          <ElOption :label="(t('admin.promptAudit.riskLevels.critical'))" value="critical">{{ t('admin.promptAudit.riskLevels.critical') }}</ElOption>
+        </ElementSelect>
       </label>
       <FilterInput v-model="localFilters.endpoint" :label="t('admin.promptAudit.events.endpoint')" @change="filtersChanged" />
       <FilterInput v-model="localFilters.group_id" :label="t('admin.promptAudit.events.groupId')" type="number" @change="filtersChanged" />
@@ -44,60 +44,57 @@
       <FilterInput v-model="localFilters.keyword" :label="t('admin.promptAudit.events.keyword')" @change="filtersChanged" />
       <label class="text-xs text-gray-600 dark:text-dark-200">
         <span>{{ t('admin.promptAudit.events.startAt') }}</span>
-        <input v-model="localFilters.start_at" type="datetime-local" class="input mt-1 w-full" :aria-label="t('admin.promptAudit.events.startAt')" @change="filtersChanged" />
+        <ElementInput v-model="localFilters.start_at" type="datetime-local" class="input mt-1 w-full" :aria-label="t('admin.promptAudit.events.startAt')" @change="filtersChanged" />
       </label>
       <label class="text-xs text-gray-600 dark:text-dark-200">
         <span>{{ t('admin.promptAudit.events.endAt') }}</span>
-        <input v-model="localFilters.end_at" type="datetime-local" class="input mt-1 w-full" :aria-label="t('admin.promptAudit.events.endAt')" @change="filtersChanged" />
+        <ElementInput v-model="localFilters.end_at" type="datetime-local" class="input mt-1 w-full" :aria-label="t('admin.promptAudit.events.endAt')" @change="filtersChanged" />
       </label>
       <div class="flex items-end gap-2 sm:col-span-2">
-        <button type="submit" class="btn btn-primary btn-sm">{{ t('common.search') }}</button>
-        <button type="button" class="btn btn-ghost btn-sm" @click="resetFilters">{{ t('common.reset') }}</button>
+        <ElButton type="primary" size="small" native-type="submit" class="">{{ t('common.search') }}</ElButton>
+        <ElButton size="small" native-type="button" class="" @click="resetFilters">{{ t('common.reset') }}</ElButton>
       </div>
-    </form>
+    </ElForm>
     <div v-if="error" role="alert" class="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{{ error }}</div>
     <div class="mt-5 overflow-x-auto rounded-xl border border-gray-200 dark:border-dark-700/60">
-      <table class="min-w-[1120px] w-full text-left text-sm">
-        <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:bg-dark-900/70 dark:text-dark-400">
-          <tr>
-            <th class="w-10 px-3 py-3"><input type="checkbox" :checked="allSelected" :aria-label="t('admin.promptAudit.events.selectAll')" @change="toggleAll" /></th>
-            <th class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.time') }}</th>
-            <th class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.identity') }}</th>
-            <th class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.group') }}</th>
-            <th class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.route') }}</th>
-            <th class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.result') }}</th>
-            <th class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.preview') }}</th>
-            <th class="px-3 py-3 text-right font-medium">{{ t('admin.promptAudit.common.actions') }}</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100 bg-white dark:divide-dark-700 dark:bg-transparent">
-          <tr v-if="loading"><td colspan="8" class="px-4 py-12 text-center text-gray-500" aria-busy="true">{{ t('common.loading') }}</td></tr>
-          <tr v-else-if="events.length === 0"><td colspan="8" class="px-4 py-12 text-center text-gray-500">{{ t('admin.promptAudit.events.empty') }}</td></tr>
-          <tr v-for="event in events" v-else :key="event.id" :data-test="`event-${event.id}`" class="align-top hover:bg-gray-50/70 dark:hover:bg-dark-800/70">
-            <td class="px-3 py-3"><input type="checkbox" :checked="selectedIds.includes(event.id)" :aria-label="t('admin.promptAudit.events.selectEvent', { id: event.id })" @change="toggleOne(event.id)" /></td>
-            <td class="whitespace-nowrap px-3 py-3 text-xs text-gray-600 dark:text-dark-300">{{ formatDate(event.created_at) }}</td>
-            <td class="px-3 py-3">
-              <CopyLine :label="t('admin.promptAudit.events.user')" :value="event.snapshot.username" />
-              <CopyLine :label="t('admin.promptAudit.events.email')" :value="event.snapshot.user_email" />
-              <CopyLine :label="t('admin.promptAudit.events.apiKey')" :value="event.snapshot.api_key_name" />
-            </td>
-            <td class="px-3 py-3 text-gray-700 dark:text-dark-200">{{ event.snapshot.group_name || '—' }}</td>
-            <td class="px-3 py-3">
-              <p class="font-medium text-gray-900 dark:text-white">{{ event.snapshot.endpoint }}</p>
-              <p class="mt-1 text-xs text-gray-500">{{ event.snapshot.model }} · {{ event.snapshot.protocol }} · {{ event.snapshot.stage || 'http' }}</p>
-            </td>
-            <td class="px-3 py-3">
-              <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="decisionClass(event.decision)">{{ formatDecisionRisk(event.decision, event.risk_level) }}</span>
-              <p class="mt-2 max-w-48 truncate text-xs text-gray-500" :title="formatCategories(event.categories)">{{ formatCategories(event.categories) }}</p>
-            </td>
-            <td class="max-w-xs px-3 py-3"><p class="line-clamp-2 break-words text-gray-600 dark:text-dark-300">{{ event.snapshot.redacted_preview || '—' }}</p></td>
-            <td class="whitespace-nowrap px-3 py-3 text-right">
-              <button type="button" class="btn btn-ghost btn-sm" @click="$emit('view', event.id)">{{ t('common.view') }}</button>
-              <button type="button" class="btn btn-ghost btn-sm text-red-600" @click="$emit('delete', event.id)">{{ t('common.delete') }}</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <ElTable  row-key="id" row-class-name="align-top hover:bg-gray-50/70 dark:hover:bg-dark-800/70" :data="(loading) ? [] : (events)" table-layout="auto" class="element-data-table">
+  <ElTableColumn :width="40" align="left">
+    <template #header><div class="w-10 px-3 py-3"><ElementCheckbox  :checked="allSelected" :aria-label="t('admin.promptAudit.events.selectAll')" @change="toggleAll" /></div></template>
+    <template #default="{ row: event, $index: rowIndex }"><div class="px-3 py-3" :data-test="`event-${event.id}`"><ElementCheckbox  :checked="selectedIds.includes(event.id)" :aria-label="t('admin.promptAudit.events.selectEvent', { id: event.id })" @change="toggleOne(event.id)" /></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.time') }}</div></template>
+    <template #default="{ row: event, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-3 text-xs text-gray-600 dark:text-dark-300" :data-test="`event-${event.id}`">{{ formatDate(event.created_at) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.identity') }}</div></template>
+    <template #default="{ row: event, $index: rowIndex }"><div class="px-3 py-3" :data-test="`event-${event.id}`"><CopyLine :label="t('admin.promptAudit.events.user')" :value="event.snapshot.username" /><CopyLine :label="t('admin.promptAudit.events.email')" :value="event.snapshot.user_email" /><CopyLine :label="t('admin.promptAudit.events.apiKey')" :value="event.snapshot.api_key_name" /></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.group') }}</div></template>
+    <template #default="{ row: event, $index: rowIndex }"><div class="px-3 py-3 text-gray-700 dark:text-dark-200" :data-test="`event-${event.id}`">{{ event.snapshot.group_name || '—' }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.route') }}</div></template>
+    <template #default="{ row: event, $index: rowIndex }"><div class="px-3 py-3" :data-test="`event-${event.id}`"><p class="font-medium text-gray-900 dark:text-white">{{ event.snapshot.endpoint }}</p><p class="mt-1 text-xs text-gray-500">{{ event.snapshot.model }} · {{ event.snapshot.protocol }} · {{ event.snapshot.stage || 'http' }}</p></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.result') }}</div></template>
+    <template #default="{ row: event, $index: rowIndex }"><div class="px-3 py-3" :data-test="`event-${event.id}`"><span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="decisionClass(event.decision)">{{ formatDecisionRisk(event.decision, event.risk_level) }}</span><p class="mt-2 max-w-48 truncate text-xs text-gray-500" :title="formatCategories(event.categories)">{{ formatCategories(event.categories) }}</p></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-3 font-medium">{{ t('admin.promptAudit.events.preview') }}</div></template>
+    <template #default="{ row: event, $index: rowIndex }"><div class="max-w-xs px-3 py-3" :data-test="`event-${event.id}`"><p class="line-clamp-2 break-words text-gray-600 dark:text-dark-300">{{ event.snapshot.redacted_preview || '—' }}</p></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="right">
+    <template #header><div class="px-3 py-3 text-right font-medium">{{ t('admin.promptAudit.common.actions') }}</div></template>
+    <template #default="{ row: event, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-3 text-right" :data-test="`event-${event.id}`"><ElButton size="small" native-type="button" class="" @click="$emit('view', event.id)">{{ t('common.view') }}</ElButton><ElButton size="small" native-type="button" class="text-red-600" @click="$emit('delete', event.id)">{{ t('common.delete') }}</ElButton></div></template>
+  </ElTableColumn>
+  <template #empty>
+    <div v-if="loading">{{ t('common.loading') }}</div>
+    <div v-else-if="events.length === 0">{{ t('admin.promptAudit.events.empty') }}</div>
+  </template>
+</ElTable>
       <Pagination :total="total" :page="page" :page-size="pageSize" @update:page="$emit('page', $event)" @update:page-size="$emit('page-size', $event)" />
     </div>
   </section>

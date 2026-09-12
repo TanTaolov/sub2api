@@ -114,12 +114,12 @@
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <button type="button" class="btn btn-secondary" @click="handleClose">
+        <ElButton native-type="button" class="" @click="handleClose">
           {{ t('common.close') }}
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary"
+        </ElButton>
+        <ElButton type="primary"
+          native-type="button"
+          class=""
           :disabled="!isActive || resetting"
           @click="handleReset"
         >
@@ -144,7 +144,7 @@
             ></path>
           </svg>
           {{ t('admin.accounts.recoverState') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

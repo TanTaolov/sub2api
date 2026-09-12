@@ -43,15 +43,15 @@
               </span>
             </div>
           </div>
-          <button
-            class="btn btn-secondary btn-icon flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-dark-700 dark:text-gray-400 dark:hover:bg-dark-600"
-            type="button"
+          <ElButton
+            class="btn-icon flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-dark-700 dark:text-gray-400 dark:hover:bg-dark-600"
+            native-type="button"
             :title="t('common.refresh')"
             :disabled="loading"
             @click="reload(false)"
           >
             <Icon name="refresh" size="sm" :class="loading ? 'animate-spin' : ''" />
-          </button>
+          </ElButton>
         </header>
 
         <!-- First-upgrade silent backfill: show until 30d product window is covered -->
@@ -91,22 +91,7 @@
 
         <!-- Single compact toolbar row: range · filters · view controls -->
         <div class="monitor-toolbar flex flex-nowrap items-center gap-1.5 overflow-x-auto px-4 py-3 sm:gap-2 sm:px-5">
-          <div
-            class="tabs inline-flex shrink-0"
-            role="group"
-            :aria-label="t('channelMonitorV2.timeRange')"
-          >
-            <button
-              v-for="option in ranges"
-              :key="option.value"
-              type="button"
-              class="tab !px-2 !py-1 text-xs sm:!px-2.5"
-              :class="filter.range === option.value ? 'tab-active' : ''"
-              @click="setRange(option.value)"
-            >
-              {{ option.label }}
-            </button>
-          </div>
+          <ElTabs :model-value="filter.range" @update:model-value="value => setRange(value as typeof filter.range)" :aria-label="t('channelMonitorV2.timeRange')" class="element-page-tabs"><ElTabPane v-for="option in ranges" :key="option.value" :name="option.value"><template #label>{{ option.label }}</template></ElTabPane></ElTabs>
 
           <span class="mx-0.5 hidden h-5 w-px shrink-0 bg-gray-200 dark:bg-dark-700 sm:block" aria-hidden="true"></span>
 
@@ -131,15 +116,15 @@
             :all-label="t('channelMonitorV2.filters.allModels')"
             :options="modelOptions"
           />
-          <button
-            type="button"
-            class="btn btn-ghost btn-sm shrink-0 !px-2 !py-1 text-xs"
+          <ElButton size="small"
+            native-type="button"
+            class="shrink-0 !px-2 !py-1 text-xs"
             :disabled="!hasDimensionFilter"
             :class="!hasDimensionFilter ? 'opacity-40' : ''"
             @click="clearDimensions"
           >
             {{ t('channelMonitorV2.clearFilters') }}
-          </button>
+          </ElButton>
 
           <span class="mx-0.5 hidden h-5 w-px shrink-0 bg-gray-200 dark:bg-dark-700 md:block" aria-hidden="true"></span>
 
@@ -150,46 +135,10 @@
             class="monitor-toolbar-select w-[7.5rem] shrink-0 sm:w-[8.5rem]"
           />
 
-          <div
-            class="tabs inline-flex shrink-0"
-            role="group"
-            :aria-label="t('channelMonitorV2.trendView.label')"
-          >
-            <button
-              type="button"
-              class="tab !px-2 !py-1 text-xs"
-              :class="trendView === 'pulse' ? 'tab-active' : ''"
-              @click="trendView = 'pulse'"
-            >
-              {{ t('channelMonitorV2.trendView.pulse') }}
-            </button>
-            <button
-              type="button"
-              class="tab !px-2 !py-1 text-xs"
-              :class="trendView === 'line' ? 'tab-active' : ''"
-              @click="trendView = 'line'"
-            >
-              {{ t('channelMonitorV2.trendView.line') }}
-            </button>
-          </div>
+          <ElTabs v-model="trendView" :aria-label="t('channelMonitorV2.trendView.label')" class="element-page-tabs"><ElTabPane  :name="'pulse'"><template #label>{{ t('channelMonitorV2.trendView.pulse') }}</template></ElTabPane>
+<ElTabPane  :name="'line'"><template #label>{{ t('channelMonitorV2.trendView.line') }}</template></ElTabPane></ElTabs>
 
-          <div
-            v-if="trendView === 'pulse'"
-            class="tabs inline-flex shrink-0"
-            role="group"
-            :aria-label="t('channelMonitorV2.healthMode.label')"
-          >
-            <button
-              v-for="option in healthModeOptions"
-              :key="option.value"
-              type="button"
-              class="tab !px-2 !py-1 text-xs"
-              :class="healthMode === option.value ? 'tab-active' : ''"
-              @click="healthMode = option.value"
-            >
-              {{ option.label }}
-            </button>
-          </div>
+          <ElTabs v-model="healthMode" v-if="trendView === 'pulse'" :aria-label="t('channelMonitorV2.healthMode.label')" class="element-page-tabs"><ElTabPane v-for="option in healthModeOptions" :key="option.value" :name="option.value"><template #label>{{ option.label }}</template></ElTabPane></ElTabs>
         </div>
       </section>
 
@@ -261,53 +210,24 @@
           :health-mode="healthMode"
           :show-throughput="showThroughput"
         />
-        <div
+        <ElCard shadow="never"
           v-else-if="loading"
-          class="card flex min-h-[320px] items-center justify-center !rounded-3xl !border-0 text-sm text-gray-400 shadow-sm ring-1 ring-gray-900/5 dark:ring-dark-700"
+          class="element-surface-card flex min-h-[320px] items-center justify-center !rounded-3xl !border-0 text-sm text-gray-400 shadow-sm ring-1 ring-gray-900/5 dark:ring-dark-700"
         >
           <span class="animate-pulse">{{ t('common.loading') }}</span>
-        </div>
+        </ElCard>
       </div>
 
       <section class="card flex min-h-0 flex-col overflow-hidden !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:!bg-dark-800 dark:ring-dark-700">
         <div class="border-b border-gray-100 px-5 pt-4 dark:border-dark-700 sm:px-6">
-          <nav class="tabs w-full max-w-md sm:w-auto" role="tablist" :aria-label="t('channelMonitorV2.tabs.aria')">
-            <button
-              v-for="item in tabs"
-              :key="item.value"
-              type="button"
-              role="tab"
-              class="tab flex-1 sm:flex-none"
-              :aria-selected="activeTab === item.value"
-              :class="activeTab === item.value ? 'tab-active' : ''"
-              @click="activeTab = item.value"
-            >
-              {{ item.label }}
-            </button>
-          </nav>
+          <ElTabs v-model="activeTab" :aria-label="t('channelMonitorV2.tabs.aria')" class="element-page-tabs"><ElTabPane v-for="item in tabs" :key="item.value" :name="item.value"><template #label>{{ item.label }}</template></ElTabPane></ElTabs>
         </div>
         <div class="min-h-0 max-h-[min(52vh,520px)] overflow-auto p-4 sm:p-5">
           <div v-if="activeTab === 'models'" class="table-container border-0">
-            <table class="table monitor-table min-w-[720px]">
-              <thead>
-                <tr>
-                  <th>{{ t('channelMonitorV2.table.platformModel') }}</th>
-                  <th>{{ t('channelMonitorV2.metrics.successRate') }}</th>
-                  <th>{{ t('channelMonitorV2.metrics.ttftP50') }}</th>
-                  <th v-if="showThroughput">{{ t('channelMonitorV2.metrics.tps') }}</th>
-                  <th>{{ t('channelMonitorV2.metrics.cacheRate') }}</th>
-                  <th v-if="showThroughput">{{ t('channelMonitorV2.metrics.rpm') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="row in modelRows"
-                  :key="`${row.platform}:${row.model}`"
-                  class="cursor-pointer"
-                  @click="drillModel(row)"
-                >
-                  <td>
-                    <div class="flex items-center gap-2">
+            <ElTable  :row-key="(row) => `${row.platform}:${row.model}`" @row-click="(row) => { drillModel(row) }" row-class-name="cursor-pointer" :data="modelRows" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div >{{ t('channelMonitorV2.table.platformModel') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div  ><div class="flex items-center gap-2">
                       <span :class="statusDot(row.health)" aria-hidden="true"></span>
                       <div>
                         <span class="block text-xs text-gray-500 dark:text-dark-400">{{ row.platform }}</span>
@@ -315,22 +235,29 @@
                           {{ row.model === '__other__' ? t('channelMonitorV2.otherModels') : row.model }}
                         </strong>
                       </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="block">{{ formatPercent(1 - row.metrics.error_rate) }}</span>
-                    <small class="text-xs text-gray-400">{{ t('channelMonitorV2.metrics.errorRateValue', { value: formatPercent(row.metrics.error_rate) }) }}</small>
-                  </td>
-                  <td>
-                    <span class="block">{{ formatMs(row.metrics.ttft.p50_ms) }}</span>
-                    <small class="text-xs text-gray-400">{{ latencyDetail(row.metrics.ttft) }}</small>
-                  </td>
-                  <td v-if="showThroughput" :title="exactTps(row.metrics.tpm)">{{ formatTps(row.metrics.tpm) }}</td>
-                  <td>{{ formatPercent(row.metrics.cache_rate) }}</td>
-                  <td v-if="showThroughput">{{ formatRate(row.metrics.rpm) }}</td>
-                </tr>
-              </tbody>
-            </table>
+                    </div></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div >{{ t('channelMonitorV2.metrics.successRate') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div  ><span class="block">{{ formatPercent(1 - row.metrics.error_rate) }}</span><small class="text-xs text-gray-400">{{ t('channelMonitorV2.metrics.errorRateValue', { value: formatPercent(row.metrics.error_rate) }) }}</small></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div >{{ t('channelMonitorV2.metrics.ttftP50') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div  ><span class="block">{{ formatMs(row.metrics.ttft.p50_ms) }}</span><small class="text-xs text-gray-400">{{ latencyDetail(row.metrics.ttft) }}</small></div></template>
+  </ElTableColumn>
+  <ElTableColumn v-if="showThroughput" :min-width="120" align="left">
+    <template #header><div >{{ t('channelMonitorV2.metrics.tps') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div :title="exactTps(row.metrics.tpm)" >{{ formatTps(row.metrics.tpm) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div >{{ t('channelMonitorV2.metrics.cacheRate') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div  >{{ formatPercent(row.metrics.cache_rate) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn v-if="showThroughput" :min-width="120" align="left">
+    <template #header><div >{{ t('channelMonitorV2.metrics.rpm') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div  >{{ formatRate(row.metrics.rpm) }}</div></template>
+  </ElTableColumn>
+</ElTable>
           </div>
 
           <div v-else-if="activeTab === 'errors'" class="space-y-3">
@@ -340,8 +267,8 @@
               class="rounded-2xl bg-gray-50 p-4 text-sm dark:bg-dark-900/30"
               :class="row.ignored ? 'opacity-60' : ''"
             >
-              <button
-                type="button"
+              <ElButton text
+                native-type="button"
                 class="grid w-full grid-cols-[minmax(100px,200px)_1fr_auto_auto] items-center gap-3 text-left"
                 @click="toggleError(row.category)"
               >
@@ -361,7 +288,7 @@
                   :class="row.ignored ? 'text-gray-400' : 'text-gray-500'"
                 >{{ formatPercent(row.rate) }}</small>
                 <Icon name="chevronDown" size="sm" :class="['text-gray-400 transition-transform', expandedErrors.has(row.category) ? 'rotate-180' : '']" />
-              </button>
+              </ElButton>
               <div v-if="expandedErrors.has(row.category)" class="mt-3 space-y-2 border-t border-gray-100 pt-3 dark:border-dark-700">
                 <template v-if="isAdmin && (row.details || []).length">
                   <div
@@ -385,29 +312,16 @@
           </div>
 
           <div v-else class="table-container border-0">
-            <table class="table monitor-table min-w-[640px]">
-              <thead>
-                <tr>
-                  <th class="w-16">{{ t('channelMonitorV2.table.rank') }}</th>
-                  <th>{{ t('channelMonitorV2.table.user') }}</th>
-                  <th>{{ t('channelMonitorV2.metrics.successRate') }}</th>
-                  <th>{{ t('channelMonitorV2.metrics.ttftP50') }}</th>
-                  <th v-if="showThroughput">{{ t('channelMonitorV2.metrics.tps') }}</th>
-                  <th>{{ t('channelMonitorV2.metrics.cacheRate') }}</th>
-                  <th v-if="showThroughput">{{ t('channelMonitorV2.metrics.rpm') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="row in userRows"
-                  :key="row.user_id || row.display_label"
-                  :class="row.is_self
+            <ElTable  :row-key="(row) => row.user_id || row.display_label" :row-class-name="({ row: row }) => '' + ' ' + (row.is_self
                     ? 'bg-primary-50 ring-1 ring-inset ring-primary-200/80 dark:bg-primary-900/25 dark:ring-primary-700/50'
-                    : ''"
-                >
-                  <td><MonitorRankBadge :rank="row.rank" /></td>
-                  <td>
-                    <strong
+                    : '')" :data="userRows" table-layout="auto" class="element-data-table">
+  <ElTableColumn :width="64" align="left">
+    <template #header><div class="w-16">{{ t('channelMonitorV2.table.rank') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div  ><MonitorRankBadge :rank="row.rank" /></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div >{{ t('channelMonitorV2.table.user') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div  ><strong
                       class="font-semibold"
                       :class="row.is_self ? 'text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-white'"
                     >
@@ -416,22 +330,29 @@
                         v-if="row.is_self"
                         class="badge badge-primary ml-2 !px-1.5 !py-0 text-[10px]"
                       >{{ t('channelMonitorV2.currentUser') }}</span>
-                    </strong>
-                  </td>
-                  <td>
-                    <span class="block">{{ formatPercent(1 - row.metrics.error_rate) }}</span>
-                    <small class="text-xs text-gray-400">{{ t('channelMonitorV2.metrics.errorRateValue', { value: formatPercent(row.metrics.error_rate) }) }}</small>
-                  </td>
-                  <td>
-                    <span class="block">{{ formatMs(row.metrics.ttft.p50_ms) }}</span>
-                    <small class="text-xs text-gray-400">{{ latencyDetail(row.metrics.ttft) }}</small>
-                  </td>
-                  <td v-if="showThroughput" :title="exactTps(row.metrics.tpm)">{{ formatTps(row.metrics.tpm) }}</td>
-                  <td>{{ formatPercent(row.metrics.cache_rate) }}</td>
-                  <td v-if="showThroughput">{{ formatRate(row.metrics.rpm) }}</td>
-                </tr>
-              </tbody>
-            </table>
+                    </strong></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div >{{ t('channelMonitorV2.metrics.successRate') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div  ><span class="block">{{ formatPercent(1 - row.metrics.error_rate) }}</span><small class="text-xs text-gray-400">{{ t('channelMonitorV2.metrics.errorRateValue', { value: formatPercent(row.metrics.error_rate) }) }}</small></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div >{{ t('channelMonitorV2.metrics.ttftP50') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div  ><span class="block">{{ formatMs(row.metrics.ttft.p50_ms) }}</span><small class="text-xs text-gray-400">{{ latencyDetail(row.metrics.ttft) }}</small></div></template>
+  </ElTableColumn>
+  <ElTableColumn v-if="showThroughput" :min-width="120" align="left">
+    <template #header><div >{{ t('channelMonitorV2.metrics.tps') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div :title="exactTps(row.metrics.tpm)" >{{ formatTps(row.metrics.tpm) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div >{{ t('channelMonitorV2.metrics.cacheRate') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div  >{{ formatPercent(row.metrics.cache_rate) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn v-if="showThroughput" :min-width="120" align="left">
+    <template #header><div >{{ t('channelMonitorV2.metrics.rpm') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div  >{{ formatRate(row.metrics.rpm) }}</div></template>
+  </ElTableColumn>
+</ElTable>
           </div>
 
           <div v-if="tabLoading" class="empty-state py-10 text-sm text-gray-400">{{ t('common.loading') }}</div>

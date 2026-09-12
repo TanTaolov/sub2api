@@ -188,7 +188,7 @@ onMounted(() => {
         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.ops.email.description') }}</p>
       </div>
       <div class="flex items-center gap-2">
-        <button
+        <ElButton text
           class="flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-dark-700 dark:text-gray-300 dark:hover:bg-dark-600"
           :disabled="loading"
           @click="loadConfig"
@@ -197,8 +197,8 @@ onMounted(() => {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
           {{ t('common.refresh') }}
-        </button>
-        <button class="btn btn-sm btn-secondary" :disabled="!config" @click="openEditor">{{ t('common.edit') }}</button>
+        </ElButton>
+        <ElButton size="small" class="" :disabled="!config" @click="openEditor">{{ t('common.edit') }}</ElButton>
       </div>
     </div>
 
@@ -268,10 +268,7 @@ onMounted(() => {
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('common.enabled') }}</div>
-            <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input v-model="draft.alert.enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
-              <span>{{ draft.alert.enabled ? t('common.enabled') : t('common.disabled') }}</span>
-            </label>
+            <ElementCheckbox v-model="draft.alert.enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ draft.alert.enabled ? t('common.enabled') : t('common.disabled') }}</span></ElementCheckbox>
           </div>
 
           <div>
@@ -282,16 +279,16 @@ onMounted(() => {
           <div class="md:col-span-2">
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.recipients') }}</div>
             <div class="flex gap-2">
-              <input
+              <ElementInput
                 v-model="alertRecipientInput"
                 type="email"
                 class="input"
                 :placeholder="t('admin.ops.email.recipients')"
                 @keydown.enter.prevent="addRecipient('alert')"
               />
-              <button class="btn btn-secondary whitespace-nowrap" type="button" @click="addRecipient('alert')">
+              <ElButton class="whitespace-nowrap" native-type="button" @click="addRecipient('alert')">
                 {{ t('common.add') }}
-              </button>
+              </ElButton>
             </div>
             <p v-if="alertRecipientError" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ alertRecipientError }}</p>
             <div class="mt-2 flex flex-wrap gap-2">
@@ -301,13 +298,13 @@ onMounted(() => {
                 class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
               >
                 {{ email }}
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   class="text-blue-700/80 hover:text-blue-900 dark:text-blue-300"
                   @click="removeRecipient('alert', email)"
                 >
                   ×
-                </button>
+                </ElButton>
               </span>
             </div>
             <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.ops.email.recipientsHint') }}</div>
@@ -315,20 +312,17 @@ onMounted(() => {
 
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.rateLimitPerHour') }}</div>
-            <input v-model.number="draft.alert.rate_limit_per_hour" type="number" min="0" max="100000" class="input" />
+            <ElementInput v-model.number="draft.alert.rate_limit_per_hour" type="number" min="0" max="100000" class="input" />
           </div>
 
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.batchWindowSeconds') }}</div>
-            <input v-model.number="draft.alert.batching_window_seconds" type="number" min="0" max="86400" class="input" />
+            <ElementInput v-model.number="draft.alert.batching_window_seconds" type="number" min="0" max="86400" class="input" />
           </div>
 
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.includeResolved') }}</div>
-            <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input v-model="draft.alert.include_resolved_alerts" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
-              <span>{{ draft.alert.include_resolved_alerts ? t('common.enabled') : t('common.disabled') }}</span>
-            </label>
+            <ElementCheckbox v-model="draft.alert.include_resolved_alerts" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ draft.alert.include_resolved_alerts ? t('common.enabled') : t('common.disabled') }}</span></ElementCheckbox>
           </div>
         </div>
       </div>
@@ -338,25 +332,22 @@ onMounted(() => {
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('common.enabled') }}</div>
-            <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input v-model="draft.report.enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
-              <span>{{ draft.report.enabled ? t('common.enabled') : t('common.disabled') }}</span>
-            </label>
+            <ElementCheckbox v-model="draft.report.enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"><span>{{ draft.report.enabled ? t('common.enabled') : t('common.disabled') }}</span></ElementCheckbox>
           </div>
 
           <div class="md:col-span-2">
             <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.recipients') }}</div>
             <div class="flex gap-2">
-              <input
+              <ElementInput
                 v-model="reportRecipientInput"
                 type="email"
                 class="input"
                 :placeholder="t('admin.ops.email.recipients')"
                 @keydown.enter.prevent="addRecipient('report')"
               />
-              <button class="btn btn-secondary whitespace-nowrap" type="button" @click="addRecipient('report')">
+              <ElButton class="whitespace-nowrap" native-type="button" @click="addRecipient('report')">
                 {{ t('common.add') }}
-              </button>
+              </ElButton>
             </div>
             <p v-if="reportRecipientError" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ reportRecipientError }}</p>
             <div class="mt-2 flex flex-wrap gap-2">
@@ -366,13 +357,13 @@ onMounted(() => {
                 class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
               >
                 {{ email }}
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   class="text-blue-700/80 hover:text-blue-900 dark:text-blue-300"
                   @click="removeRecipient('report', email)"
                 >
                   ×
-                </button>
+                </ElButton>
               </span>
             </div>
           </div>
@@ -382,46 +373,38 @@ onMounted(() => {
               <div>
                 <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.dailySummary') }}</div>
                 <div class="flex items-center gap-2">
-                  <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                    <input v-model="draft.report.daily_summary_enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
-                  </label>
-                  <input v-model="draft.report.daily_summary_schedule" type="text" class="input" :placeholder="t('admin.ops.email.cronPlaceholder')" />
+                  <ElementCheckbox v-model="draft.report.daily_summary_enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"></ElementCheckbox>
+                  <ElementInput v-model="draft.report.daily_summary_schedule" type="text" class="input" :placeholder="t('admin.ops.email.cronPlaceholder')" />
                 </div>
               </div>
               <div>
                 <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.weeklySummary') }}</div>
                 <div class="flex items-center gap-2">
-                  <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                    <input v-model="draft.report.weekly_summary_enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
-                  </label>
-                  <input v-model="draft.report.weekly_summary_schedule" type="text" class="input" :placeholder="t('admin.ops.email.cronPlaceholder')" />
+                  <ElementCheckbox v-model="draft.report.weekly_summary_enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"></ElementCheckbox>
+                  <ElementInput v-model="draft.report.weekly_summary_schedule" type="text" class="input" :placeholder="t('admin.ops.email.cronPlaceholder')" />
                 </div>
               </div>
               <div>
                 <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.errorDigest') }}</div>
                 <div class="flex items-center gap-2">
-                  <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                    <input v-model="draft.report.error_digest_enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
-                  </label>
-                  <input v-model="draft.report.error_digest_schedule" type="text" class="input" :placeholder="t('admin.ops.email.cronPlaceholder')" />
+                  <ElementCheckbox v-model="draft.report.error_digest_enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"></ElementCheckbox>
+                  <ElementInput v-model="draft.report.error_digest_schedule" type="text" class="input" :placeholder="t('admin.ops.email.cronPlaceholder')" />
                 </div>
               </div>
               <div>
                 <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.errorDigestMinCount') }}</div>
-                <input v-model.number="draft.report.error_digest_min_count" type="number" min="0" max="1000000" class="input" />
+                <ElementInput v-model.number="draft.report.error_digest_min_count" type="number" min="0" max="1000000" class="input" />
               </div>
               <div>
                 <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.accountHealth') }}</div>
                 <div class="flex items-center gap-2">
-                  <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                    <input v-model="draft.report.account_health_enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
-                  </label>
-                  <input v-model="draft.report.account_health_schedule" type="text" class="input" :placeholder="t('admin.ops.email.cronPlaceholder')" />
+                  <ElementCheckbox v-model="draft.report.account_health_enabled" :class="[&quot;inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]"></ElementCheckbox>
+                  <ElementInput v-model="draft.report.account_health_schedule" type="text" class="input" :placeholder="t('admin.ops.email.cronPlaceholder')" />
                 </div>
               </div>
               <div>
                 <div class="mb-1 text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.ops.email.accountHealthThreshold') }}</div>
-                <input v-model.number="draft.report.account_health_error_rate_threshold" type="number" min="0" max="100" step="0.1" class="input" />
+                <ElementInput v-model.number="draft.report.account_health_error_rate_threshold" type="number" min="0" max="100" step="0.1" class="input" />
               </div>
             </div>
             <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ t('admin.ops.email.reportHint') }}</div>
@@ -431,10 +414,10 @@ onMounted(() => {
     </div>
     <template #footer>
       <div class="flex justify-end gap-2">
-        <button class="btn btn-secondary" @click="showEditor = false">{{ t('common.cancel') }}</button>
-        <button class="btn btn-primary" :disabled="saving || !editorValidation.valid" @click="saveConfig">
+        <ElButton class="" @click="showEditor = false">{{ t('common.cancel') }}</ElButton>
+        <ElButton type="primary" class="" :disabled="saving || !editorValidation.valid" @click="saveConfig">
           {{ saving ? t('common.saving') : t('common.save') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

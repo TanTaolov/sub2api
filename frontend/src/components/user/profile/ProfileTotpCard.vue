@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <ElCard shadow="never" class="element-surface-card">
     <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
       <h2 class="text-lg font-medium text-gray-900 dark:text-white">
         {{ t('profile.totp.title') }}
@@ -48,13 +48,13 @@
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          class="btn btn-outline-danger"
+        <ElButton
+          native-type="button"
+          class="btn-outline-danger"
           @click="showDisableDialog = true"
         >
           {{ t('profile.totp.disable') }}
-        </button>
+        </ElButton>
       </div>
 
       <!-- 2FA Not Enabled -->
@@ -74,13 +74,13 @@
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          class="btn btn-primary"
+        <ElButton type="primary"
+          native-type="button"
+          class=""
           @click="showSetupModal = true"
         >
           {{ t('profile.totp.enable') }}
-        </button>
+        </ElButton>
       </div>
     </div>
 
@@ -97,7 +97,7 @@
       @close="showDisableDialog = false"
       @success="handleDisableSuccess"
     />
-  </div>
+  </ElCard>
 </template>
 
 <script setup lang="ts">

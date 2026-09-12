@@ -9,7 +9,7 @@
       </h2>
     </div>
     <div :class="props.embedded ? '' : 'px-6 py-6'">
-      <form @submit.prevent="handleChangePassword" class="space-y-4">
+      <ElForm @submit.prevent="handleChangePassword" class="space-y-4">
         <div v-if="props.embedded">
           <p class="text-sm font-semibold text-gray-900 dark:text-white">
             {{ t('profile.changePassword') }}
@@ -19,7 +19,7 @@
           <label for="old_password" class="input-label">
             {{ t('profile.currentPassword') }}
           </label>
-          <input
+          <ElementInput
             id="old_password"
             v-model="form.old_password"
             type="password"
@@ -33,7 +33,7 @@
           <label for="new_password" class="input-label">
             {{ t('profile.newPassword') }}
           </label>
-          <input
+          <ElementInput
             id="new_password"
             v-model="form.new_password"
             type="password"
@@ -50,7 +50,7 @@
           <label for="confirm_password" class="input-label">
             {{ t('profile.confirmNewPassword') }}
           </label>
-          <input
+          <ElementInput
             id="confirm_password"
             v-model="form.confirm_password"
             type="password"
@@ -61,11 +61,11 @@
         </div>
 
         <div class="flex justify-end pt-4">
-          <button type="submit" :disabled="loading" class="btn btn-primary">
+          <ElButton type="primary" native-type="submit" :disabled="loading" class="">
             {{ loading ? t('profile.changingPassword') : t('profile.changePasswordButton') }}
-          </button>
+          </ElButton>
         </div>
-      </form>
+      </ElForm>
     </div>
   </div>
 </template>

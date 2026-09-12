@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-wrap gap-2">
-    <button
+    <ElButton text
       v-for="preset in presets"
       :key="preset.mode + ':' + preset.protocol + ':' + preset.url"
-      type="button"
+      native-type="button"
       data-testid="cn-base-url-preset"
       :class="[
         'rounded-lg px-3 py-1 text-xs transition-colors',
@@ -14,7 +14,7 @@
       @click="emit('select', preset)"
     >
       {{ preset.label }} ({{ displayUrl(preset.url) }})
-    </button>
+    </ElButton>
   </div>
 </template>
 

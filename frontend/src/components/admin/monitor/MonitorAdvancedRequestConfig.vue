@@ -9,7 +9,7 @@
           :key="i"
           class="flex items-center gap-2"
         >
-          <input
+          <ElementInput
             v-model="row.name"
             type="text"
             spellcheck="false"
@@ -17,7 +17,7 @@
             class="input w-52 flex-none font-mono text-xs"
             @blur="commitHeaders"
           />
-          <input
+          <ElementInput
             v-model="row.value"
             type="text"
             spellcheck="false"
@@ -25,8 +25,8 @@
             class="input flex-1 font-mono text-xs"
             @blur="commitHeaders"
           />
-          <button
-            type="button"
+          <ElButton type="danger"
+            native-type="button"
             class="flex-none rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
             :title="t('common.delete')"
             @click="removeRow(i)"
@@ -34,10 +34,10 @@
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
+          </ElButton>
         </div>
-        <button
-          type="button"
+        <ElButton text
+          native-type="button"
           class="inline-flex items-center gap-1 rounded border border-dashed border-gray-300 px-2 py-1 text-xs text-gray-500 hover:border-primary-400 hover:text-primary-600 dark:border-dark-600 dark:text-gray-400 dark:hover:border-primary-500 dark:hover:text-primary-400"
           @click="addRow"
         >
@@ -45,7 +45,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           {{ t('admin.channelMonitor.advanced.headerAddRow') }}
-        </button>
+        </ElButton>
       </div>
       <p v-if="headersError" class="mt-1 text-xs text-red-500">{{ headersError }}</p>
       <p v-else class="mt-1 text-xs text-gray-400">
@@ -57,16 +57,16 @@
     <div>
       <label class="input-label">{{ t('admin.channelMonitor.advanced.bodyMode') }}</label>
       <div class="grid grid-cols-3 gap-3">
-        <button
+        <ElButton text
           v-for="opt in bodyModeOptions"
           :key="opt.value"
-          type="button"
+          native-type="button"
           class="rounded-lg border-2 px-3 py-2 text-sm font-medium transition-colors"
           :class="bodyModeButtonClass(opt.value)"
           @click="updateBodyMode(opt.value)"
         >
           {{ opt.label }}
-        </button>
+        </ElButton>
       </div>
       <p class="mt-1 text-xs text-gray-400">
         {{ bodyModeHint }}
@@ -77,18 +77,18 @@
     <div v-if="bodyOverrideMode !== 'off'">
       <div class="mb-1 flex items-center justify-between">
         <label class="input-label !mb-0">{{ t('admin.channelMonitor.advanced.bodyJson') }}</label>
-        <button
-          type="button"
+        <ElButton text
+          native-type="button"
           class="text-xs text-primary-600 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline dark:text-primary-400"
           :disabled="!bodyText.trim()"
           @click="formatBody"
         >
           {{ t('admin.channelMonitor.advanced.bodyJsonFormat') }}
-        </button>
+        </ElButton>
       </div>
-      <textarea
+      <ElementInput type="textarea"
         v-model="bodyText"
-        rows="10"
+        :rows="10"
         :placeholder="bodyPlaceholder"
         class="input font-mono text-xs"
         style="white-space: pre; overflow-wrap: normal; overflow-x: auto;"

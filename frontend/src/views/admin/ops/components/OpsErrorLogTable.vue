@@ -66,14 +66,14 @@
 
         <template #cell-user="{ row }">
           <div v-if="row.user_id" class="text-sm">
-            <button
+            <ElButton text
               v-if="userClickable && row.user_email"
               class="font-medium text-primary-600 underline decoration-dashed underline-offset-2 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
               :title="t('admin.usage.clickToViewBalance')"
               @click.stop="emit('userClick', row.user_id, row.user_email)"
             >
               {{ row.user_email }}
-            </button>
+            </ElButton>
             <span v-else class="font-medium text-gray-900 dark:text-white">{{ row.user_email || '-' }}</span>
             <span class="ml-1 text-gray-500 dark:text-gray-400">#{{ row.user_id }}</span>
           </div>
@@ -151,14 +151,14 @@
         </template>
 
         <template #cell-actions="{ row }">
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-primary-600 dark:hover:bg-dark-600 dark:hover:text-primary-400"
             :title="t('admin.ops.errorLog.details')"
             @click.stop="emit('openErrorDetail', row.id)"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-          </button>
+          </ElButton>
         </template>
 
         <template #empty><EmptyState :message="t('admin.ops.errorLog.noErrors')" /></template>

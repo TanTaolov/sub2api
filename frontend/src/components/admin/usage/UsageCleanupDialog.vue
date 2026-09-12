@@ -19,9 +19,9 @@
           <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
             {{ t('admin.usage.cleanup.recentTasks') }}
           </h4>
-          <button type="button" class="btn btn-ghost btn-sm" @click="loadTasks">
+          <ElButton size="small" native-type="button" class="" @click="loadTasks">
             {{ t('common.refresh') }}
-          </button>
+          </ElButton>
         </div>
 
         <div class="mt-3 space-y-2">
@@ -43,14 +43,14 @@
                     {{ statusLabel(task.status) }}
                   </span>
                   <span class="text-xs text-gray-400">#{{ task.id }}</span>
-                  <button
+                  <ElButton
                     v-if="canCancel(task)"
-                    type="button"
-                    class="btn btn-ghost btn-xs text-rose-600 hover:text-rose-700 dark:text-rose-300"
+                    native-type="button"
+                    class="btn-xs text-rose-600 hover:text-rose-700 dark:text-rose-300"
                     @click="openCancelConfirm(task)"
                   >
                     {{ t('admin.usage.cleanup.cancel') }}
-                  </button>
+                  </ElButton>
                 </div>
                 <div class="text-xs text-gray-400">
                   {{ formatDateTime(task.created_at) }}
@@ -84,12 +84,12 @@
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <button type="button" class="btn btn-secondary" @click="handleClose">
+        <ElButton native-type="button" class="" @click="handleClose">
           {{ t('common.cancel') }}
-        </button>
-        <button type="button" class="btn btn-danger" :disabled="submitting" @click="openConfirm">
+        </ElButton>
+        <ElButton type="danger" native-type="button" class="" :disabled="submitting" @click="openConfirm">
           {{ submitting ? t('admin.usage.cleanup.submitting') : t('admin.usage.cleanup.submit') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

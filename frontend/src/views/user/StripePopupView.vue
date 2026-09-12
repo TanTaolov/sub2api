@@ -18,26 +18,26 @@
         >
           {{ error }}
         </div>
-        <button
+        <ElButton text
           class="w-full text-sm underline dark:text-blue-400 dark:hover:text-blue-300"
           :style="{ color: methodColor }"
           @click="closeWindow"
         >
           {{ t('common.close') }}
-        </button>
+        </ElButton>
       </div>
 
       <!-- Success -->
       <div v-else-if="success" class="space-y-3 py-4 text-center">
         <div class="text-5xl text-green-600 dark:text-green-400">✓</div>
         <p class="text-sm text-gray-500 dark:text-slate-400">{{ t('payment.result.success') }}</p>
-        <button
+        <ElButton text
           class="text-sm underline dark:text-blue-400 dark:hover:text-blue-300"
           :style="{ color: methodColor }"
           @click="closeWindow"
         >
           {{ t('common.close') }}
-        </button>
+        </ElButton>
       </div>
 
       <!-- Loading / Redirecting -->

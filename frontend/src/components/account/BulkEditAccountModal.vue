@@ -5,7 +5,7 @@
     width="wide"
     @close="handleClose"
   >
-    <form id="bulk-edit-account-form" class="space-y-5" @submit.prevent="() => handleSubmit()">
+    <ElForm id="bulk-edit-account-form" class="space-y-5" @submit.prevent="() => handleSubmit()">
       <!-- Info -->
       <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
         <p class="text-sm text-blue-700 dark:text-blue-400">
@@ -49,12 +49,12 @@
               {{ t('admin.accounts.openai.oauthPassthroughDesc') }}
             </p>
           </div>
-          <input
+          <ElementCheckbox
             v-model="enableOpenAIPassthrough"
             id="bulk-edit-openai-passthrough-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-openai-passthrough-body"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div
@@ -63,9 +63,9 @@
           role="group"
           aria-labelledby="bulk-edit-openai-passthrough-label"
         >
-          <button
+          <ElButton text
             id="bulk-edit-openai-passthrough-toggle"
-            type="button"
+            native-type="button"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
               openaiPassthroughEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
@@ -78,7 +78,7 @@
                 openaiPassthroughEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -100,12 +100,12 @@
               {{ t('admin.accounts.openai.flattenNamespacesDesc') }}
             </p>
           </div>
-          <input
+          <ElementCheckbox
             v-model="enableOpenAIFlattenNamespaces"
             id="bulk-edit-openai-flatten-namespaces-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-openai-flatten-namespaces-body"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div
@@ -114,9 +114,9 @@
           role="group"
           aria-labelledby="bulk-edit-openai-flatten-namespaces-label"
         >
-          <button
+          <ElButton text
             id="bulk-edit-openai-flatten-namespaces-toggle"
-            type="button"
+            native-type="button"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
               openaiFlattenNamespacesEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
@@ -129,7 +129,7 @@
                 openaiFlattenNamespacesEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -151,12 +151,12 @@
               {{ t('admin.accounts.openai.longContextBillingDesc') }}
             </p>
           </div>
-          <input
+          <ElementCheckbox
             v-model="enableOpenAILongContextBilling"
             id="bulk-edit-openai-long-context-billing-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-openai-long-context-billing-body"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div
@@ -165,25 +165,7 @@
           role="group"
           aria-labelledby="bulk-edit-openai-long-context-billing-label"
         >
-          <button
-            type="button"
-            data-testid="bulk-edit-openai-long-context-billing-toggle"
-            role="switch"
-            :disabled="!enableOpenAILongContextBilling"
-            :aria-checked="openAILongContextBillingEnabled"
-            :class="[
-              'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-              openAILongContextBillingEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
-            ]"
-            @click="openAILongContextBillingEnabled = !openAILongContextBillingEnabled"
-          >
-            <span
-              :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                openAILongContextBillingEnabled ? 'translate-x-5' : 'translate-x-0'
-              ]"
-            />
-          </button>
+          <ElSwitch data-testid="bulk-edit-openai-long-context-billing-toggle" :disabled="!enableOpenAILongContextBilling" :model-value="openAILongContextBillingEnabled" @change="openAILongContextBillingEnabled = !openAILongContextBillingEnabled" />
         </div>
         <p
           class="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-900/20 dark:text-amber-300"
@@ -203,15 +185,15 @@
           >
             {{ t('admin.accounts.baseUrl') }}
           </label>
-          <input
+          <ElementCheckbox
             v-model="enableBaseUrl"
             id="bulk-edit-base-url-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-base-url"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
-        <input
+        <ElementInput
           v-model="baseUrl"
           id="bulk-edit-base-url"
           type="text"
@@ -241,12 +223,12 @@
           >
             {{ t('admin.accounts.modelRestriction') }}
           </label>
-          <input
+          <ElementCheckbox
             v-model="enableModelRestriction"
             id="bulk-edit-model-restriction-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-model-restriction-body"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
 
@@ -268,8 +250,8 @@
           <template v-else>
             <!-- Mode Toggle -->
             <div class="mb-4 flex gap-2">
-              <button
-                type="button"
+              <ElButton text
+                native-type="button"
                 :class="[
                   'flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all',
                   modelRestrictionMode === 'whitelist'
@@ -292,9 +274,9 @@
                   />
                 </svg>
                 {{ t('admin.accounts.modelWhitelist') }}
-              </button>
-              <button
-                type="button"
+              </ElButton>
+              <ElButton text
+                native-type="button"
                 :class="[
                   'flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all',
                   modelRestrictionMode === 'mapping'
@@ -317,7 +299,7 @@
                   />
                 </svg>
                 {{ t('admin.accounts.modelMapping') }}
-              </button>
+              </ElButton>
             </div>
 
             <!-- Whitelist Mode -->
@@ -382,7 +364,7 @@
                   :key="index"
                   class="flex items-center gap-2"
                 >
-                  <input
+                  <ElementInput
                     v-model="mapping.from"
                     type="text"
                     class="input flex-1"
@@ -401,14 +383,14 @@
                       d="M14 5l7 7m0 0l-7 7m7-7H3"
                     />
                   </svg>
-                  <input
+                  <ElementInput
                     v-model="mapping.to"
                     type="text"
                     class="input flex-1"
                     :placeholder="t('admin.accounts.actualModel')"
                   />
-                  <button
-                    type="button"
+                  <ElButton text
+                    native-type="button"
                     class="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
                     @click="removeModelMapping(index)"
                   >
@@ -420,12 +402,12 @@
                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                       />
                     </svg>
-                  </button>
+                  </ElButton>
                 </div>
               </div>
 
-              <button
-                type="button"
+              <ElButton text
+                native-type="button"
                 class="mb-3 w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-2 text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-700 dark:border-dark-500 dark:text-gray-400 dark:hover:border-dark-400 dark:hover:text-gray-300"
                 @click="addModelMapping"
               >
@@ -443,19 +425,19 @@
                   />
                 </svg>
                 {{ t('admin.accounts.addMapping') }}
-              </button>
+              </ElButton>
 
               <!-- Quick Add Buttons -->
               <div class="flex flex-wrap gap-2">
-                <button
+                <ElButton text
                   v-for="preset in filteredPresets"
                   :key="preset.label"
-                  type="button"
+                  native-type="button"
                   :class="['rounded-lg px-3 py-1 text-xs transition-colors', preset.color]"
                   @click="addPresetMapping(preset.from, preset.to)"
                 >
                   + {{ preset.label }}
-                </button>
+                </ElButton>
               </div>
             </div>
           </template>
@@ -477,12 +459,12 @@
               {{ t('admin.accounts.customErrorCodesHint') }}
             </p>
           </div>
-          <input
+          <ElementCheckbox
             v-model="enableCustomErrorCodes"
             id="bulk-edit-custom-error-codes-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-custom-error-codes-body"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
 
@@ -496,10 +478,10 @@
 
           <!-- Error Code Buttons -->
           <div class="flex flex-wrap gap-2">
-            <button
+            <ElButton text
               v-for="code in commonErrorCodes"
               :key="code.value"
-              type="button"
+              native-type="button"
               :class="[
                 'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
                 selectedErrorCodes.includes(code.value)
@@ -509,12 +491,12 @@
               @click="toggleErrorCode(code.value)"
             >
               {{ code.value }} {{ code.label }}
-            </button>
+            </ElButton>
           </div>
 
           <!-- Manual input -->
           <div class="flex items-center gap-2">
-            <input
+            <ElementInput
               v-model="customErrorCodeInput"
               id="bulk-edit-custom-error-code-input"
               type="number"
@@ -525,7 +507,7 @@
               aria-labelledby="bulk-edit-custom-error-codes-label"
               @keyup.enter="addCustomErrorCode"
             />
-            <button type="button" class="btn btn-secondary px-3" @click="addCustomErrorCode">
+            <ElButton native-type="button" class="px-3" @click="addCustomErrorCode">
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   stroke-linecap="round"
@@ -534,7 +516,7 @@
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-            </button>
+            </ElButton>
           </div>
 
           <!-- Selected codes summary -->
@@ -545,13 +527,13 @@
               class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-sm font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400"
             >
               {{ code }}
-              <button
-                type="button"
+              <ElButton text
+                native-type="button"
                 class="hover:text-red-900 dark:hover:text-red-300"
                 @click="removeErrorCode(code)"
               >
                 <Icon name="x" size="xs" class="h-3.5 w-3.5" :stroke-width="2" />
-              </button>
+              </ElButton>
             </span>
             <span v-if="selectedErrorCodes.length === 0" class="text-xs text-gray-400">
               {{ t('admin.accounts.noneSelectedUsesDefault') }}
@@ -575,17 +557,17 @@
               {{ t('admin.accounts.interceptWarmupRequestsDesc') }}
             </p>
           </div>
-          <input
+          <ElementCheckbox
             v-model="enableInterceptWarmup"
             id="bulk-edit-intercept-warmup-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-intercept-warmup-body"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div v-if="enableInterceptWarmup" id="bulk-edit-intercept-warmup-body" class="mt-3">
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
               interceptWarmupRequests ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
@@ -598,7 +580,7 @@
                 interceptWarmupRequests ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -617,17 +599,17 @@
               {{ t('admin.accounts.headerOverride.hint') }}
             </p>
           </div>
-          <input
+          <ElementCheckbox
             v-model="enableHeaderOverride"
             id="bulk-edit-header-override-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-header-override-body"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div v-if="enableHeaderOverride" id="bulk-edit-header-override-body" class="mt-3 space-y-3">
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
               headerOverrideEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
@@ -640,7 +622,7 @@
                 headerOverrideEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
 
           <div v-if="headerOverrideEnabled" class="space-y-3">
             <div class="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
@@ -675,12 +657,12 @@
           >
             {{ t('admin.accounts.proxy') }}
           </label>
-          <input
+          <ElementCheckbox
             v-model="enableProxy"
             id="bulk-edit-proxy-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-proxy-body"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div id="bulk-edit-proxy-body" :class="!enableProxy && 'pointer-events-none opacity-50'">
@@ -703,15 +685,15 @@
             >
               {{ t('admin.accounts.concurrency') }}
             </label>
-            <input
+            <ElementCheckbox
               v-model="enableConcurrency"
               id="bulk-edit-concurrency-enabled"
-              type="checkbox"
+
               aria-controls="bulk-edit-concurrency"
-              class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              class=""
             />
           </div>
-          <input
+          <ElementInput
             v-model.number="concurrency"
             id="bulk-edit-concurrency"
             type="number"
@@ -732,15 +714,15 @@
             >
               {{ t('admin.accounts.loadFactor') }}
             </label>
-            <input
+            <ElementCheckbox
               v-model="enableLoadFactor"
               id="bulk-edit-load-factor-enabled"
-              type="checkbox"
+
               aria-controls="bulk-edit-load-factor"
-              class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              class=""
             />
           </div>
-          <input
+          <ElementInput
             v-model.number="loadFactor"
             id="bulk-edit-load-factor"
             type="number"
@@ -762,15 +744,15 @@
             >
               {{ t('admin.accounts.priority') }}
             </label>
-            <input
+            <ElementCheckbox
               v-model="enablePriority"
               id="bulk-edit-priority-enabled"
-              type="checkbox"
+
               aria-controls="bulk-edit-priority"
-              class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              class=""
             />
           </div>
-          <input
+          <ElementInput
             v-model.number="priority"
             id="bulk-edit-priority"
             type="number"
@@ -790,15 +772,15 @@
             >
               {{ t('admin.accounts.billingRateMultiplier') }}
             </label>
-            <input
+            <ElementCheckbox
               v-model="enableRateMultiplier"
               id="bulk-edit-rate-multiplier-enabled"
-              type="checkbox"
+
               aria-controls="bulk-edit-rate-multiplier"
-              class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              class=""
             />
           </div>
-          <input
+          <ElementInput
             v-model.number="rateMultiplier"
             id="bulk-edit-rate-multiplier"
             type="number"
@@ -831,12 +813,12 @@
           >
             {{ t('common.status') }}
           </label>
-          <input
+          <ElementCheckbox
             v-model="enableStatus"
             id="bulk-edit-status-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-status"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div id="bulk-edit-status" :class="!enableStatus && 'pointer-events-none opacity-50'">
@@ -858,12 +840,12 @@
           >
             {{ t('admin.accounts.openai.wsMode') }}
           </label>
-          <input
+          <ElementCheckbox
             v-model="enableOpenAIWSMode"
             id="bulk-edit-openai-ws-mode-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-openai-ws-mode"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div
@@ -895,12 +877,12 @@
           >
             {{ t('admin.accounts.openai.codexCLIOnly') }}
           </label>
-          <input
+          <ElementCheckbox
             v-model="enableCodexCLIOnly"
             id="bulk-edit-openai-codex-cli-only-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-openai-codex-cli-only"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div
@@ -910,9 +892,9 @@
           <p class="mb-3 text-xs text-gray-500 dark:text-gray-400">
             {{ t('admin.accounts.openai.codexCLIOnlyDesc') }}
           </p>
-          <button
+          <ElButton text
             id="bulk-edit-openai-codex-cli-only-toggle"
-            type="button"
+            native-type="button"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
               codexCLIOnlyEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
@@ -925,7 +907,7 @@
                 codexCLIOnlyEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -939,12 +921,12 @@
           >
             {{ t('admin.accounts.openai.codexCLIOnlyAppServer') }}
           </label>
-          <input
+          <ElementCheckbox
             v-model="enableCodexCLIOnlyAppServer"
             id="bulk-edit-openai-codex-app-server-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-openai-codex-app-server"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div
@@ -954,9 +936,9 @@
           <p class="mb-3 text-xs text-gray-500 dark:text-gray-400">
             {{ t('admin.accounts.openai.codexCLIOnlyAppServerDesc') }}
           </p>
-          <button
+          <ElButton text
             id="bulk-edit-openai-codex-app-server-toggle"
-            type="button"
+            native-type="button"
             :class="[
               'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
               codexCLIOnlyAppServerEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
@@ -969,7 +951,7 @@
                 codexCLIOnlyAppServerEnabled ? 'translate-x-5' : 'translate-x-0'
               ]"
             />
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -977,11 +959,11 @@
       <div v-if="allOpenAIOAuth" class="border-t border-gray-200 pt-4 dark:border-dark-600">
         <div class="mb-3 flex items-center justify-between">
           <label class="input-label mb-0">{{ t('admin.accounts.openai.codexFingerprintMode') }}</label>
-          <input
+          <ElementCheckbox
             id="bulk-edit-openai-codex-fingerprint-mode-enabled"
             v-model="enableCodexFingerprintMode"
-            type="checkbox"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+
+            class=""
           />
         </div>
         <div :class="!enableCodexFingerprintMode && 'pointer-events-none opacity-50'">
@@ -1007,12 +989,12 @@
               {{ t('admin.accounts.upstreamBilling.autoProbeHint') }}
             </p>
           </div>
-          <input
+          <ElementCheckbox
             v-model="enableUpstreamBillingAutoProbe"
             id="bulk-edit-upstream-billing-auto-probe-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-upstream-billing-auto-probe"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div
@@ -1046,12 +1028,12 @@
               {{ t('admin.accounts.openai.endpointCapabilitiesDesc') }}
             </p>
           </div>
-          <input
+          <ElementCheckbox
             v-model="enableOpenAIEndpointCapabilities"
             id="bulk-edit-openai-endpoint-capabilities-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-openai-endpoint-capabilities-body"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div
@@ -1061,21 +1043,7 @@
           aria-labelledby="bulk-edit-openai-endpoint-capabilities-label"
         >
           <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <label
-              v-for="option in openAIEndpointCapabilityOptions"
-              :key="option.value"
-              class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-dark-600"
-            >
-              <input
-                type="checkbox"
-                :disabled="!enableOpenAIEndpointCapabilities"
-                class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-500"
-                :data-testid="`bulk-edit-openai-endpoint-capability-${option.value}`"
-                :checked="openAIEndpointCapabilities.includes(option.value)"
-                @change="toggleOpenAIEndpointCapability(option.value, $event)"
-              />
-              <span class="text-gray-700 dark:text-gray-200">{{ option.label }}</span>
-            </label>
+            <ElementCheckbox v-for="option in openAIEndpointCapabilityOptions" :key="option.value" :disabled="!enableOpenAIEndpointCapabilities" :data-testid="`bulk-edit-openai-endpoint-capability-${option.value}`" :checked="openAIEndpointCapabilities.includes(option.value)" @change="toggleOpenAIEndpointCapability(option.value, $event)" :class="[&quot;flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-dark-600&quot;,&quot;&quot;]"><span class="text-gray-700 dark:text-gray-200">{{ option.label }}</span></ElementCheckbox>
           </div>
         </div>
       </div>
@@ -1095,12 +1063,12 @@
               {{ t('admin.accounts.openai.responsesModeDesc') }}
             </p>
           </div>
-          <input
+          <ElementCheckbox
             v-model="enableOpenAIResponsesMode"
             id="bulk-edit-openai-responses-mode-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-openai-responses-mode-body"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div
@@ -1136,12 +1104,12 @@
           >
             {{ t('admin.accounts.openai.wsMode') }}
           </label>
-          <input
+          <ElementCheckbox
             v-model="enableOpenAIAPIKeyWSMode"
             id="bulk-edit-openai-apikey-ws-mode-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-openai-apikey-ws-mode"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div
@@ -1178,12 +1146,12 @@
               {{ t('admin.accounts.openai.compactModeDesc') }}
             </p>
           </div>
-          <input
+          <ElementCheckbox
             v-model="enableOpenAICompactMode"
             id="bulk-edit-openai-compact-mode-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-openai-compact-mode"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div
@@ -1214,12 +1182,12 @@
               {{ t('admin.accounts.openai.compactModelMappingDesc') }}
             </p>
           </div>
-          <input
+          <ElementCheckbox
             v-model="enableOpenAICompactModelMapping"
             id="bulk-edit-openai-compact-model-mapping-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-openai-compact-model-mapping"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div
@@ -1232,7 +1200,7 @@
               :key="index"
               class="flex items-center gap-2"
             >
-              <input
+              <ElementInput
                 v-model="mapping.from"
                 type="text"
                 class="input flex-1"
@@ -1240,30 +1208,30 @@
                 data-testid="bulk-edit-openai-compact-model-mapping-input"
               />
               <span class="text-gray-400">→</span>
-              <input
+              <ElementInput
                 v-model="mapping.to"
                 type="text"
                 class="input flex-1"
                 :placeholder="t('admin.accounts.toModel')"
                 data-testid="bulk-edit-openai-compact-model-mapping-input"
               />
-              <button
-                type="button"
+              <ElButton text
+                native-type="button"
                 class="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
                 @click="removeOpenAICompactModelMapping(index)"
               >
                 <Icon name="trash" size="sm" />
-              </button>
+              </ElButton>
             </div>
           </div>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             class="mb-3 w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-2 text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-700 dark:border-dark-500 dark:text-gray-400 dark:hover:border-dark-400 dark:hover:text-gray-300"
             data-testid="bulk-edit-openai-compact-model-mapping-add"
             @click="addOpenAICompactModelMapping"
           >
             + {{ t('admin.accounts.addMapping') }}
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -1277,12 +1245,12 @@
           >
             {{ t('admin.accounts.quotaControl.rpmLimit.label') }}
           </label>
-          <input
+          <ElementCheckbox
             v-model="enableRpmLimit"
             id="bulk-edit-rpm-limit-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-rpm-limit-body"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
 
@@ -1294,8 +1262,8 @@
         >
           <div class="mb-3 flex items-center justify-between">
             <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.accounts.quotaControl.rpmLimit.hint') }}</span>
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="rpmLimitEnabled = !rpmLimitEnabled"
               :class="[
                 'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -1308,13 +1276,13 @@
                   rpmLimitEnabled ? 'translate-x-5' : 'translate-x-0'
                 ]"
               />
-            </button>
+            </ElButton>
           </div>
 
           <div v-if="rpmLimitEnabled" class="space-y-3">
             <div>
               <label class="input-label text-xs">{{ t('admin.accounts.quotaControl.rpmLimit.baseRpm') }}</label>
-              <input
+              <ElementInput
                 v-model.number="bulkBaseRpm"
                 type="number"
                 min="1"
@@ -1329,8 +1297,8 @@
             <div>
               <label class="input-label text-xs">{{ t('admin.accounts.quotaControl.rpmLimit.strategy') }}</label>
               <div class="flex gap-2">
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   @click="bulkRpmStrategy = 'tiered'"
                   :class="[
                     'flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all',
@@ -1340,9 +1308,9 @@
                   ]"
                 >
                   {{ t('admin.accounts.quotaControl.rpmLimit.strategyTiered') }}
-                </button>
-                <button
-                  type="button"
+                </ElButton>
+                <ElButton text
+                  native-type="button"
                   @click="bulkRpmStrategy = 'sticky_exempt'"
                   :class="[
                     'flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all',
@@ -1352,13 +1320,13 @@
                   ]"
                 >
                   {{ t('admin.accounts.quotaControl.rpmLimit.strategyStickyExempt') }}
-                </button>
+                </ElButton>
               </div>
             </div>
 
             <div v-if="bulkRpmStrategy === 'tiered'">
               <label class="input-label text-xs">{{ t('admin.accounts.quotaControl.rpmLimit.stickyBuffer') }}</label>
-              <input
+              <ElementInput
                 v-model.number="bulkRpmStickyBuffer"
                 type="number"
                 min="1"
@@ -1379,7 +1347,7 @@
             {{ t('admin.accounts.quotaControl.rpmLimit.userMsgQueueHint') }}
           </p>
           <div class="flex space-x-2">
-            <button type="button" v-for="opt in umqModeOptions" :key="opt.value"
+            <ElButton text native-type="button" v-for="opt in umqModeOptions" :key="opt.value"
               @click="userMsgQueueMode = userMsgQueueMode === opt.value ? null : opt.value"
               :class="[
                 'px-3 py-1.5 text-sm rounded-md border transition-colors',
@@ -1388,7 +1356,7 @@
                   : 'bg-white dark:bg-dark-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-dark-500 hover:bg-gray-50 dark:hover:bg-dark-600'
               ]">
               {{ opt.label }}
-            </button>
+            </ElButton>
           </div>
         </div>
       </div>
@@ -1403,12 +1371,12 @@
           >
             {{ t('nav.groups') }}
           </label>
-          <input
+          <ElementCheckbox
             v-model="enableGroups"
             id="bulk-edit-groups-enabled"
-            type="checkbox"
+
             aria-controls="bulk-edit-groups"
-            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
           />
         </div>
         <div id="bulk-edit-groups" :class="!enableGroups && 'pointer-events-none opacity-50'">
@@ -1419,18 +1387,18 @@
           />
         </div>
       </div>
-    </form>
+    </ElForm>
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <button type="button" class="btn btn-secondary" @click="handleClose">
+        <ElButton native-type="button" class="" @click="handleClose">
           {{ t('common.cancel') }}
-        </button>
-        <button
-          type="submit"
+        </ElButton>
+        <ElButton type="primary"
+          native-type="submit"
           form="bulk-edit-account-form"
           :disabled="submitting"
-          class="btn btn-primary"
+          class=""
         >
           <svg
             v-if="submitting"
@@ -1455,7 +1423,7 @@
           {{
             submitting ? t('admin.accounts.bulkEdit.updating') : t('admin.accounts.bulkEdit.submit')
           }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

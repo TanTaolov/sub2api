@@ -18,20 +18,20 @@
               <Select v-model="filters.downloaded" :options="downloadFilterOptions" class="w-full" @change="applyFilters" />
             </div>
             <div class="flex flex-wrap items-center justify-start gap-2 sm:justify-end 2xl:flex-shrink-0">
-              <button type="button" class="btn btn-secondary" :disabled="loadingJobs" @click="resetFilters">
+              <ElButton native-type="button" class="" :disabled="loadingJobs" @click="resetFilters">
                 {{ t('common.reset') }}
-              </button>
-              <button type="button" class="btn btn-secondary" :disabled="loadingKeys || loadingJobs" :title="t('common.refresh')" @click="refreshPage">
+              </ElButton>
+              <ElButton native-type="button" class="" :disabled="loadingKeys || loadingJobs" :title="t('common.refresh')" @click="refreshPage">
                 <Icon name="refresh" size="md" :class="loadingKeys || loadingJobs ? 'animate-spin' : ''" />
-              </button>
-              <button type="button" class="btn btn-secondary" @click="showGuideModal = true">
+              </ElButton>
+              <ElButton native-type="button" class="" @click="showGuideModal = true">
                 <Icon name="book" size="md" class="mr-2" />
                 {{ t('batchImage.actions.usageGuide') }}
-              </button>
-              <button type="button" class="btn btn-primary" @click="openCreateModal">
+              </ElButton>
+              <ElButton type="primary" native-type="button" class="" @click="openCreateModal">
                 <Icon name="plus" size="md" class="mr-2" />
                 {{ t('batchImage.actions.createJob') }}
-              </button>
+              </ElButton>
             </div>
           </div>
 
@@ -51,24 +51,24 @@
               </template>
             </i18n-t>
             <div class="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                class="btn btn-secondary btn-sm"
+              <ElButton size="small"
+                native-type="button"
+                class=""
                 :disabled="bulkDownloading || selectedDownloadableRows.length === 0"
                 @click="downloadSelectedJobs"
               >
                 <Icon :name="bulkDownloading ? 'refresh' : 'download'" size="sm" class="mr-1.5" :class="bulkDownloading ? 'animate-spin' : ''" />
                 {{ t('batchImage.actions.downloadSelected') }}
-              </button>
-              <button
-                type="button"
-                class="btn btn-secondary btn-sm text-red-600 hover:text-red-700 dark:text-red-400"
+              </ElButton>
+              <ElButton size="small"
+                native-type="button"
+                class="text-red-600 hover:text-red-700 dark:text-red-400"
                 :disabled="bulkDeleting"
                 @click="deleteSelectedJobs"
               >
                 <Icon :name="bulkDeleting ? 'refresh' : 'trash'" size="sm" class="mr-1.5" :class="bulkDeleting ? 'animate-spin' : ''" />
                 {{ t('batchImage.actions.deleteRecords') }}
-              </button>
+              </ElButton>
             </div>
           </div>
         </div>
@@ -83,9 +83,9 @@
           row-key="id"
         >
           <template #header-select>
-            <input
-              type="checkbox"
-              class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            <ElementCheckbox
+
+              class=""
               :checked="allVisibleSelected"
               :indeterminate="someVisibleSelected"
               @change="toggleAllVisible(($event.target as HTMLInputElement).checked)"
@@ -93,9 +93,9 @@
           </template>
 
           <template #cell-select="{ row }">
-            <input
-              type="checkbox"
-              class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            <ElementCheckbox
+
+              class=""
               :checked="selectedJobIds.has(row.id)"
               @change="toggleJobSelection(row.id, ($event.target as HTMLInputElement).checked)"
               @click.stop
@@ -104,17 +104,17 @@
 
           <template #cell-id="{ row }">
 	            <div class="flex w-[220px] items-start gap-1" :class="row.is_child ? 'pl-6' : ''">
-	              <button
+	              <ElButton text
 	                v-if="row.child_count > 0 && !row.is_child"
-	                type="button"
+	                native-type="button"
 	                class="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 dark:text-gray-400 dark:hover:bg-dark-700 dark:hover:text-white"
 	                :title="expandedParentIds.has(row.id) ? t('batchImage.list.collapseChildren') : t('batchImage.list.expandChildren', { n: row.child_count }, row.child_count)"
 	                @click.stop="toggleChildRows(row.id)"
 	              >
 	                <Icon :name="expandedParentIds.has(row.id) ? 'chevronDown' : 'chevronRight'" size="xs" />
-	              </button>
+	              </ElButton>
 	              <span v-else class="w-6 flex-shrink-0" />
-	              <button type="button" class="min-w-0 flex-1 rounded-lg py-1 text-left transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 dark:hover:bg-dark-700" @click="selectJob(row.id)">
+	              <ElButton text native-type="button" class="min-w-0 flex-1 rounded-lg py-1 text-left transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 dark:hover:bg-dark-700" @click="selectJob(row.id)">
 	                <span
 	                  class="flex min-w-0 items-center gap-2 text-sm font-medium"
 	                  :class="row.task_name ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'"
@@ -130,7 +130,7 @@
 	                <span class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
 	                  <span>{{ formatDate(row.created_at) }}</span>
 	                </span>
-	              </button>
+	              </ElButton>
 	            </div>
 	          </template>
 
@@ -177,17 +177,17 @@
 
 	          <template #cell-actions="{ row }">
 	            <div class="flex items-center justify-center gap-1">
-              <button
-                type="button"
+              <ElButton text
+                native-type="button"
                 class="batch-row-action flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 dark:hover:bg-dark-700 dark:hover:text-primary-400"
                 :title="t('batchImage.actions.viewDetail')"
                 @click="selectJob(row.id)"
               >
                 <Icon name="eye" size="sm" />
                 <span class="text-xs">{{ t('common.view') }}</span>
-              </button>
-              <button
-                type="button"
+              </ElButton>
+              <ElButton text
+                native-type="button"
                 class="batch-row-action flex flex-col items-center gap-0.5 rounded-lg p-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30"
                 :class="canDownload(row) ? 'text-gray-500 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-400' : 'text-gray-300 dark:text-dark-500'"
                 :disabled="!canDownload(row) || downloading"
@@ -200,10 +200,10 @@
 	                  :class="isDownloadingJob(row.id) ? 'animate-spin' : ''"
 	                />
                 <span class="text-xs">{{ t('batchImage.actions.download') }}</span>
-	              </button>
+	              </ElButton>
               <div v-if="canRetry(row) || canDeleteRecord(row)">
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   class="batch-row-action flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 dark:hover:bg-dark-700 dark:hover:text-white"
                   :class="{ 'bg-gray-100 text-gray-900 dark:bg-dark-700 dark:text-white': openMoreJobId === row.id }"
                   :title="t('batchImage.actions.moreActions')"
@@ -211,7 +211,7 @@
                 >
                   <Icon name="more" size="sm" />
                   <span class="text-xs">{{ t('common.more') }}</span>
-                </button>
+                </ElButton>
               </div>
 	            </div>
 	          </template>
@@ -255,86 +255,66 @@
             </div>
           </div>
           <div class="flex items-center justify-end gap-2">
-            <button
-              type="button"
-              class="btn btn-secondary btn-sm"
+            <ElButton size="small"
+              native-type="button"
+              class=""
               :disabled="pagination.page <= 1 || loadingJobs"
               @click="handlePageChange(pagination.page - 1)"
             >
               <Icon name="chevronLeft" size="sm" class="mr-1" />
               {{ t('pagination.previous') }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-secondary btn-sm"
+            </ElButton>
+            <ElButton size="small"
+              native-type="button"
+              class=""
               :disabled="!pagination.has_more || loadingJobs"
               @click="handlePageChange(pagination.page + 1)"
             >
               {{ t('pagination.next') }}
               <Icon name="chevronRight" size="sm" class="ml-1" />
-            </button>
+            </ElButton>
           </div>
         </div>
       </template>
     </TablePageLayout>
 
-    <Teleport to="body">
-      <div
-        v-if="openMoreJobId"
-        class="fixed z-[9999] w-44 overflow-hidden rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 dark:bg-dark-800 dark:ring-white/10"
-        :style="moreMenuStyle"
-        @click.stop
-      >
-        <template v-for="job in batchJobs" :key="job.id">
+    <ElementFloatingPanel :visible="Boolean(openMoreJobId)" :position="moreMenuStyle" width="176" :interactive="true" @close="closeMoreMenu()"><div @click.stop><template v-for="job in batchJobs" :key="job.id">
           <template v-if="job.id === openMoreJobId">
-            <button
+            <ElButton text
               v-if="canRetry(job)"
-              type="button"
+              native-type="button"
               class="flex w-full items-center gap-2 px-3 py-2 text-left text-gray-700 transition-colors hover:bg-amber-50 hover:text-amber-700 disabled:opacity-60 dark:text-gray-200 dark:hover:bg-amber-900/20 dark:hover:text-amber-300"
               :disabled="retryingBatchId === job.id"
               @click="retryFailedJob(job)"
             >
               <Icon name="refresh" size="sm" :class="retryingBatchId === job.id ? 'animate-spin' : ''" />
               {{ t('batchImage.actions.retryFailedItems') }}
-            </button>
-            <button
+            </ElButton>
+            <ElButton text
               v-if="canDeleteRecord(job)"
-              type="button"
+              native-type="button"
               class="flex w-full items-center gap-2 px-3 py-2 text-left text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-900/20"
               :disabled="deletingBatchId === job.id"
               @click="deleteJob(job)"
             >
               <Icon :name="deletingBatchId === job.id ? 'refresh' : 'trash'" size="sm" :class="deletingBatchId === job.id ? 'animate-spin' : ''" />
               {{ t('batchImage.actions.deleteRecords') }}
-            </button>
+            </ElButton>
           </template>
-        </template>
-      </div>
-    </Teleport>
+        </template></div></ElementFloatingPanel>
 
-    <Teleport to="body">
-      <div
-        v-if="promptPopover.visible"
-        class="batch-prompt-popover fixed z-[9999] rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-800 shadow-xl ring-1 ring-black/5 dark:border-dark-700 dark:bg-dark-900 dark:text-gray-100 dark:ring-white/10"
-        :style="promptPopover.style"
-        @mouseenter="cancelPromptPopoverClose"
-        @mouseleave="schedulePromptPopoverClose"
-      >
-        <div class="mb-2 flex items-center justify-between gap-3">
+    <ElementFloatingPanel :visible="Boolean(promptPopover.visible)" :position="promptPopover.style" width="360" :interactive="true" @close="promptPopover.visible = false"><div @mouseenter="cancelPromptPopoverClose" @mouseleave="schedulePromptPopoverClose"><div class="mb-2 flex items-center justify-between gap-3">
           <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('batchImage.promptPopover.title') }}</span>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2 py-1 text-xs font-medium text-primary-600 transition-colors hover:bg-primary-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 dark:text-primary-300 dark:hover:bg-primary-900/20"
             @click="copyPromptPopover"
           >
             {{ t('common.copy') }}
-          </button>
-        </div>
-        <p class="max-h-48 overflow-y-auto whitespace-pre-wrap break-words leading-6 selection:bg-primary-100 selection:text-primary-900 dark:selection:bg-primary-900/60 dark:selection:text-primary-100">
+          </ElButton>
+        </div><p class="max-h-48 overflow-y-auto whitespace-pre-wrap break-words leading-6 selection:bg-primary-100 selection:text-primary-900 dark:selection:bg-primary-900/60 dark:selection:text-primary-100">
           {{ promptPopover.text }}
-        </p>
-      </div>
-    </Teleport>
+        </p></div></ElementFloatingPanel>
 
     <BaseDialog :show="!!currentJob" :title="t('batchImage.detail.title')" width="extra-wide" @close="closeDetail">
       <div v-if="currentJob" class="space-y-4">
@@ -371,48 +351,27 @@
 
         <div class="flex flex-wrap items-center justify-between gap-3">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('batchImage.detail.items') }}</h3>
-          <button type="button" class="btn btn-secondary btn-sm" :disabled="refreshing || loadingItems" @click="refreshDetail">
+          <ElButton size="small" native-type="button" class="" :disabled="refreshing || loadingItems" @click="refreshDetail">
             <Icon name="refresh" size="sm" class="mr-1.5" :class="refreshing || loadingItems ? 'animate-spin' : ''" />
             {{ t('common.refresh') }}
-          </button>
+          </ElButton>
         </div>
 
         <div v-if="items.length" class="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-dark-700 dark:bg-dark-900">
-          <table class="w-full min-w-[860px] table-fixed divide-y divide-gray-200 text-sm dark:divide-dark-700">
-            <colgroup>
-              <col class="w-[18%]" />
-              <col class="w-[34%]" />
-              <col class="w-[12%]" />
-              <col class="w-[10%]" />
-              <col class="w-[26%]" />
-            </colgroup>
-            <thead class="bg-gray-50 dark:bg-dark-800/80">
-              <tr>
-                <th class="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">Custom ID</th>
-                <th class="px-3 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Prompt</th>
-                <th class="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('common.status') }}</th>
-                <th class="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('batchImage.detail.preview') }}</th>
-                <th class="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('batchImage.detail.result') }}</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-dark-700">
-              <tr
-                v-for="item in items"
-                :key="itemPreviewKey(item)"
-                class="align-middle"
-                :class="detailItemRowClass(item)"
-              >
-                <td class="px-3 py-2.5 text-center">
-                  <span
+          <ElTable  :row-key="(item) => itemPreviewKey(item)" :row-class-name="({ row: item }) => &quot;align-middle&quot; + ' ' + (detailItemRowClass(item))" :data="items" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="center">
+    <template #header><div class="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">Custom ID</div></template>
+    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-2.5 text-center" ><span
                     class="block min-w-0 truncate font-mono text-sm"
                     :class="isRecoveredOriginalFailure(item) ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'"
                     :title="item.custom_id"
                   >
                     {{ item.custom_id }}
-                  </span>
-                </td>
-                <td class="px-3 py-2.5 text-left" :class="isRecoveredOriginalFailure(item) ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'">
-                  <div
+                  </span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Prompt</div></template>
+    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-2.5 text-left" :class="isRecoveredOriginalFailure(item) ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'" ><div
                     class="batch-prompt-trigger cursor-default truncate rounded px-1 text-sm leading-6 focus:outline-none"
                     tabindex="0"
                     @pointerenter="schedulePromptPopoverOpen($event, item.prompt_preview || '-')"
@@ -425,18 +384,20 @@
                     @blur="schedulePromptPopoverClose"
                   >
                     {{ item.prompt_preview || '-' }}
-                  </div>
-                </td>
-                <td class="px-3 py-2.5 text-center">
-                  <span :class="itemDisplayStatusBadgeClass(item)" class="badge max-w-full truncate whitespace-nowrap" :title="itemDisplayStatusLabel(item)">
+                  </div></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="center">
+    <template #header><div class="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('common.status') }}</div></template>
+    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-2.5 text-center" ><span :class="itemDisplayStatusBadgeClass(item)" class="badge max-w-full truncate whitespace-nowrap" :title="itemDisplayStatusLabel(item)">
                     {{ itemDisplayStatusLabel(item) }}
-                  </span>
-                </td>
-                <td class="px-3 py-2.5 text-center">
-                  <div class="mx-auto h-12 w-12 overflow-hidden rounded-md border border-gray-200 bg-gray-50 dark:border-dark-700 dark:bg-dark-800">
-                    <button
+                  </span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="center">
+    <template #header><div class="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('batchImage.detail.preview') }}</div></template>
+    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-2.5 text-center" ><div class="mx-auto h-12 w-12 overflow-hidden rounded-md border border-gray-200 bg-gray-50 dark:border-dark-700 dark:bg-dark-800">
+                    <ElButton text
                       v-if="itemPreviewUrls[itemPreviewKey(item)] && !previewErrorIds.has(itemPreviewKey(item))"
-                      type="button"
+                      native-type="button"
                       class="block h-full w-full overflow-hidden"
                       :title="t('batchImage.detail.previewZoom', { id: item.custom_id })"
                       @click="openImagePreview(item)"
@@ -447,34 +408,33 @@
                         alt=""
                         @error="handlePreviewError(itemPreviewKey(item))"
                       />
-                    </button>
-                    <button
+                    </ElButton>
+                    <ElButton text
                       v-else-if="canLoadItemPreview(item)"
-                      type="button"
+                      native-type="button"
                       class="flex h-full w-full items-center justify-center text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary-600 disabled:cursor-wait disabled:opacity-70 dark:text-gray-400 dark:hover:bg-dark-700"
                       :disabled="previewLoadingIds.has(itemPreviewKey(item))"
                       :title="previewErrorIds.has(itemPreviewKey(item)) ? t('batchImage.detail.previewReload') : t('batchImage.detail.previewLoad')"
                       @click="loadItemPreview(item)"
                     >
                       <Icon :name="previewLoadingIds.has(itemPreviewKey(item)) ? 'refresh' : 'eye'" size="sm" :class="previewLoadingIds.has(itemPreviewKey(item)) ? 'animate-spin' : ''" />
-                    </button>
+                    </ElButton>
                     <div v-else class="flex h-full w-full items-center justify-center text-gray-400" :title="item.image_count > 0 ? t('batchImage.detail.previewUnavailable') : t('batchImage.detail.noImage')">
                       <Icon name="document" size="sm" />
                     </div>
-                  </div>
-                </td>
-                <td class="px-3 py-2.5 text-center">
-                  <span
+                  </div></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="center">
+    <template #header><div class="px-3 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('batchImage.detail.result') }}</div></template>
+    <template #default="{ row: item, $index: rowIndex }"><div class="px-3 py-2.5 text-center" ><span
                     class="inline-flex max-w-full items-center justify-center truncate rounded-md px-2.5 py-1 text-xs font-medium leading-5 ring-1 ring-inset"
                     :class="itemResultClass(item)"
                     :title="itemResultLabel(item)"
                   >
                     {{ itemResultLabel(item) }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  </span></div></template>
+  </ElTableColumn>
+</ElTable>
         </div>
         <div v-else class="rounded-lg border border-dashed border-gray-200 py-10 text-center dark:border-dark-700">
           <Icon name="refresh" size="lg" class="mx-auto mb-3 text-gray-400" :class="loadingItems ? 'animate-spin' : ''" />
@@ -489,23 +449,23 @@
 
       <template #footer>
         <div class="flex justify-end gap-3">
-	          <button type="button" class="btn btn-secondary" :disabled="!currentJob || !canCancel(currentJob) || cancelling" @click="cancelSelected">
+	          <ElButton native-type="button" class="" :disabled="!currentJob || !canCancel(currentJob) || cancelling" @click="cancelSelected">
 	            <Icon v-if="cancelling" name="refresh" size="sm" class="mr-2 animate-spin" />
 	            {{ t('batchImage.actions.cancelJob') }}
-	          </button>
-	          <button
+	          </ElButton>
+	          <ElButton
 	            v-if="currentJob && currentDisplayJob && canRetry(currentDisplayJob)"
-	            type="button"
-	            class="btn btn-secondary inline-flex min-w-[116px] items-center justify-center"
+	            native-type="button"
+	            class="inline-flex min-w-[116px] items-center justify-center"
 	            :disabled="retryingBatchId === currentJob.id"
 	            @click="retrySelected"
 	          >
 	            <Icon name="refresh" size="sm" class="mr-2" :class="currentJob && retryingBatchId === currentJob.id ? 'animate-spin' : ''" />
 	            {{ t('batchImage.actions.retryFailedItems') }}
-	          </button>
-	          <button
-            type="button"
-            class="btn btn-primary inline-flex min-w-[112px] items-center justify-center"
+	          </ElButton>
+	          <ElButton type="primary"
+            native-type="button"
+            class="inline-flex min-w-[112px] items-center justify-center"
             :disabled="!currentJob || !canDownload(currentJob) || downloading"
             @click="downloadSelected"
           >
@@ -516,7 +476,7 @@
               :class="currentJob && isDownloadingJob(currentJob.id) ? 'animate-spin' : ''"
             />
             {{ t('batchImage.actions.downloadZip') }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>
@@ -538,11 +498,11 @@
     </BaseDialog>
 
     <BaseDialog :show="showCreateModal" :title="t('batchImage.create.title')" width="wide" @close="closeCreateModal">
-      <form class="space-y-5" @submit.prevent="submitJob">
+      <ElForm class="space-y-5" @submit.prevent="submitJob">
         <div class="grid gap-4 md:grid-cols-2">
           <div class="md:col-span-2">
             <label class="input-label">{{ t('batchImage.create.taskName') }}</label>
-            <input
+            <ElementInput
               v-model="form.taskName"
               type="text"
               maxlength="255"
@@ -553,12 +513,12 @@
 
           <div class="md:col-span-2">
             <label class="input-label">API Key</label>
-            <select v-model.number="form.apiKeyId" class="input" :disabled="loadingKeys">
-              <option :value="0">{{ loadingKeys ? t('batchImage.create.loadingKeys') : t('batchImage.create.selectKeyPlaceholder') }}</option>
-              <option v-for="key in geminiApiKeys" :key="key.id" :value="key.id">
+            <ElementSelect v-model.number="form.apiKeyId" class="input" :disabled="loadingKeys">
+              <ElOption :label="(loadingKeys ? t('batchImage.create.loadingKeys') : t('batchImage.create.selectKeyPlaceholder'))" :value="0">{{ loadingKeys ? t('batchImage.create.loadingKeys') : t('batchImage.create.selectKeyPlaceholder') }}</ElOption>
+              <ElOption :label="(key.name) + &quot;·&quot; + (key.group?.name || 'Gemini')" v-for="key in geminiApiKeys" :key="key.id" :value="key.id">
                 {{ key.name }} · {{ key.group?.name || 'Gemini' }}
-              </option>
-            </select>
+              </ElOption>
+            </ElementSelect>
             <p v-if="!loadingKeys && geminiApiKeys.length === 0" class="input-hint text-amber-600 dark:text-amber-400">
               {{ t('batchImage.create.noKeysHint') }}
             </p>
@@ -566,13 +526,13 @@
 
           <div>
             <label class="input-label">{{ t('batchImage.create.model') }}</label>
-            <select v-model="form.model" class="input" :disabled="loadingModels || availableBatchImageModels.length === 0">
-              <option v-if="loadingModels" value="">{{ batchImageText('loadingModels') }}</option>
-              <option v-else-if="availableBatchImageModels.length === 0" value="">{{ batchImageText('noModels') }}</option>
-              <option v-for="model in availableBatchImageModels" :key="model.value" :value="model.value">
+            <ElementSelect v-model="form.model" class="input" :disabled="loadingModels || availableBatchImageModels.length === 0">
+              <ElOption :label="(batchImageText('loadingModels'))" v-if="loadingModels" value="">{{ batchImageText('loadingModels') }}</ElOption>
+              <ElOption :label="(batchImageText('noModels'))" v-else-if="availableBatchImageModels.length === 0" value="">{{ batchImageText('noModels') }}</ElOption>
+              <ElOption :label="(model.label)" v-for="model in availableBatchImageModels" :key="model.value" :value="model.value">
                 {{ model.label }}
-              </option>
-            </select>
+              </ElOption>
+            </ElementSelect>
             <p v-if="modelLoadError" class="input-hint text-amber-600 dark:text-amber-400">
               {{ modelLoadError }}
             </p>
@@ -591,11 +551,11 @@
 
           <div>
             <label class="input-label">{{ t('batchImage.create.outputFormat') }}</label>
-            <select v-model="form.responseMimeType" class="input">
-              <option value="image/png">PNG</option>
-              <option value="image/jpeg">JPEG</option>
-              <option value="image/webp">WebP</option>
-            </select>
+            <ElementSelect v-model="form.responseMimeType" class="input">
+              <ElOption :label="&quot;PNG&quot;" value="image/png">PNG</ElOption>
+              <ElOption :label="&quot;JPEG&quot;" value="image/jpeg">JPEG</ElOption>
+              <ElOption :label="&quot;WebP&quot;" value="image/webp">WebP</ElOption>
+            </ElementSelect>
           </div>
 
           <div>
@@ -612,30 +572,30 @@
             <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('batchImage.create.promptAdded', { count: promptRows.length }) }}</span>
           </div>
           <div class="rounded-lg border border-gray-200 p-3 dark:border-dark-700">
-            <textarea
+            <ElementInput type="textarea"
               v-model="promptDraft"
-              rows="3"
+              :rows="3"
               class="h-[76px] w-full resize-y rounded-md border border-gray-300 px-3 py-2 text-sm leading-5 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:border-dark-600 dark:bg-dark-900 dark:text-gray-100 dark:focus:border-primary-500 dark:focus:ring-primary-900/40"
               :placeholder="t('batchImage.create.promptPlaceholder')"
             />
             <div class="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_112px_132px_112px] md:items-center">
-              <input
+              <ElementInput
                 v-model="customIdDraft"
                 type="text"
                 maxlength="255"
                 class="input h-9 text-sm"
                 :placeholder="t('batchImage.create.customIdPlaceholder')"
               />
-              <select
+              <ElementSelect
                 v-model.number="outputCountDraft"
                 class="batch-output-count-select input h-9 text-sm"
                 :title="t('batchImage.create.outputCountPerPrompt')"
                 :aria-label="t('batchImage.create.outputCountPerPrompt')"
               >
-                <option v-for="count in outputCountOptions" :key="count" :value="count">
+                <ElOption :label="(t('batchImage.create.outputCountOption', { n: count }, count))" v-for="count in outputCountOptions" :key="count" :value="count">
                   {{ t('batchImage.create.outputCountOption', { n: count }, count) }}
-                </option>
-              </select>
+                </ElOption>
+              </ElementSelect>
               <label
                 class="btn btn-secondary h-9 cursor-pointer justify-center text-sm"
                 :class="referenceImageDrafts.length >= selectedModelReferenceLimit ? 'pointer-events-none opacity-60' : ''"
@@ -651,10 +611,10 @@
                   @change="handleReferenceImageFiles"
                 />
               </label>
-              <button type="button" class="btn btn-secondary h-9 justify-center whitespace-nowrap px-4 text-sm" :disabled="!promptDraft.trim()" @click="addPromptRow">
+              <ElButton native-type="button" class="h-9 justify-center whitespace-nowrap px-4 text-sm" :disabled="!promptDraft.trim()" @click="addPromptRow">
                 <Icon name="plus" size="sm" class="mr-1.5" />
                 {{ t('common.add') }}
-              </button>
+              </ElButton>
             </div>
             <div v-if="referenceImageDrafts.length" class="mt-3 flex flex-wrap gap-2">
               <span
@@ -663,9 +623,9 @@
                 class="inline-flex max-w-full items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-700 dark:border-dark-700 dark:bg-dark-900 dark:text-gray-200"
               >
                 <span class="max-w-[180px] truncate">{{ ref.name }}</span>
-                <button type="button" class="text-gray-400 hover:text-red-600" :title="t('batchImage.create.removeReferenceImage')" @click="removeReferenceImageDraft(refIndex)">
+                <ElButton text native-type="button" class="text-gray-400 hover:text-red-600" :title="t('batchImage.create.removeReferenceImage')" @click="removeReferenceImageDraft(refIndex)">
                   <Icon name="x" size="xs" />
-                </button>
+                </ElButton>
               </span>
             </div>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -686,9 +646,9 @@
               <span v-if="row.reference_images.length" class="flex-shrink-0 text-xs text-gray-500 dark:text-gray-400">
                 {{ t('batchImage.create.referenceCount', { n: row.reference_images.length }, row.reference_images.length) }}
               </span>
-              <button type="button" class="btn-ghost btn-icon flex-shrink-0 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20" :title="t('common.delete')" @click="removePromptRow(index)">
+              <ElButton native-type="button" class="btn-icon flex-shrink-0 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20" :title="t('common.delete')" @click="removePromptRow(index)">
                 <Icon name="trash" size="sm" />
-              </button>
+              </ElButton>
             </div>
           </div>
           <div v-else class="rounded-lg border border-dashed border-gray-200 px-3 py-6 text-center text-sm text-gray-500 dark:border-dark-700 dark:text-gray-400">
@@ -702,15 +662,15 @@
 	        <div v-if="submitting" class="rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm leading-6 text-sky-800 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-100">
 	          {{ t('batchImage.create.submittingNotice') }}
 	        </div>
-	      </form>
+	      </ElForm>
 
       <template #footer>
         <div class="flex justify-end gap-3">
-          <button type="button" class="btn btn-secondary" :disabled="submitting" @click="closeCreateModal">{{ t('common.cancel') }}</button>
-	          <button type="button" class="btn btn-primary inline-flex min-w-[120px] justify-center" :disabled="submitting || loadingModels || (parsedItems.length === 0 && !promptDraft.trim()) || !selectedApiKey || !form.model" @click="submitJob">
+          <ElButton native-type="button" class="" :disabled="submitting" @click="closeCreateModal">{{ t('common.cancel') }}</ElButton>
+	          <ElButton type="primary" native-type="button" class="inline-flex min-w-[120px] justify-center" :disabled="submitting || loadingModels || (parsedItems.length === 0 && !promptDraft.trim()) || !selectedApiKey || !form.model" @click="submitJob">
             <Icon v-if="submitting" name="refresh" size="sm" class="mr-2 animate-spin" />
             {{ submitting ? t('common.submitting') : t('batchImage.actions.submitJob') }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>
@@ -731,7 +691,7 @@
 	            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('batchImage.guide.skillTitle') }}</h3>
 	            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('batchImage.guide.skillDesc') }}</p>
 	          </div>
-	        <textarea
+	        <ElementInput type="textarea"
 	          :value="agentInstruction"
 	          readonly
 	          class="min-h-[420px] w-full resize-y rounded-md border border-gray-200 bg-gray-50 p-4 font-mono text-sm leading-6 text-gray-800 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-dark-600 dark:bg-dark-900 dark:text-gray-100 dark:focus:border-primary-500 dark:focus:ring-primary-900/40"
@@ -740,11 +700,11 @@
 	      </div>
       <template #footer>
         <div class="flex justify-end gap-3">
-          <button type="button" class="btn btn-secondary" @click="showGuideModal = false">{{ t('common.close') }}</button>
-          <button type="button" class="btn btn-primary" @click="copyInstruction">
+          <ElButton native-type="button" class="" @click="showGuideModal = false">{{ t('common.close') }}</ElButton>
+          <ElButton type="primary" native-type="button" class="" @click="copyInstruction">
             <Icon name="copy" size="sm" class="mr-2" />
             {{ t('batchImage.actions.copyInstruction') }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>

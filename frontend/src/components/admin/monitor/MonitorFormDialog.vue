@@ -5,20 +5,20 @@
     width="wide"
     @close="$emit('close')"
   >
-    <form id="channel-monitor-form" @submit.prevent="handleSubmit" class="space-y-5">
+    <ElForm id="channel-monitor-form" @submit.prevent="handleSubmit" class="space-y-5">
       <div>
         <label class="input-label">{{ t('admin.channelMonitor.form.name') }} <span class="text-red-500">*</span></label>
-        <input v-model="form.name" type="text" required class="input" :placeholder="t('admin.channelMonitor.form.namePlaceholder')" />
+        <ElementInput v-model="form.name" type="text" required class="input" :placeholder="t('admin.channelMonitor.form.namePlaceholder')" />
       </div>
 
       <!-- 检测模式：probe（探活）/ quota（仅配额）/ quota_probe（探活+配额） -->
       <div>
         <label class="input-label">{{ t('admin.channelMonitor.form.checkMode') }}</label>
         <div class="grid gap-3 sm:grid-cols-3" data-testid="monitor-check-mode">
-          <button
+          <ElButton text
             v-for="opt in checkModeOptions"
             :key="opt.value"
-            type="button"
+            native-type="button"
             :data-testid="`monitor-check-mode-${opt.value}`"
             :aria-pressed="form.check_mode === opt.value"
             :disabled="opt.disabled"
@@ -28,17 +28,17 @@
           >
             <span class="block text-sm font-semibold">{{ opt.label }}</span>
             <span class="mt-0.5 block text-xs opacity-80">{{ opt.hint }}</span>
-          </button>
+          </ElButton>
         </div>
       </div>
 
       <div>
         <label class="input-label">{{ t('admin.channelMonitor.form.provider') }} <span class="text-red-500">*</span></label>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <button
+          <ElButton text
             v-for="opt in providerOptions"
             :key="opt.value"
-            type="button"
+            native-type="button"
             :data-testid="`monitor-provider-${opt.value}`"
             :aria-pressed="form.provider === opt.value"
             class="flex items-center justify-center gap-2 rounded-lg border-2 px-3 py-2.5 text-sm font-medium transition-colors"
@@ -47,7 +47,7 @@
           >
             <ProviderIcon :provider="opt.value" :size="18" />
             <span>{{ opt.label }}</span>
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -81,10 +81,10 @@
       <div v-if="form.provider === PROVIDER_OPENAI && usesProbePart" class="rounded-lg border border-blue-100 bg-blue-50/50 p-3 dark:border-blue-500/20 dark:bg-blue-500/10">
         <label class="input-label">{{ t('admin.channelMonitor.form.apiMode') }}</label>
         <div class="grid gap-3 sm:grid-cols-2">
-          <button
+          <ElButton text
             v-for="opt in apiModeOptions"
             :key="opt.value"
-            type="button"
+            native-type="button"
             :aria-pressed="form.api_mode === opt.value"
             class="rounded-lg border-2 px-3 py-2 text-left transition-colors"
             :class="apiModeButtonClass(opt.value)"
@@ -92,17 +92,17 @@
           >
             <span class="block text-sm font-semibold">{{ opt.label }}</span>
             <span class="mt-0.5 block text-xs opacity-80">{{ opt.hint }}</span>
-          </button>
+          </ElButton>
         </div>
       </div>
 
       <div v-if="usesProbePart">
         <label class="input-label">{{ t('admin.channelMonitor.form.endpoint') }} <span class="text-red-500">*</span></label>
         <div class="flex gap-2">
-          <input v-model="form.endpoint" data-testid="monitor-endpoint" type="text" required class="input flex-1" :placeholder="t('admin.channelMonitor.form.endpointPlaceholder')" />
-          <button type="button" @click="useCurrentDomain" class="btn btn-secondary whitespace-nowrap">
+          <ElementInput v-model="form.endpoint" data-testid="monitor-endpoint" type="text" required class="input flex-1" :placeholder="t('admin.channelMonitor.form.endpointPlaceholder')" />
+          <ElButton native-type="button" @click="useCurrentDomain" class="whitespace-nowrap">
             {{ t('admin.channelMonitor.form.useCurrentDomain') }}
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -111,23 +111,23 @@
           {{ t('admin.channelMonitor.form.apiKey') }}<span v-if="!editing" class="text-red-500"> *</span>
         </label>
         <div class="flex gap-2">
-          <input
+          <ElementInput
             v-model="form.api_key"
             type="password"
             :required="!editing"
             class="input flex-1"
             :placeholder="editing ? t('admin.channelMonitor.form.apiKeyEditPlaceholder') : t('admin.channelMonitor.form.apiKeyPlaceholder')"
           />
-          <button type="button" @click="openMyKeyPicker" class="btn btn-secondary whitespace-nowrap">
+          <ElButton native-type="button" @click="openMyKeyPicker" class="whitespace-nowrap">
             {{ t('admin.channelMonitor.form.useMyKey') }}
-          </button>
+          </ElButton>
         </div>
         <p v-if="editing && editing.api_key_masked" class="mt-1 text-xs text-gray-400">{{ editing.api_key_masked }}</p>
       </div>
 
       <div v-if="usesProbePart">
         <label class="input-label">{{ t('admin.channelMonitor.form.primaryModel') }} <span class="text-red-500">*</span></label>
-        <input
+        <ElementInput
           v-model="form.primary_model"
           data-testid="monitor-primary-model"
           type="text"
@@ -150,18 +150,18 @@
 
       <div>
         <label class="input-label">{{ t('admin.channelMonitor.form.groupName') }}</label>
-        <input v-model="form.group_name" type="text" class="input" :placeholder="t('admin.channelMonitor.form.groupNamePlaceholder')" />
+        <ElementInput v-model="form.group_name" type="text" class="input" :placeholder="t('admin.channelMonitor.form.groupNamePlaceholder')" />
       </div>
 
       <div>
         <label class="input-label">{{ t('admin.channelMonitor.form.intervalSeconds') }} <span class="text-red-500">*</span></label>
-        <input v-model.number="form.interval_seconds" type="number" min="15" max="3600" required class="input" />
+        <ElementInput v-model.number="form.interval_seconds" type="number" min="15" max="3600" required class="input" />
         <p class="mt-1 text-xs text-gray-400">{{ t('admin.channelMonitor.form.intervalSecondsHint') }}</p>
       </div>
 
       <div>
         <label class="input-label">{{ t('admin.channelMonitor.form.jitterSeconds') }}</label>
-        <input v-model.number="form.jitter_seconds" type="number" min="0" :max="maxJitterSeconds" class="input" />
+        <ElementInput v-model.number="form.jitter_seconds" type="number" min="0" :max="maxJitterSeconds" class="input" />
         <p class="mt-1 text-xs text-gray-400">{{ t('admin.channelMonitor.form.jitterSecondsHint') }}</p>
       </div>
 
@@ -171,13 +171,7 @@
       </div>
 
       <!-- 高级设置区：请求模板 + 自定义 headers/body（仅探活模式有意义） -->
-      <details v-if="usesProbePart" class="rounded-lg border border-gray-200 bg-gray-50/50 p-3 dark:border-dark-700 dark:bg-dark-900/30">
-        <summary class="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300">
-          {{ t('admin.channelMonitor.advanced.section') }}
-        </summary>
-        <p class="mt-1 text-xs text-gray-400">{{ t('admin.channelMonitor.advanced.sectionHint') }}</p>
-
-        <div class="mt-4 space-y-4">
+      <ElCollapse v-if="usesProbePart" class="rounded-lg border border-gray-200 bg-gray-50/50 p-3 dark:border-dark-700 dark:bg-dark-900/30" ><ElCollapseItem name="content"><template #title>{{ t('admin.channelMonitor.advanced.section') }}</template><p class="mt-1 text-xs text-gray-400">{{ t('admin.channelMonitor.advanced.sectionHint') }}</p><div class="mt-4 space-y-4">
           <div>
             <label class="input-label">{{ t('admin.channelMonitor.templateField.label') }}</label>
             <Select
@@ -198,25 +192,24 @@
             @update:body-override-mode="form.body_override_mode = $event"
             @update:body-override="form.body_override = $event"
           />
-        </div>
-      </details>
-    </form>
+        </div></ElCollapseItem></ElCollapse>
+    </ElForm>
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <button @click="$emit('close')" type="button" class="btn btn-secondary">
+        <ElButton @click="$emit('close')" native-type="button" class="">
           {{ t('common.cancel') }}
-        </button>
-        <button
-          type="submit"
+        </ElButton>
+        <ElButton type="primary"
+          native-type="submit"
           form="channel-monitor-form"
           :disabled="submitting"
-          class="btn btn-primary"
+          class=""
         >
           {{ submitting
             ? t('common.submitting')
             : editing ? t('common.update') : t('common.create') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

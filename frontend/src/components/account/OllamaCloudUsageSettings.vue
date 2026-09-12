@@ -55,10 +55,10 @@
 
       <div>
         <label class="input-label" for="ollama-cloud-session">{{ t('admin.accounts.ollamaCloud.sessionLabel') }}</label>
-        <textarea
+        <ElementInput type="textarea"
           id="ollama-cloud-session"
           v-model="session"
-          rows="3"
+          :rows="3"
           class="input font-mono text-xs"
           autocomplete="new-password"
           data-1p-ignore
@@ -70,38 +70,38 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
+        <ElButton type="primary" size="small"
+          native-type="button"
+          class=""
           :disabled="saving || !session.trim() || !state.encryption_key_configured"
           data-testid="ollama-cloud-session-save"
           @click="saveSession"
         >
           <Icon name="check" size="xs" class="mr-1.5" />
           {{ t('common.save') }}
-        </button>
-        <button
+        </ElButton>
+        <ElButton size="small"
           v-if="state.configured"
-          type="button"
-          class="btn btn-secondary btn-sm text-red-600 dark:text-red-400"
+          native-type="button"
+          class="text-red-600 dark:text-red-400"
           :disabled="saving"
           data-testid="ollama-cloud-session-delete"
           @click="showDeleteConfirm = true"
         >
           <Icon name="trash" size="xs" class="mr-1.5" />
           {{ t('admin.accounts.ollamaCloud.deleteSession') }}
-        </button>
-        <button
+        </ElButton>
+        <ElButton size="small"
           v-if="state.configured"
-          type="button"
-          class="btn btn-secondary btn-sm"
+          native-type="button"
+          class=""
           :disabled="refreshing"
           data-testid="ollama-cloud-refresh"
           @click="refreshUsage"
         >
           <Icon name="refresh" size="xs" class="mr-1.5" :class="{ 'animate-spin': refreshing }" />
           {{ t('admin.accounts.ollamaCloud.refreshNow') }}
-        </button>
+        </ElButton>
       </div>
 
       <div v-if="state.configured" class="flex items-center justify-between gap-4 border-t border-gray-100 pt-4 dark:border-dark-700">

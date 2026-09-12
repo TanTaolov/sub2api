@@ -9,7 +9,7 @@
       </h2>
     </div>
     <div :class="props.embedded ? '' : 'px-6 py-6'">
-      <form @submit.prevent="handleUpdateProfile" class="space-y-4">
+      <ElForm @submit.prevent="handleUpdateProfile" class="space-y-4">
         <div v-if="props.embedded">
           <p class="text-sm font-semibold text-gray-900 dark:text-white">
             {{ t('profile.editProfile') }}
@@ -19,7 +19,7 @@
           <label for="username" class="input-label">
             {{ t('profile.username') }}
           </label>
-          <input
+          <ElementInput
             id="username"
             v-model="username"
             type="text"
@@ -29,11 +29,11 @@
         </div>
 
         <div class="flex justify-end pt-4">
-          <button type="submit" :disabled="loading" class="btn btn-primary">
+          <ElButton type="primary" native-type="submit" :disabled="loading" class="">
             {{ loading ? t('profile.updating') : t('profile.updateProfile') }}
-          </button>
+          </ElButton>
         </div>
-      </form>
+      </ElForm>
     </div>
   </div>
 </template>

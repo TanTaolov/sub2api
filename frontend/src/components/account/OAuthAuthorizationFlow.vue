@@ -15,127 +15,39 @@
             {{ methodLabel }}
           </label>
           <div class="flex flex-wrap gap-4">
-            <label v-if="showManualOption" class="flex cursor-pointer items-center gap-2">
-              <input
-                v-model="inputMethod"
-                type="radio"
-                value="manual"
-                class="text-blue-600 focus:ring-blue-500"
-              />
-              <span class="text-sm text-blue-900 dark:text-blue-200">{{
+            <ElementRadio v-if="showManualOption" v-model="inputMethod" value="manual" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.manualAuth')
-              }}</span>
-            </label>
-            <label v-if="showCookieOption" class="flex cursor-pointer items-center gap-2">
-              <input
-                v-model="inputMethod"
-                type="radio"
-                value="cookie"
-                class="text-blue-600 focus:ring-blue-500"
-              />
-              <span class="text-sm text-blue-900 dark:text-blue-200">{{
+              }}</span></ElementRadio>
+            <ElementRadio v-if="showCookieOption" v-model="inputMethod" value="cookie" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.cookieAutoAuth')
-              }}</span>
-            </label>
-            <label v-if="showRefreshTokenOption" class="flex cursor-pointer items-center gap-2">
-              <input
-                v-model="inputMethod"
-                type="radio"
-                value="refresh_token"
-                class="text-blue-600 focus:ring-blue-500"
-              />
-              <span class="text-sm text-blue-900 dark:text-blue-200">{{
+              }}</span></ElementRadio>
+            <ElementRadio v-if="showRefreshTokenOption" v-model="inputMethod" value="refresh_token" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t(getOAuthKey('refreshTokenAuth'))
-              }}</span>
-            </label>
-            <label v-if="showSsoOption" class="flex cursor-pointer items-center gap-2">
-              <input
-                v-model="inputMethod"
-                type="radio"
-                value="sso_cookie"
-                class="text-blue-600 focus:ring-blue-500"
-              />
-              <span class="text-sm text-blue-900 dark:text-blue-200">{{
+              }}</span></ElementRadio>
+            <ElementRadio v-if="showSsoOption" v-model="inputMethod" value="sso_cookie" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t(getOAuthKey('ssoCookieAuth'))
-              }}</span>
-            </label>
-            <label v-if="emailPasswordOptionEnabled" class="flex cursor-pointer items-center gap-2">
-              <input
-                v-model="inputMethod"
-                type="radio"
-                value="email_password"
-                class="text-blue-600 focus:ring-blue-500"
-              />
-              <span class="text-sm text-blue-900 dark:text-blue-200">{{
+              }}</span></ElementRadio>
+            <ElementRadio v-if="emailPasswordOptionEnabled" v-model="inputMethod" value="email_password" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t(getOAuthKey('emailPasswordAuth'))
-              }}</span>
-            </label>
-            <label v-if="showMobileRefreshTokenOption" class="flex cursor-pointer items-center gap-2">
-              <input
-                v-model="inputMethod"
-                type="radio"
-                value="mobile_refresh_token"
-                class="text-blue-600 focus:ring-blue-500"
-              />
-              <span class="text-sm text-blue-900 dark:text-blue-200">{{
+              }}</span></ElementRadio>
+            <ElementRadio v-if="showMobileRefreshTokenOption" v-model="inputMethod" value="mobile_refresh_token" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.openai.mobileRefreshTokenAuth')
-              }}</span>
-            </label>
-            <label v-if="showSessionTokenOption" class="flex cursor-pointer items-center gap-2">
-              <input
-                v-model="inputMethod"
-                type="radio"
-                value="session_token"
-                class="text-blue-600 focus:ring-blue-500"
-              />
-              <span class="text-sm text-blue-900 dark:text-blue-200">{{
+              }}</span></ElementRadio>
+            <ElementRadio v-if="showSessionTokenOption" v-model="inputMethod" value="session_token" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t(getOAuthKey('sessionTokenAuth'))
-              }}</span>
-            </label>
-            <label v-if="showAccessTokenOption" class="flex cursor-pointer items-center gap-2">
-              <input
-                v-model="inputMethod"
-                type="radio"
-                value="access_token"
-                class="text-blue-600 focus:ring-blue-500"
-              />
-              <span class="text-sm text-blue-900 dark:text-blue-200">{{
+              }}</span></ElementRadio>
+            <ElementRadio v-if="showAccessTokenOption" v-model="inputMethod" value="access_token" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.openai.accessTokenAuth')
-              }}</span>
-            </label>
-            <label v-if="showCodexSessionImportOption" class="flex cursor-pointer items-center gap-2">
-              <input
-                v-model="inputMethod"
-                type="radio"
-                value="codex_session"
-                class="text-blue-600 focus:ring-blue-500"
-              />
-              <span class="text-sm text-blue-900 dark:text-blue-200">{{
+              }}</span></ElementRadio>
+            <ElementRadio v-if="showCodexSessionImportOption" v-model="inputMethod" value="codex_session" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.openai.codexSessionAuth')
-              }}</span>
-            </label>
-            <label v-if="showAgentIdentityOption" class="flex cursor-pointer items-center gap-2">
-              <input
-                v-model="inputMethod"
-                type="radio"
-                value="agent_identity"
-                class="text-blue-600 focus:ring-blue-500"
-              />
-              <span class="text-sm text-blue-900 dark:text-blue-200">{{
+              }}</span></ElementRadio>
+            <ElementRadio v-if="showAgentIdentityOption" v-model="inputMethod" value="agent_identity" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.openai.agentIdentityAuth')
-              }}</span>
-            </label>
-            <label v-if="showCodexPatOption" class="flex cursor-pointer items-center gap-2">
-              <input
-                v-model="inputMethod"
-                type="radio"
-                value="codex_pat"
-                class="text-blue-600 focus:ring-blue-500"
-              />
-              <span class="text-sm text-blue-900 dark:text-blue-200">{{
+              }}</span></ElementRadio>
+            <ElementRadio v-if="showCodexPatOption" v-model="inputMethod" value="codex_pat" :class="[&quot;flex cursor-pointer items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-blue-900 dark:text-blue-200">{{
                 t('admin.accounts.oauth.openai.codexPatAuth')
-              }}</span>
-            </label>
+              }}</span></ElementRadio>
           </div>
         </div>
 
@@ -162,12 +74,12 @@
                   {{ t('admin.accounts.oauth.keysCount', { count: parsedRefreshTokenCount }) }}
                 </span>
               </label>
-              <textarea
+              <ElementInput type="textarea"
                 v-model="refreshTokenInput"
-                rows="3"
+                :rows="3"
                 class="input w-full resize-y font-mono text-sm"
                 :placeholder="t(getOAuthKey('refreshTokenPlaceholder'))"
-              ></textarea>
+              ></ElementInput>
               <p
                 v-if="parsedRefreshTokenCount > 1"
                 class="mt-1 text-xs text-blue-600 dark:text-blue-400"
@@ -187,9 +99,9 @@
             </div>
 
             <!-- Validate Button -->
-            <button
-              type="button"
-              class="btn btn-primary w-full"
+            <ElButton type="primary"
+              native-type="button"
+              class="w-full"
               :disabled="loading || !refreshTokenInput.trim()"
               @click="handleValidateRefreshToken"
             >
@@ -219,7 +131,7 @@
                   ? t(getOAuthKey('validating'))
                   : t(getOAuthKey('validateAndCreate'))
               }}
-            </button>
+            </ElButton>
           </div>
         </div>
 
@@ -245,13 +157,13 @@
                   {{ t('admin.accounts.oauth.keysCount', { count: parsedSSOCount }) }}
                 </span>
               </label>
-              <textarea
+              <ElementInput type="textarea"
                 v-model="ssoCookieInput"
-                rows="5"
+                :rows="5"
                 class="input w-full resize-y font-mono text-sm"
                 :placeholder="t(getOAuthKey('ssoCookiePlaceholder'))"
                 spellcheck="false"
-              ></textarea>
+              ></ElementInput>
               <p class="mt-1 text-xs text-blue-600 dark:text-blue-400">
                 {{ t(getOAuthKey('ssoCookieHint')) }}
               </p>
@@ -266,9 +178,9 @@
               </p>
             </div>
 
-            <button
-              type="button"
-              class="btn btn-primary w-full"
+            <ElButton type="primary"
+              native-type="button"
+              class="w-full"
               :disabled="loading || !ssoCookieInput.trim()"
               @click="handleImportSSO"
             >
@@ -294,7 +206,7 @@
               </svg>
               <Icon v-else name="sparkles" size="sm" class="mr-2" />
               {{ loading ? t(getOAuthKey('convertingSSO')) : t(getOAuthKey('convertSSOAndCreate')) }}
-            </button>
+            </ElButton>
           </div>
         </div>
 
@@ -319,14 +231,14 @@
                   {{ t('admin.accounts.oauth.keysCount', { count: parsedEmailPasswordCount }) }}
                 </span>
               </label>
-              <textarea
+              <ElementInput type="textarea"
                 v-model="emailPasswordInput"
-                rows="4"
+                :rows="4"
                 class="input w-full resize-y font-mono text-sm"
                 :placeholder="t(getOAuthKey('emailPasswordPlaceholder'))"
                 spellcheck="false"
                 autocomplete="off"
-              ></textarea>
+              ></ElementInput>
               <p class="mt-1 text-xs text-blue-600 dark:text-blue-400">
                 {{ t(getOAuthKey('emailPasswordHint')) }}
               </p>
@@ -339,9 +251,9 @@
                 {{ error }}
               </p>
             </div>
-            <button
-              type="button"
-              class="btn btn-primary w-full"
+            <ElButton type="primary"
+              native-type="button"
+              class="w-full"
               :disabled="loading || !emailPasswordInput.trim()"
               @click="handleAuthorizePassword"
             >
@@ -367,7 +279,7 @@
               </svg>
               <Icon v-else name="sparkles" size="sm" class="mr-2" />
               {{ loading ? t(getOAuthKey('validating')) : t(getOAuthKey('validateAndCreate')) }}
-            </button>
+            </ElButton>
           </div>
         </div>
 
@@ -393,13 +305,13 @@
                   {{ t('admin.accounts.oauth.keysCount', { count: parsedCodexSessionCount }) }}
                 </span>
               </label>
-              <textarea
+              <ElementInput type="textarea"
                 v-model="codexSessionInput"
-                rows="8"
+                :rows="8"
                 class="input w-full resize-y font-mono text-sm"
                 :placeholder="t(isAgentIdentityInput ? 'admin.accounts.oauth.openai.agentIdentityPlaceholder' : 'admin.accounts.oauth.openai.codexSessionPlaceholder')"
                 spellcheck="false"
-              ></textarea>
+              ></ElementInput>
               <p class="mt-1 text-xs text-blue-600 dark:text-blue-400">
                 {{ t(isAgentIdentityInput ? 'admin.accounts.oauth.openai.agentIdentityHint' : 'admin.accounts.oauth.openai.codexSessionHint') }}
               </p>
@@ -414,9 +326,9 @@
               </p>
             </div>
 
-            <button
-              type="button"
-              class="btn btn-primary w-full"
+            <ElButton type="primary"
+              native-type="button"
+              class="w-full"
               :disabled="loading || !codexSessionInput.trim()"
               @click="handleImportCodexSession"
             >
@@ -446,7 +358,7 @@
                   ? t('admin.accounts.oauth.openai.validating')
                   : t('admin.accounts.oauth.openai.codexSessionImportAndCreate')
               }}
-            </button>
+            </ElButton>
           </div>
         </div>
 
@@ -466,13 +378,13 @@
                 <Icon name="key" size="sm" class="text-blue-500" />
                 {{ t('admin.accounts.oauth.openai.codexPatInputLabel') }}
               </label>
-              <textarea
+              <ElementInput type="textarea"
                 v-model="codexPATInput"
-                rows="3"
+                :rows="3"
                 class="input w-full resize-y font-mono text-sm"
                 :placeholder="t('admin.accounts.oauth.openai.codexPatPlaceholder')"
                 spellcheck="false"
-              ></textarea>
+              ></ElementInput>
               <p class="mt-1 text-xs text-blue-600 dark:text-blue-400">
                 {{ t('admin.accounts.oauth.openai.codexPatHint') }}
               </p>
@@ -487,9 +399,9 @@
               </p>
             </div>
 
-            <button
-              type="button"
-              class="btn btn-primary w-full"
+            <ElButton type="primary"
+              native-type="button"
+              class="w-full"
               :disabled="loading || !codexPATInput.trim()"
               @click="handleImportCodexPAT"
             >
@@ -519,7 +431,7 @@
                   ? t('admin.accounts.oauth.openai.validating')
                   : t('admin.accounts.oauth.openai.codexPatImportAndCreate')
               }}
-            </button>
+            </ElButton>
           </div>
         </div>
 
@@ -545,9 +457,9 @@
                 >
                   {{ t('admin.accounts.oauth.keysCount', { count: parsedKeyCount }) }}
                 </span>
-                <button
+                <ElButton text
                   v-if="showHelp"
-                  type="button"
+                  native-type="button"
                   class="text-blue-500 hover:text-blue-600"
                   @click="showHelpDialog = !showHelpDialog"
                 >
@@ -564,18 +476,18 @@
                       d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
                     />
                   </svg>
-                </button>
+                </ElButton>
               </label>
-              <textarea
+              <ElementInput type="textarea"
                 v-model="sessionKeyInput"
-                rows="3"
+                :rows="3"
                 class="input w-full resize-y font-mono text-sm"
                 :placeholder="
                   allowMultiple
                     ? t('admin.accounts.oauth.sessionKeyPlaceholder')
                     : t('admin.accounts.oauth.sessionKeyPlaceholderSingle')
                 "
-              ></textarea>
+              ></ElementInput>
               <p
                 v-if="parsedKeyCount > 1 && allowMultiple"
                 class="mt-1 text-xs text-blue-600 dark:text-blue-400"
@@ -619,9 +531,9 @@
             </div>
 
             <!-- Auth Button -->
-            <button
-              type="button"
-              class="btn btn-primary w-full"
+            <ElButton type="primary"
+              native-type="button"
+              class="w-full"
               :disabled="loading || !sessionKeyInput.trim()"
               @click="handleCookieAuth"
             >
@@ -651,7 +563,7 @@
                   ? t('admin.accounts.oauth.authorizing')
                   : t('admin.accounts.oauth.startAutoAuth')
               }}
-            </button>
+            </ElButton>
           </div>
         </div>
 
@@ -690,7 +602,7 @@
                       {{ t('admin.accounts.oauth.gemini.howToGetProjectId') }}
                     </a>
                   </label>
-                  <input
+                  <ElementInput
                     v-model="projectId"
                     type="text"
                     class="input w-full font-mono text-sm"
@@ -700,11 +612,11 @@
                     {{ t('admin.accounts.oauth.gemini.projectIdHint') }}
                   </p>
                 </div>
-                <button
+                <ElButton type="primary"
                   v-if="!authUrl"
-                  type="button"
+                  native-type="button"
                   :disabled="loading"
-                  class="btn btn-primary text-sm"
+                  class="text-sm"
                   @click="handleGenerateUrl"
                 >
                   <svg
@@ -729,18 +641,18 @@
                   </svg>
                   <Icon v-else name="link" size="sm" class="mr-2" />
                   {{ loading ? t('admin.accounts.oauth.generating') : oauthGenerateAuthUrl }}
-                </button>
+                </ElButton>
                 <div v-else class="space-y-3">
                   <div class="flex items-center gap-2">
-                    <input
+                    <ElementInput
                       :value="authUrl"
                       readonly
                       type="text"
                       class="input flex-1 bg-gray-50 font-mono text-xs dark:bg-gray-700"
                     />
-                    <button
-                      type="button"
-                      class="btn btn-secondary p-2"
+                    <ElButton
+                      native-type="button"
+                      class="p-2"
                       title="Copy URL"
                       @click="handleCopyUrl"
                     >
@@ -765,16 +677,16 @@
                         class="text-green-500"
                         :stroke-width="2"
                       />
-                    </button>
+                    </ElButton>
                   </div>
-                  <button
-                    type="button"
+                  <ElButton text
+                    native-type="button"
                     class="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400"
                     @click="handleRegenerate"
                   >
                     <Icon name="refresh" size="xs" class="mr-1 inline" />
                     {{ t('admin.accounts.oauth.regenerate') }}
-                  </button>
+                  </ElButton>
                 </div>
               </div>
             </div>
@@ -844,12 +756,12 @@
                     <Icon name="key" size="sm" class="mr-1 inline text-blue-500" />
                     {{ oauthAuthCode }}
                   </label>
-                  <textarea
+                  <ElementInput type="textarea"
                     v-model="authCodeInput"
-                    rows="3"
+                    :rows="3"
                     class="input w-full resize-none font-mono text-sm"
                     :placeholder="oauthAuthCodePlaceholder"
-                  ></textarea>
+                  ></ElementInput>
                   <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                     <Icon name="infoCircle" size="xs" class="mr-1 inline" />
                     {{ oauthAuthCodeHint }}

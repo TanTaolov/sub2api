@@ -1,8 +1,8 @@
 <template>
-  <div class="relative">
+  <div class="relative" ref="versionContainerRef">
     <!-- Admin: Full version badge with dropdown -->
     <template v-if="isAdmin">
-      <button
+      <ElButton text
         @click="toggleDropdown"
         class="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs transition-colors"
         :class="[
@@ -24,24 +24,16 @@
           ></span>
           <span class="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
         </span>
-      </button>
+      </ElButton>
 
       <!-- Dropdown -->
-      <transition name="dropdown">
-        <div
-          v-if="dropdownOpen"
-          ref="dropdownRef"
-          class="absolute left-0 z-50 mt-2 overflow-hidden whitespace-normal rounded-xl border border-gray-200 bg-white shadow-lg transition-all duration-200 dark:border-dark-700 dark:bg-dark-800"
-          :class="rollbackPanelOpen && isReleaseBuild ? 'w-80' : 'w-64'"
-        >
-          <!-- Header with refresh button -->
-          <div
+      <ElementFloatingPanel :visible="dropdownOpen" :anchor="versionContainerRef" width="320" placement="bottom-end" @close="dropdownOpen = false"><div ref="dropdownRef"><!-- Header with refresh button --><div
             class="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-dark-700"
           >
             <span class="text-sm font-medium text-gray-700 dark:text-dark-300">{{
               t('version.currentVersion')
             }}</span>
-            <button
+            <ElButton text
               @click="refreshVersion(true)"
               class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-dark-700 dark:hover:text-dark-200"
               :disabled="loading"
@@ -53,10 +45,8 @@
                 :stroke-width="2"
                 :class="{ 'animate-spin': loading }"
               />
-            </button>
-          </div>
-
-          <div class="p-4">
+            </ElButton>
+          </div><div class="p-4">
             <!-- Loading state -->
             <div v-if="loading" class="flex items-center justify-center py-6">
               <svg class="h-6 w-6 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
@@ -140,13 +130,13 @@
                 </div>
 
                 <!-- Retry button -->
-                <button
+                <ElButton type="danger"
                   @click="handleUpdate"
                   :disabled="updating"
                   class="flex w-full items-center justify-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {{ t('version.retry') }}
-                </button>
+                </ElButton>
               </div>
 
               <!-- Priority 2: Update success - need restart -->
@@ -182,7 +172,7 @@
                 </div>
 
                 <!-- Restart button with countdown -->
-                <button
+                <ElButton text
                   @click="handleRestart"
                   :disabled="restarting"
                   class="flex w-full items-center justify-center gap-2 rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
@@ -228,7 +218,7 @@
                     >
                   </template>
                   <span v-else>{{ t('version.restartNow') }}</span>
-                </button>
+                </ElButton>
               </div>
 
               <!-- Priority 3: Update available for source build - show git pull hint -->
@@ -318,7 +308,7 @@
                 </div>
 
                 <!-- Update button -->
-                <button
+                <ElButton type="primary"
                   @click="handleUpdate"
                   :disabled="updating"
                   class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
@@ -340,7 +330,7 @@
                   </svg>
                   <Icon v-else name="download" size="sm" :stroke-width="2" />
                   {{ updating ? t('version.updating') : t('version.updateNow') }}
-                </button>
+                </ElButton>
 
                 <!-- View release link -->
                 <a
@@ -376,7 +366,7 @@
 
                 <!-- Version rollback entry -->
                 <div class="border-t border-gray-100 pt-2 dark:border-dark-700">
-                  <button
+                  <ElButton text
                     @click="toggleRollbackPanel"
                     class="group flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-xs text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 dark:text-dark-500 dark:hover:bg-dark-700/50 dark:hover:text-dark-300"
                   >
@@ -391,7 +381,7 @@
                       class="transition-transform duration-200"
                       :class="{ 'rotate-180': rollbackPanelOpen }"
                     />
-                  </button>
+                  </ElButton>
 
                   <transition name="rollback">
                     <div v-if="rollbackPanelOpen" class="mt-2 space-y-2">
@@ -451,12 +441,12 @@
                         >
                           {{ rollbackVersionsError }}
                         </p>
-                        <button
+                        <ElButton text
                           @click="loadRollbackVersions"
                           class="w-full rounded-lg border border-gray-200 py-1.5 text-xs text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:border-dark-700 dark:text-dark-400 dark:hover:bg-dark-700/50 dark:hover:text-dark-200"
                         >
                           {{ t('version.retry') }}
-                        </button>
+                        </ElButton>
                       </div>
 
                       <!-- No versions available -->
@@ -473,7 +463,7 @@
                           {{ t('version.rollbackSelectVersion') }}
                         </p>
 
-                        <button
+                        <ElButton text
                           v-for="item in rollbackVersions"
                           :key="item.version"
                           @click="selectRollbackVersion(item.version)"
@@ -512,7 +502,7 @@
                           <span class="text-[11px] tabular-nums text-gray-400 dark:text-dark-500">
                             {{ formatPublishedAt(item.published_at) }}
                           </span>
-                        </button>
+                        </ElButton>
 
                         <!-- Selected version: manual command (per deploy method) + confirm -->
                         <transition name="rollback">
@@ -531,7 +521,7 @@
                                 <div
                                   class="flex items-center gap-0.5 rounded-md bg-gray-200/70 p-0.5 dark:bg-dark-600/70"
                                 >
-                                  <button
+                                  <ElButton text
                                     v-for="tab in manualTabs"
                                     :key="tab.key"
                                     @click="manualTab = tab.key"
@@ -543,9 +533,9 @@
                                     "
                                   >
                                     {{ tab.label }}
-                                  </button>
+                                  </ElButton>
                                 </div>
-                                <button
+                                <ElButton text
                                   @click="copyToClipboard(activeManualCommand)"
                                   class="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:text-dark-400 dark:hover:bg-dark-600 dark:hover:text-dark-200"
                                 >
@@ -556,7 +546,7 @@
                                     :class="copied ? 'text-green-500' : ''"
                                   />
                                   {{ copied ? t('version.copied') : t('version.copyCommand') }}
-                                </button>
+                                </ElButton>
                               </div>
                               <code
                                 class="block select-all whitespace-pre-wrap break-all bg-gray-50 p-2.5 font-mono text-[10px] leading-relaxed text-gray-600 dark:bg-dark-900 dark:text-dark-300"
@@ -583,7 +573,7 @@
                               {{ rollbackError }}
                             </p>
 
-                            <button
+                            <ElButton text
                               @click="handleRollback"
                               :disabled="rollingBack"
                               class="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-50"
@@ -616,7 +606,7 @@
                                       version: 'v' + selectedRollbackVersion
                                     })
                               }}</span>
-                            </button>
+                            </ElButton>
                           </div>
                         </transition>
                       </template>
@@ -625,9 +615,7 @@
                 </div>
               </div>
             </template>
-          </div>
-        </div>
-      </transition>
+          </div></div></ElementFloatingPanel>
     </template>
 
     <!-- Non-admin: Simple static version text -->
@@ -666,6 +654,7 @@ const appStore = useAppStore()
 
 const isAdmin = computed(() => authStore.isAdmin)
 
+const versionContainerRef = ref<HTMLElement | null>(null)
 const dropdownOpen = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)
 

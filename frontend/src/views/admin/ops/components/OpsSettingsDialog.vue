@@ -251,7 +251,7 @@ async function saveAllSettings() {
         <h4 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.ops.settings.dataCollection') }}</h4>
         <div>
           <label class="input-label">{{ t('admin.ops.settings.evaluationInterval') }}</label>
-          <input
+          <ElementInput
             v-model.number="runtimeSettings.evaluation_interval_seconds"
             type="number"
             min="1"
@@ -277,16 +277,16 @@ async function saveAllSettings() {
           <div v-if="emailConfig.alert.enabled">
             <label class="input-label">{{ t('admin.ops.settings.alertRecipients') }}</label>
             <div class="flex gap-2">
-              <input
+              <ElementInput
                 v-model="alertRecipientInput"
                 type="email"
                 class="input"
                 :placeholder="t('admin.ops.settings.emailPlaceholder')"
                 @keydown.enter.prevent="addRecipient('alert')"
               />
-              <button class="btn btn-secondary whitespace-nowrap" type="button" @click="addRecipient('alert')">
+              <ElButton class="whitespace-nowrap" native-type="button" @click="addRecipient('alert')">
                 {{ t('common.add') }}
-              </button>
+              </ElButton>
             </div>
             <div class="mt-2 flex flex-wrap gap-2">
               <span
@@ -295,7 +295,7 @@ async function saveAllSettings() {
                 class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
               >
                 {{ email }}
-                <button type="button" class="text-blue-700/80 hover:text-blue-900" @click="removeRecipient('alert', email)">×</button>
+                <ElButton text native-type="button" class="text-blue-700/80 hover:text-blue-900" @click="removeRecipient('alert', email)">×</ElButton>
               </span>
             </div>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -325,16 +325,16 @@ async function saveAllSettings() {
           <div v-if="emailConfig.report.enabled">
             <label class="input-label">{{ t('admin.ops.settings.reportRecipients') }}</label>
             <div class="flex gap-2">
-              <input
+              <ElementInput
                 v-model="reportRecipientInput"
                 type="email"
                 class="input"
                 :placeholder="t('admin.ops.settings.emailPlaceholder')"
                 @keydown.enter.prevent="addRecipient('report')"
               />
-              <button class="btn btn-secondary whitespace-nowrap" type="button" @click="addRecipient('report')">
+              <ElButton class="whitespace-nowrap" native-type="button" @click="addRecipient('report')">
                 {{ t('common.add') }}
-              </button>
+              </ElButton>
             </div>
             <div class="mt-2 flex flex-wrap gap-2">
               <span
@@ -343,7 +343,7 @@ async function saveAllSettings() {
                 class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
               >
                 {{ email }}
-                <button type="button" class="text-blue-700/80 hover:text-blue-900" @click="removeRecipient('report', email)">×</button>
+                <ElButton text native-type="button" class="text-blue-700/80 hover:text-blue-900" @click="removeRecipient('report', email)">×</ElButton>
               </span>
             </div>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -357,14 +357,14 @@ async function saveAllSettings() {
               <Toggle v-model="emailConfig.report.daily_summary_enabled" />
             </div>
             <div v-if="emailConfig.report.daily_summary_enabled">
-              <input v-model="emailConfig.report.daily_summary_schedule" type="text" class="input" placeholder="0 9 * * *" />
+              <ElementInput v-model="emailConfig.report.daily_summary_schedule" type="text" class="input" placeholder="0 9 * * *" />
             </div>
             <div class="flex items-center justify-between">
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('admin.ops.settings.weeklySummary') }}</label>
               <Toggle v-model="emailConfig.report.weekly_summary_enabled" />
             </div>
             <div v-if="emailConfig.report.weekly_summary_enabled">
-              <input v-model="emailConfig.report.weekly_summary_schedule" type="text" class="input" placeholder="0 9 * * 1" />
+              <ElementInput v-model="emailConfig.report.weekly_summary_schedule" type="text" class="input" placeholder="0 9 * * 1" />
             </div>
           </div>
         </div>
@@ -378,7 +378,7 @@ async function saveAllSettings() {
         <div class="space-y-4">
           <div>
             <label class="input-label">{{ t('admin.ops.settings.slaMinPercent') }}</label>
-            <input
+            <ElementInput
               v-model.number="metricThresholds.sla_percent_min"
               type="number"
               min="0"
@@ -392,7 +392,7 @@ async function saveAllSettings() {
 
           <div>
             <label class="input-label">{{ t('admin.ops.settings.ttftP99MaxMs') }}</label>
-            <input
+            <ElementInput
               v-model.number="metricThresholds.ttft_p99_ms_max"
               type="number"
               min="0"
@@ -404,7 +404,7 @@ async function saveAllSettings() {
 
           <div>
             <label class="input-label">{{ t('admin.ops.settings.requestErrorRateMaxPercent') }}</label>
-            <input
+            <ElementInput
               v-model.number="metricThresholds.request_error_rate_percent_max"
               type="number"
               min="0"
@@ -417,7 +417,7 @@ async function saveAllSettings() {
 
           <div>
             <label class="input-label">{{ t('admin.ops.settings.upstreamErrorRateMaxPercent') }}</label>
-            <input
+            <ElementInput
               v-model.number="metricThresholds.upstream_error_rate_percent_max"
               type="number"
               min="0"
@@ -431,11 +431,7 @@ async function saveAllSettings() {
       </div>
 
       <!-- 高级设置 -->
-      <details class="rounded-2xl bg-gray-50 dark:bg-dark-700/50">
-        <summary class="cursor-pointer p-4 text-sm font-semibold text-gray-900 dark:text-white">
-          {{ t('admin.ops.settings.advancedSettings') }}
-        </summary>
-        <div class="space-y-4 px-4 pb-4">
+      <ElCollapse class="rounded-2xl bg-gray-50 dark:bg-dark-700/50" ><ElCollapseItem name="content"><template #title>{{ t('admin.ops.settings.advancedSettings') }}</template><div class="space-y-4 px-4 pb-4">
           <!-- 数据保留策略 -->
           <div class="space-y-3">
             <h5 class="text-xs font-semibold text-gray-700 dark:text-gray-300">{{ t('admin.ops.settings.dataRetention') }}</h5>
@@ -447,7 +443,7 @@ async function saveAllSettings() {
 
             <div v-if="advancedSettings.data_retention.cleanup_enabled">
               <label class="input-label">{{ t('admin.ops.settings.cleanupSchedule') }}</label>
-              <input
+              <ElementInput
                 v-model="advancedSettings.data_retention.cleanup_schedule"
                 type="text"
                 class="input"
@@ -459,7 +455,7 @@ async function saveAllSettings() {
             <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
                 <label class="input-label">{{ t('admin.ops.settings.errorLogRetentionDays') }}</label>
-                <input
+                <ElementInput
                   v-model.number="advancedSettings.data_retention.error_log_retention_days"
                   type="number"
                   min="0"
@@ -469,7 +465,7 @@ async function saveAllSettings() {
               </div>
               <div>
                 <label class="input-label">{{ t('admin.ops.settings.minuteMetricsRetentionDays') }}</label>
-                <input
+                <ElementInput
                   v-model.number="advancedSettings.data_retention.minute_metrics_retention_days"
                   type="number"
                   min="0"
@@ -479,7 +475,7 @@ async function saveAllSettings() {
               </div>
               <div>
                 <label class="input-label">{{ t('admin.ops.settings.hourlyMetricsRetentionDays') }}</label>
-                <input
+                <ElementInput
                   v-model.number="advancedSettings.data_retention.hourly_metrics_retention_days"
                   type="number"
                   min="0"
@@ -512,7 +508,7 @@ async function saveAllSettings() {
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label class="input-label">{{ t('admin.ops.settings.openaiQuotaAutoPauseDefault5h') }}</label>
-                <input
+                <ElementInput
                   v-model.number="quotaAutoPause5hPercent"
                   type="number"
                   min="0"
@@ -524,7 +520,7 @@ async function saveAllSettings() {
               </div>
               <div>
                 <label class="input-label">{{ t('admin.ops.settings.openaiQuotaAutoPauseDefault7d') }}</label>
-                <input
+                <ElementInput
                   v-model.number="quotaAutoPause7dPercent"
                   type="number"
                   min="0"
@@ -634,16 +630,15 @@ async function saveAllSettings() {
               <Toggle v-model="advancedSettings.display_openai_token_stats" />
             </div>
           </div>
-        </div>
-      </details>
+        </div></ElCollapseItem></ElCollapse>
     </div>
 
     <template #footer>
       <div class="flex justify-end gap-2">
-        <button class="btn btn-secondary" @click="emit('close')">{{ t('common.cancel') }}</button>
-        <button class="btn btn-primary" :disabled="saving || !validation.valid" @click="saveAllSettings">
+        <ElButton class="" @click="emit('close')">{{ t('common.cancel') }}</ElButton>
+        <ElButton type="primary" class="" :disabled="saving || !validation.valid" @click="saveAllSettings">
           {{ saving ? t('common.saving') : t('common.save') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

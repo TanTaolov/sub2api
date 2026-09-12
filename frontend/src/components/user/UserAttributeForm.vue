@@ -7,7 +7,7 @@
       </label>
 
       <!-- Text Input -->
-      <input
+      <ElementInput
         v-if="attr.type === 'text' || attr.type === 'email' || attr.type === 'url'"
         v-model="localValues[attr.id]"
         :type="attr.type === 'text' ? 'text' : attr.type"
@@ -18,7 +18,7 @@
       />
 
       <!-- Number Input -->
-      <input
+      <ElementInput
         v-else-if="attr.type === 'number'"
         v-model.number="localValues[attr.id]"
         type="number"
@@ -31,7 +31,7 @@
       />
 
       <!-- Date Input -->
-      <input
+      <ElementInput
         v-else-if="attr.type === 'date'"
         v-model="localValues[attr.id]"
         type="date"
@@ -41,12 +41,12 @@
       />
 
       <!-- Textarea -->
-      <textarea
+      <ElementInput type="textarea"
         v-else-if="attr.type === 'textarea'"
         v-model="localValues[attr.id]"
         :required="attr.required"
         :placeholder="attr.placeholder"
-        rows="3"
+        :rows="3"
         class="input"
         @input="emitChange"
       />
@@ -61,20 +61,7 @@
 
       <!-- Multi-Select (Checkboxes) -->
       <div v-else-if="attr.type === 'multi_select'" class="space-y-2">
-        <label
-          v-for="opt in attr.options"
-          :key="opt.value"
-          class="flex items-center gap-2"
-        >
-          <input
-            type="checkbox"
-            :value="opt.value"
-            :checked="isOptionSelected(attr.id, opt.value)"
-            @change="toggleMultiSelectOption(attr.id, opt.value)"
-            class="h-4 w-4 rounded border-gray-300 text-primary-600"
-          />
-          <span class="text-sm text-gray-700 dark:text-gray-300">{{ opt.label }}</span>
-        </label>
+        <ElementCheckbox v-for="opt in attr.options" :key="opt.value" :value="opt.value" :checked="isOptionSelected(attr.id, opt.value)" @change="toggleMultiSelectOption(attr.id, opt.value)" :class="[&quot;flex items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{ opt.label }}</span></ElementCheckbox>
       </div>
 
       <!-- Description -->

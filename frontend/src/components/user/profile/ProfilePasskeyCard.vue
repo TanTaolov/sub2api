@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <ElCard shadow="never" class="element-surface-card">
     <div class="flex items-start justify-between border-b border-gray-100 px-6 py-4 dark:border-dark-700">
       <div>
         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -9,15 +9,15 @@
           {{ t('profile.passkey.description') }}
         </p>
       </div>
-      <button
+      <ElButton type="primary"
         v-if="enabled && supported && !showAddForm"
-        type="button"
-        class="btn btn-primary"
+        native-type="button"
+        class=""
         :disabled="busy"
         @click="showAddForm = true"
       >
         {{ t('profile.passkey.add') }}
-      </button>
+      </ElButton>
     </div>
 
     <div class="px-6 py-6">
@@ -28,7 +28,7 @@
         {{ t('profile.passkey.unsupported') }}
       </div>
       <div>
-        <form
+        <ElForm
           v-if="enabled && supported && showAddForm"
           class="mb-5 flex flex-col gap-3 rounded-lg border border-gray-200 p-4 dark:border-dark-700"
           @submit.prevent="addPasskey"
@@ -36,7 +36,7 @@
           <div class="grid gap-3 sm:grid-cols-2">
             <div>
               <label for="passkey-name" class="input-label">{{ t('profile.passkey.name') }}</label>
-              <input
+              <ElementInput
                 id="passkey-name"
                 v-model="newName"
                 class="input"
@@ -49,7 +49,7 @@
               <label for="passkey-add-password" class="input-label">{{
                 t('profile.currentPassword')
               }}</label>
-              <input
+              <ElementInput
                 id="passkey-add-password"
                 v-model="newPassword"
                 type="password"
@@ -60,14 +60,14 @@
             </div>
           </div>
           <div class="flex justify-end gap-2">
-            <button type="button" class="btn btn-secondary" :disabled="busy" @click="cancelAdd">
+            <ElButton native-type="button" class="" :disabled="busy" @click="cancelAdd">
               {{ t('common.cancel') }}
-            </button>
-            <button type="submit" class="btn btn-primary" :disabled="busy || newPassword.length === 0">
+            </ElButton>
+            <ElButton type="primary" native-type="submit" class="" :disabled="busy || newPassword.length === 0">
               {{ busy ? t('common.processing') : t('profile.passkey.continue') }}
-            </button>
+            </ElButton>
           </div>
-        </form>
+        </ElForm>
 
         <div v-if="loading" class="flex justify-center py-6">
           <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-500"></div>
@@ -107,22 +107,22 @@
               </p>
             </div>
             <div class="flex shrink-0 gap-2">
-              <button
-                type="button"
-                class="btn btn-secondary btn-sm"
+              <ElButton size="small"
+                native-type="button"
+                class=""
                 :disabled="busy"
                 @click="renamePasskey(credential)"
               >
                 {{ t('common.edit') }}
-              </button>
-              <button
-                type="button"
-                class="btn btn-ghost btn-sm text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/30"
+              </ElButton>
+              <ElButton size="small"
+                native-type="button"
+                class="text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/30"
                 :disabled="busy"
                 @click="deletePasskey(credential)"
               >
                 {{ t('common.delete') }}
-              </button>
+              </ElButton>
             </div>
           </div>
         </div>
@@ -130,24 +130,14 @@
     </div>
 
     <!-- 删除确认：吊销凭据需验证当前密码，防止被窃会话静默移除 Passkey -->
-    <div v-if="deleteTarget" class="fixed inset-0 z-50 overflow-y-auto">
-      <div class="flex min-h-full items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/50 transition-opacity" @click="closeDeleteDialog"></div>
-        <div
-          class="relative w-full max-w-md transform rounded-xl bg-white p-6 shadow-xl transition-all dark:bg-dark-800"
-        >
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ t('profile.passkey.deleteTitle') }}
-          </h3>
-          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+    <ElDialog :model-value="Boolean(deleteTarget)" :title="t('profile.passkey.deleteTitle')" width="448px" append-to-body align-center destroy-on-close class="element-dialog " :show-close="true" @update:model-value="visible => { if (!visible) { closeDeleteDialog() } }" ><template v-if="deleteTarget"><p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {{ t('profile.passkey.deleteConfirm', { name: deleteTarget.name }) }}
-          </p>
-          <form class="mt-4 space-y-4" @submit.prevent="confirmDelete">
+          </p><ElForm class="mt-4 space-y-4" @submit.prevent="confirmDelete">
             <div>
               <label for="passkey-delete-password" class="input-label">{{
                 t('profile.currentPassword')
               }}</label>
-              <input
+              <ElementInput
                 id="passkey-delete-password"
                 v-model="deletePassword"
                 type="password"
@@ -158,22 +148,19 @@
               />
             </div>
             <div class="flex justify-end gap-3">
-              <button type="button" class="btn btn-secondary" :disabled="busy" @click="closeDeleteDialog">
+              <ElButton native-type="button" class="" :disabled="busy" @click="closeDeleteDialog">
                 {{ t('common.cancel') }}
-              </button>
-              <button
-                type="submit"
-                class="btn btn-danger"
+              </ElButton>
+              <ElButton type="danger"
+                native-type="submit"
+                class=""
                 :disabled="busy || deletePassword.length === 0"
               >
                 {{ busy ? t('common.processing') : t('common.delete') }}
-              </button>
+              </ElButton>
             </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
+          </ElForm></template></ElDialog>
+  </ElCard>
 </template>
 
 <script setup lang="ts">

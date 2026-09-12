@@ -1,360 +1,84 @@
-import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-
+import { mount, type VueWrapper } from '@vue/test-utils'
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
+import { defineComponent, h } from 'vue'
 import DataTable from '../DataTable.vue'
-
-vi.mock('vue-i18n', () => ({
-  useI18n: () => ({
-    t: (key: string) => key
-  })
-}))
-
-const stubDesktopMatchMedia = () => {
-  Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    value: vi.fn().mockImplementation((query: string) => ({
-      matches: true,
-      media: query,
-      onchange: null,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn()
-    }))
-  })
+vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key: string) => key }) }))
+const wrappers: VueWrapper[] = []
+function viewport(desktop: boolean) {
+  window.matchMedia = vi.fn(query => ({ matches: desktop, media: query, onchange: null, addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn(), dispatchEvent: vi.fn() }))
 }
-
-const stubMobileMatchMedia = () => {
-  Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    value: vi.fn().mockImplementation((query: string) => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn()
-    }))
+beforeEach(() => { viewport(true); localStorage.clear() })
+afterEach(() => { wrappers.forEach(wrapper => wrapper.unmount()); wrappers.length = 0 })
+function createTable(props: Record<string, unknown> = {}, slots = {}) {
+  const wrapper = mount(DataTable, {
+    props: { columns: [{ key: 'name', label: 'Name', sortable: true }], data: [{ id: 1, name: 'Beta' }, { id: 2, name: 'Alpha' }], ...props },
+    slots,
+    global: { stubs: { ElAutoResizer: defineComponent({ setup: (_, { slots }) => () => h('div', slots.default?.({ width: 900, height: 500 })) }) }
   })
+  wrappers.push(wrapper)
+  return wrapper
 }
+const rowNames = (wrapper: VueWrapper) => wrapper.findAll('.el-table__body .el-table__row').map(row => row.text())
 
 describe('DataTable', () => {
-  beforeEach(() => {
-    stubDesktopMatchMedia()
-    localStorage.clear()
+  it('小数据集完整显示，点击表头切换稳定排序', async () => {
+    const wrapper = createTable({ defaultSortKey: 'name' }, { 'header-name': '<span>Name</span>' })
+    await wrapper.vm.$nextTick()
+    expect(rowNames(wrapper)).toEqual(['Alpha', 'Beta'])
+    await wrapper.get('button[aria-label="Name"]').trigger('click')
+    expect(rowNames(wrapper)).toEqual(['Beta', 'Alpha'])
   })
-
-  it('renders paired sort arrows and highlights the active direction', async () => {
-    const wrapper = mount(DataTable, {
-      props: {
-        columns: [
-          { key: 'name', label: 'Name', sortable: true },
-          { key: 'created_at', label: 'Created', sortable: true }
-        ],
-        data: [
-          { id: 1, name: 'Beta', created_at: '2026-01-02T00:00:00Z' },
-          { id: 2, name: 'Alpha', created_at: '2026-01-01T00:00:00Z' }
-        ],
-        defaultSortKey: 'name',
-        defaultSortOrder: 'asc'
-      },
-      slots: {
-        'header-name': '<span data-test="custom-name-header">Name</span>'
-      }
-    })
-
+  it('服务端排序只发出事件，不重新排列服务端返回的数据', async () => {
+    const wrapper = createTable({ serverSideSort: true })
     await wrapper.vm.$nextTick()
-
-    const nameHeader = wrapper.findAll('th')[0]
-    expect(nameHeader.find('[data-test="custom-name-header"]').exists()).toBe(true)
-    expect(nameHeader.attributes('aria-sort')).toBe('ascending')
-    expect(nameHeader.findAll('svg')).toHaveLength(2)
-    expect(nameHeader.findAll('svg')[0].classes()).toContain('text-primary-600')
-    expect(nameHeader.findAll('svg')[1].classes()).toContain('text-gray-300')
-
-    await nameHeader.trigger('click')
-    await wrapper.vm.$nextTick()
-
-    expect(nameHeader.attributes('aria-sort')).toBe('descending')
-    expect(nameHeader.findAll('svg')[0].classes()).toContain('text-gray-300')
-    expect(nameHeader.findAll('svg')[1].classes()).toContain('text-primary-600')
+    await wrapper.get('button[aria-label="Name"]').trigger('click')
+    expect(wrapper.emitted('sort')).toEqual([['name', 'asc']])
+    expect(rowNames(wrapper)).toEqual(['Beta', 'Alpha'])
   })
-
-  it('renders every row with no virtual padding spacer for small datasets (virtualization off)', async () => {
-    const data = Array.from({ length: 8 }, (_, i) => ({ id: i + 1, name: `Row ${i + 1}` }))
-    const wrapper = mount(DataTable, {
-      props: {
-        columns: [{ key: 'name', label: 'Name' }],
-        data
-      }
-    })
-
+  it('保存并恢复指定表格的排序偏好', async () => {
+    const wrapper = createTable({ sortStorageKey: 'table-preference' })
     await wrapper.vm.$nextTick()
-
-    // Virtualization is OFF for a small list…
-    expect((wrapper.vm as any).shouldVirtualize).toBe(false)
-    // …every row is in the DOM…
-    expect(wrapper.findAll('tbody tr[data-index]')).toHaveLength(data.length)
-    // …and there are no aria-hidden virtual padding spacer rows.
-    expect(wrapper.findAll('tbody tr[aria-hidden="true"]')).toHaveLength(0)
+    await wrapper.get('button[aria-label="Name"]').trigger('click')
+    await wrapper.get('button[aria-label="Name"]').trigger('click')
+    const restored = createTable({ sortStorageKey: 'table-preference' })
+    await restored.vm.$nextTick()
+    expect(rowNames(restored)).toEqual(['Beta', 'Alpha'])
+    expect(restored.get('button[aria-label="Name"]').attributes('aria-sort')).toBe('descending')
   })
-
-  it('switches to windowed rendering once row count exceeds virtualizeThreshold', async () => {
-    const data = Array.from({ length: 12 }, (_, i) => ({ id: i + 1, name: `Row ${i + 1}` }))
-    const wrapper = mount(DataTable, {
-      props: {
-        columns: [{ key: 'name', label: 'Name' }],
-        data,
-        virtualizeThreshold: 3
-      }
-    })
-
+  it('当前页全选保留其他页的选中键，取消仅移除本页键', async () => {
+    const wrapper = createTable({ selectable: true, selectedKeys: [99] })
     await wrapper.vm.$nextTick()
-
-    // Virtualization is ON: the mode-switch decision flipped…
-    expect((wrapper.vm as any).shouldVirtualize).toBe(true)
-    // …and the virtualizer drives off the full row count.
-    const exposed = (wrapper.vm as any).virtualizer
-    const instance = exposed?.value ?? exposed
-    expect(instance.options.count).toBe(data.length)
+    await wrapper.get('[data-test="select-all"] input').setValue(true)
+    expect(wrapper.emitted('update:selectedKeys')?.[0]).toEqual([[99, 1, 2]])
+    await wrapper.setProps({ selectedKeys: [99, 1, 2] })
+    await wrapper.get('[data-test="select-all"] input').setValue(false)
+    expect(wrapper.emitted('update:selectedKeys')?.[1]).toEqual([[99]])
   })
-
-  it('keys the virtualizer size cache by row identity, not index (avoids stale heights on sort/filter)', async () => {
-    const data = Array.from({ length: 12 }, (_, i) => ({ id: 100 + i, name: `Row ${i + 1}` }))
-    const wrapper = mount(DataTable, {
-      props: {
-        columns: [{ key: 'name', label: 'Name' }],
-        data,
-        rowKey: 'id',
-        virtualizeThreshold: 3
-      }
-    })
-
+  it('选择复选框不会触发行点击', async () => {
+    const wrapper = createTable({ selectable: true, clickableRows: true })
     await wrapper.vm.$nextTick()
-
-    const exposed = (wrapper.vm as any).virtualizer
-    const instance = exposed?.value ?? exposed
-    // getItemKey must resolve to the row's stable key (id), not the positional index.
-    expect(instance.options.getItemKey(0)).toBe(100)
-    expect(instance.options.getItemKey(5)).toBe(105)
+    await wrapper.get('[data-test="select-row"] input').trigger('click')
+    expect(wrapper.emitted('rowClick')).toBeUndefined()
+    await wrapper.get('.el-table__row').trigger('click')
+    expect(wrapper.emitted('rowClick')?.[0]).toEqual([{ id: 1, name: 'Beta' }])
   })
-
-  it('clears stale row and element caches when pagination replaces the row ID set', async () => {
-    const firstPage = Array.from({ length: 100 }, (_, i) => ({ id: i + 1, name: `First ${i + 1}` }))
-    const secondPage = Array.from({ length: 100 }, (_, i) => ({ id: i + 101, name: `Second ${i + 1}` }))
-    const wrapper = mount(DataTable, {
-      props: {
-        columns: [{ key: 'name', label: 'Name' }],
-        data: firstPage,
-        rowKey: 'id',
-        virtualizeThreshold: 1
-      }
-    })
-
+  it('大列表采用虚拟表格，分页替换后不残留上一页数据', async () => {
+    const wrapper = createTable({ data: Array.from({ length: 200 }, (_, index) => ({ id: index, name: 'Old ' + index })) })
     await wrapper.vm.$nextTick()
-
-    const exposed = (wrapper.vm as any).virtualizer
-    const instance = exposed?.value ?? exposed
-    const firstPageIDs = firstPage.map(row => row.id)
-    ;(instance as any).itemSizeCache = new Map(firstPageIDs.map(id => [id, 156]))
-    instance.elementsCache.clear()
-    for (const id of firstPageIDs) {
-      instance.elementsCache.set(id, document.createElement('tr'))
-    }
-    const measureElementSpy = vi.spyOn(instance, 'measureElement')
-
-    await wrapper.setProps({ data: secondPage })
+    expect(wrapper.find('.el-table-v2').exists()).toBe(true)
+    expect(wrapper.findAll('.el-table-v2__row').length).toBeLessThan(200)
+    await wrapper.setProps({ data: Array.from({ length: 200 }, (_, index) => ({ id: index + 200, name: 'New ' + index })) })
     await wrapper.vm.$nextTick()
-
-    const sizeCache = (instance as any).itemSizeCache as Map<number, number>
-    expect(sizeCache.size).toBeLessThanOrEqual(secondPage.length)
-    expect(instance.elementsCache.size).toBeLessThanOrEqual(secondPage.length)
-    expect(firstPageIDs.some(id => sizeCache.has(id))).toBe(false)
-    expect(firstPageIDs.some(id => instance.elementsCache.has(id))).toBe(false)
-    expect(measureElementSpy.mock.calls.some(([node]) => node === null)).toBe(true)
+    expect(wrapper.text()).not.toContain('Old ')
+    expect(wrapper.text()).toContain('New 0')
   })
-
-  it('clears stale caches when equal-length pages replace rows without stable keys', async () => {
-    const firstPage = Array.from({ length: 12 }, (_, i) => ({ name: `First ${i + 1}` }))
-    const secondPage = Array.from({ length: 12 }, (_, i) => ({ name: `Second ${i + 1}` }))
-    const wrapper = mount(DataTable, {
-      props: {
-        columns: [{ key: 'name', label: 'Name' }],
-        data: firstPage,
-        virtualizeThreshold: 1
-      }
-    })
-
+  it('移动端卡片保留单元格插槽和当前页多选', async () => {
+    viewport(false)
+    const wrapper = createTable({ selectable: true, selectedKeys: [99] }, { 'cell-name': '<span data-test="mobile-name">{{ params.row.name }}</span>' })
     await wrapper.vm.$nextTick()
-
-    const exposed = (wrapper.vm as any).virtualizer
-    const instance = exposed?.value ?? exposed
-    const measureElementSpy = vi.spyOn(instance, 'measureElement')
-
-    await wrapper.setProps({ data: secondPage })
-    await wrapper.vm.$nextTick()
-
-    expect(measureElementSpy.mock.calls.some(([node]) => node === null)).toBe(true)
-  })
-
-  it('conservatively clears caches when duplicate row-key multiplicity changes', async () => {
-    const firstPage = [
-      { id: 1, name: 'First A' },
-      { id: 1, name: 'First B' },
-      { id: 2, name: 'First C' }
-    ]
-    const secondPage = [
-      { id: 1, name: 'Second A' },
-      { id: 2, name: 'Second B' },
-      { id: 2, name: 'Second C' }
-    ]
-    const wrapper = mount(DataTable, {
-      props: {
-        columns: [{ key: 'name', label: 'Name' }],
-        data: firstPage,
-        rowKey: 'id',
-        virtualizeThreshold: 1
-      }
-    })
-
-    await wrapper.vm.$nextTick()
-
-    const exposed = (wrapper.vm as any).virtualizer
-    const instance = exposed?.value ?? exposed
-    const measureElementSpy = vi.spyOn(instance, 'measureElement')
-
-    await wrapper.setProps({ data: secondPage })
-    await wrapper.vm.$nextTick()
-
-    expect(measureElementSpy.mock.calls.some(([node]) => node === null)).toBe(true)
-  })
-
-  it('preserves cache when rows without stable keys only reorder the same objects', async () => {
-    const data = Array.from({ length: 12 }, (_, i) => ({ name: `Row ${i + 1}` }))
-    const wrapper = mount(DataTable, {
-      props: {
-        columns: [{ key: 'name', label: 'Name' }],
-        data,
-        virtualizeThreshold: 1
-      }
-    })
-
-    await wrapper.vm.$nextTick()
-
-    const exposed = (wrapper.vm as any).virtualizer
-    const instance = exposed?.value ?? exposed
-    const measureSpy = vi.spyOn(instance, 'measure')
-
-    await wrapper.setProps({ data: [...data].reverse() })
-    await wrapper.vm.$nextTick()
-
-    expect(measureSpy).not.toHaveBeenCalled()
-  })
-
-  it('preserves stable row height cache when the same row IDs are only reordered', async () => {
-    const data = Array.from({ length: 100 }, (_, i) => ({ id: i + 1, name: `Row ${i + 1}` }))
-    const wrapper = mount(DataTable, {
-      props: {
-        columns: [{ key: 'name', label: 'Name' }],
-        data,
-        rowKey: 'id',
-        virtualizeThreshold: 1
-      }
-    })
-
-    await wrapper.vm.$nextTick()
-
-    const exposed = (wrapper.vm as any).virtualizer
-    const instance = exposed?.value ?? exposed
-    ;(instance as any).itemSizeCache = new Map(data.map(row => [row.id, 156]))
-    const measureSpy = vi.spyOn(instance, 'measure')
-
-    await wrapper.setProps({ data: [...data].reverse() })
-    await wrapper.vm.$nextTick()
-
-    const sizeCache = (instance as any).itemSizeCache as Map<number, number>
-    expect(measureSpy).not.toHaveBeenCalled()
-    expect(sizeCache.size).toBe(100)
-  })
-
-  it('emits controlled current-page selection while preserving off-page keys', async () => {
-    const wrapper = mount(DataTable, {
-      props: {
-        columns: [{ key: 'name', label: 'Name' }],
-        data: [
-          { id: 1, name: 'One' },
-          { id: 2, name: 'Two' }
-        ],
-        rowKey: 'id',
-        selectable: true,
-        selectedKeys: [99]
-      }
-    })
-
-    await wrapper.get('[data-test="select-all"]').setValue(true)
-
-    const selectedAll = wrapper.emitted('update:selectedKeys')?.at(-1)?.[0]
-    expect(selectedAll).toEqual([99, 1, 2])
-
-    await wrapper.setProps({ selectedKeys: selectedAll as number[] })
-    const rowCheckboxes = wrapper.findAll<HTMLInputElement>('[data-test="select-row"]')
-    expect(rowCheckboxes.every((checkbox) => checkbox.element.checked)).toBe(true)
-
-    await rowCheckboxes[0].setValue(false)
-
-    expect(wrapper.emitted('update:selectedKeys')?.at(-1)?.[0]).toEqual([99, 2])
-    expect(wrapper.emitted('selectionChange')?.at(-1)?.[0]).toEqual([99, 2])
-  })
-
-  it('keeps the single usage field shrinkable in a 320px mobile card', () => {
-    stubMobileMatchMedia()
-    const viewport = document.createElement('div')
-    viewport.style.width = '320px'
-    document.body.appendChild(viewport)
-    const wrapper = mount(DataTable, {
-      attachTo: viewport,
-      props: {
-        columns: [{ key: 'usage', label: 'Usage' }],
-        data: [{ id: 1, usage: 'snapshot' }],
-        rowKey: 'id'
-      },
-      slots: {
-        'cell-usage': '<div data-test="usage-cell">snapshot</div>'
-      }
-    })
-
-    expect(viewport.style.width).toBe('320px')
-    expect(wrapper.findAll('[data-field="usage"]')).toHaveLength(1)
-    expect(wrapper.find('[data-field="ollama_cloud_usage"]').exists()).toBe(false)
-    const field = wrapper.get('[data-field="usage"]')
-    expect(field.classes()).toContain('min-w-0')
-    expect(field.get('div').classes()).toEqual(expect.arrayContaining(['min-w-0', 'max-w-full']))
-    expect(wrapper.findAll('[data-test="usage-cell"]')).toHaveLength(1)
-
-    wrapper.unmount()
-    viewport.remove()
-  })
-
-  it('offers current-page select all in the mobile card layout', async () => {
-    stubMobileMatchMedia()
-    const wrapper = mount(DataTable, {
-      props: {
-        columns: [{ key: 'name', label: 'Name' }],
-        data: [
-          { id: 1, name: 'One' },
-          { id: 2, name: 'Two' }
-        ],
-        rowKey: 'id',
-        selectable: true,
-        selectedKeys: [99]
-      }
-    })
-
-    await wrapper.get('[data-test="select-all-mobile"]').setValue(true)
-
-    expect(wrapper.emitted('update:selectedKeys')?.at(-1)?.[0]).toEqual([99, 1, 2])
+    expect(wrapper.find('.el-table').exists()).toBe(false)
+    expect(wrapper.findAll('[data-test="mobile-name"]')).toHaveLength(2)
+    await wrapper.get('[data-test="select-all-mobile"] input').setValue(true)
+    expect(wrapper.emitted('update:selectedKeys')?.[0]).toEqual([[99, 1, 2]])
   })
 })

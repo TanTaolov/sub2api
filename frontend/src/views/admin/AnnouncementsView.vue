@@ -5,7 +5,7 @@
         <div class="flex flex-wrap items-center gap-3">
           <!-- Left: Search + Filters -->
           <div class="flex-1 sm:max-w-64">
-            <input
+            <ElementInput
               v-model="searchQuery"
               type="text"
               :placeholder="t('admin.announcements.searchAnnouncements')"
@@ -22,18 +22,18 @@
 
           <!-- Right: Action buttons -->
           <div class="flex flex-1 flex-wrap items-center justify-end gap-2">
-            <button
+            <ElButton
               @click="loadAnnouncements"
               :disabled="loading"
-              class="btn btn-secondary"
+              class=""
               :title="t('common.refresh')"
             >
               <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
-            </button>
-            <button @click="openCreateDialog" class="btn btn-primary">
+            </ElButton>
+            <ElButton type="primary" @click="openCreateDialog" class="">
               <Icon name="plus" size="md" class="mr-1" />
               {{ t('admin.announcements.createAnnouncement') }}
-            </button>
+            </ElButton>
           </div>
         </div>
       </template>
@@ -114,34 +114,34 @@
 
           <template #cell-actions="{ row }">
             <div class="flex items-center space-x-1">
-              <button
+              <ElButton text
                 @click="openPreview(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
                 :title="t('admin.announcements.preview')"
               >
                 <Icon name="eye" size="sm" />
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 @click="openReadStatus(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
                 :title="t('admin.announcements.readStatus')"
               >
                 <Icon name="chartBar" size="sm" />
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 @click="openEditDialog(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-dark-600 dark:hover:text-gray-300"
                 :title="t('common.edit')"
               >
                 <Icon name="edit" size="sm" />
-              </button>
-              <button
+              </ElButton>
+              <ElButton text
                 @click="handleDelete(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                 :title="t('common.delete')"
               >
                 <Icon name="trash" size="sm" />
-              </button>
+              </ElButton>
             </div>
           </template>
 
@@ -175,15 +175,15 @@
       width="wide"
       @close="closeEdit"
     >
-      <form id="announcement-form" @submit.prevent="handleSave" class="space-y-4">
+      <ElForm id="announcement-form" @submit.prevent="handleSave" class="space-y-4">
         <div>
           <label class="input-label">{{ t('admin.announcements.form.title') }}</label>
-          <input v-model="form.title" type="text" class="input" required />
+          <ElementInput v-model="form.title" type="text" class="input" required />
         </div>
 
         <div>
           <label class="input-label">{{ t('admin.announcements.form.content') }}</label>
-          <textarea v-model="form.content" rows="6" class="input" required></textarea>
+          <ElementInput type="textarea" v-model="form.content" :rows="6" class="input" required></ElementInput>
         </div>
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -201,12 +201,12 @@
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <label class="input-label">{{ t('admin.announcements.form.startsAt') }}</label>
-            <input v-model="form.starts_at_str" type="datetime-local" max="9999-12-31T23:59" class="input" />
+            <ElementInput v-model="form.starts_at_str" type="datetime-local" max="9999-12-31T23:59" class="input" />
             <p class="input-hint">{{ t('admin.announcements.form.startsAtHint') }}</p>
           </div>
           <div>
             <label class="input-label">{{ t('admin.announcements.form.endsAt') }}</label>
-            <input v-model="form.ends_at_str" type="datetime-local" max="9999-12-31T23:59" class="input" />
+            <ElementInput v-model="form.ends_at_str" type="datetime-local" max="9999-12-31T23:59" class="input" />
             <p class="input-hint">{{ t('admin.announcements.form.endsAtHint') }}</p>
           </div>
         </div>
@@ -215,16 +215,16 @@
           v-model="form.targeting"
           :groups="subscriptionGroups"
         />
-      </form>
+      </ElForm>
 
       <template #footer>
         <div class="flex justify-end gap-3">
-          <button type="button" @click="closeEdit" class="btn btn-secondary">
+          <ElButton native-type="button" @click="closeEdit" class="">
             {{ t('common.cancel') }}
-          </button>
-          <button type="submit" form="announcement-form" :disabled="saving" class="btn btn-primary">
+          </ElButton>
+          <ElButton type="primary" native-type="submit" form="announcement-form" :disabled="saving" class="">
             {{ saving ? t('common.saving') : t('common.save') }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </BaseDialog>

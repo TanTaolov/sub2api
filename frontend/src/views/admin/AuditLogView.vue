@@ -3,7 +3,7 @@
     <TablePageLayout>
       <!-- Filters -->
       <template #filters>
-        <div class="card p-4 sm:p-6">
+        <ElCard shadow="never" class="element-surface-card p-4 sm:p-6">
           <div class="flex flex-wrap items-end justify-between gap-4">
             <!-- Left: filter fields -->
             <div class="flex flex-1 flex-wrap items-end gap-4">
@@ -15,7 +15,7 @@
                     size="md"
                     class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                   />
-                  <input
+                  <ElementInput
                     v-model.trim="filters.q"
                     type="text"
                     class="input pl-10"
@@ -27,17 +27,17 @@
 
               <div class="w-full sm:w-auto sm:min-w-[200px]">
                 <label class="input-label">{{ t('admin.audit.filters.actorEmail') }}</label>
-                <input v-model.trim="filters.actor_email" type="text" class="input" @keyup.enter="search" />
+                <ElementInput v-model.trim="filters.actor_email" type="text" class="input" @keyup.enter="search" />
               </div>
 
               <div class="w-full sm:w-auto sm:min-w-[180px]">
                 <label class="input-label">{{ t('admin.audit.filters.action') }}</label>
-                <input v-model.trim="filters.action" type="text" class="input" @keyup.enter="search" />
+                <ElementInput v-model.trim="filters.action" type="text" class="input" @keyup.enter="search" />
               </div>
 
               <div class="w-full sm:w-auto sm:min-w-[160px]">
                 <label class="input-label">{{ t('admin.audit.filters.clientIp') }}</label>
-                <input v-model.trim="filters.client_ip" type="text" class="input" @keyup.enter="search" />
+                <ElementInput v-model.trim="filters.client_ip" type="text" class="input" @keyup.enter="search" />
               </div>
 
               <div class="w-full sm:w-auto sm:min-w-[140px]">
@@ -67,19 +67,19 @@
 
             <!-- Right: actions -->
             <div class="flex w-full flex-wrap items-center justify-end gap-3 sm:w-auto">
-              <button type="button" class="btn btn-primary" :disabled="loading" @click="search">
+              <ElButton type="primary" native-type="button" class="" :disabled="loading" @click="search">
                 {{ t('common.search') }}
-              </button>
-              <button type="button" class="btn btn-secondary" :disabled="loading" @click="resetFilters">
+              </ElButton>
+              <ElButton native-type="button" class="" :disabled="loading" @click="resetFilters">
                 {{ t('common.reset') }}
-              </button>
-              <button type="button" class="btn btn-danger" @click="openClearDialog">
+              </ElButton>
+              <ElButton type="danger" native-type="button" class="" @click="openClearDialog">
                 <Icon name="trash" size="sm" class="mr-1.5" />
                 {{ t('admin.audit.clearAll') }}
-              </button>
+              </ElButton>
             </div>
           </div>
-        </div>
+        </ElCard>
       </template>
 
       <!-- Table -->
@@ -127,14 +127,14 @@
           </template>
 
           <template #cell-actions="{ row }">
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               class="inline-flex items-center gap-1 font-medium text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
               @click="openDetail(row.id)"
             >
               <Icon name="eye" size="sm" />
               {{ t('admin.audit.columns.detail') }}
-            </button>
+            </ElButton>
           </template>
 
           <template #empty>
@@ -279,25 +279,25 @@
       <div class="space-y-4 py-2">
         <div>
           <label class="input-label">{{ t('admin.ops.customTimeRange.startTime') }}</label>
-          <input v-model="customStartTimeInput" type="datetime-local" class="input" />
+          <ElementInput v-model="customStartTimeInput" type="datetime-local" class="input" />
         </div>
         <div>
           <label class="input-label">{{ t('admin.ops.customTimeRange.endTime') }}</label>
-          <input v-model="customEndTimeInput" type="datetime-local" class="input" />
+          <ElementInput v-model="customEndTimeInput" type="datetime-local" class="input" />
         </div>
       </div>
       <template #footer>
-        <button type="button" class="btn btn-secondary" @click="handleCustomTimeRangeCancel">
+        <ElButton native-type="button" class="" @click="handleCustomTimeRangeCancel">
           {{ t('common.cancel') }}
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary"
+        </ElButton>
+        <ElButton type="primary"
+          native-type="button"
+          class=""
           :disabled="!customStartTimeInput || !customEndTimeInput"
           @click="handleCustomTimeRangeConfirm"
         >
           {{ t('common.confirm') }}
-        </button>
+        </ElButton>
       </template>
     </BaseDialog>
 
@@ -323,7 +323,7 @@
     >
       <div class="py-2">
         <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('admin.audit.clearConfirm.totpHint') }}</p>
-        <input
+        <ElementInput
           v-model.trim="clearTotpCode"
           type="text"
           inputmode="numeric"
@@ -335,17 +335,17 @@
         />
       </div>
       <template #footer>
-        <button type="button" class="btn btn-secondary" :disabled="clearing" @click="cancelClearTotp">
+        <ElButton native-type="button" class="" :disabled="clearing" @click="cancelClearTotp">
           {{ t('common.cancel') }}
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger"
+        </ElButton>
+        <ElButton type="danger"
+          native-type="button"
+          class=""
           :disabled="clearing || clearTotpCode.length !== 6"
           @click="submitClear"
         >
           {{ clearing ? t('common.loading') : t('admin.audit.clearAll') }}
-        </button>
+        </ElButton>
       </template>
     </BaseDialog>
   </AppLayout>

@@ -1,6 +1,5 @@
 <template>
-  <div ref="containerRef" class="relative">
-    <div v-if="selectedUserIds.length > 0" class="mb-2 flex flex-wrap gap-2">
+  <ElementFloatingPanel  :visible="Boolean(showDropdown && searchQuery.trim())" fit-reference width="192" @close="showDropdown = false"><template #reference><div ref="containerRef" class="relative"><div v-if="selectedUserIds.length > 0" class="mb-2 flex flex-wrap gap-2">
       <span
         v-for="userId in selectedUserIds"
         :key="userId"
@@ -16,25 +15,23 @@
         >
           {{ t("admin.settings.openaiFastPolicy.userDeleted") }}
         </span>
-        <button
-          type="button"
+        <ElButton text
+          native-type="button"
           class="shrink-0 rounded text-gray-400 hover:text-red-600 dark:hover:text-red-400"
           :aria-label="t('admin.settings.openaiFastPolicy.removeUser')"
           :title="t('admin.settings.openaiFastPolicy.removeUser')"
           @click="removeUser(userId)"
         >
           <Icon name="x" size="xs" :stroke-width="2" />
-        </button>
+        </ElButton>
       </span>
-    </div>
-
-    <div class="relative">
+    </div><div class="relative">
       <Icon
         name="search"
         size="sm"
         class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
       />
-      <input
+      <ElementInput
         v-model="searchQuery"
         type="text"
         autocomplete="off"
@@ -43,26 +40,18 @@
         @input="debounceSearch"
         @focus="showDropdown = true"
       />
-    </div>
-
-    <div
-      v-if="showDropdown && searchQuery.trim()"
-      class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-dark-600 dark:bg-dark-700"
-    >
-      <div v-if="searchLoading" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+    </div></div></template><div  class="max-h-80 overflow-y-auto py-1"><div v-if="searchLoading" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
         {{ t("common.loading") }}
-      </div>
-      <div
+      </div><div
         v-else-if="availableResults.length === 0"
         class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400"
       >
         {{ t("admin.settings.openaiFastPolicy.userSearchEmpty") }}
-      </div>
-      <template v-else>
-        <button
+      </div><template v-else>
+        <ElButton text
           v-for="user in availableResults"
           :key="user.id"
-          type="button"
+          native-type="button"
           class="flex w-full items-center justify-between gap-3 px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-dark-600"
           @click="selectUser(user)"
         >
@@ -73,10 +62,8 @@
             </span>
           </span>
           <span class="shrink-0 text-xs text-gray-400">#{{ user.id }}</span>
-        </button>
-      </template>
-    </div>
-  </div>
+        </ElButton>
+      </template></div></ElementFloatingPanel>
 </template>
 
 <script setup lang="ts">

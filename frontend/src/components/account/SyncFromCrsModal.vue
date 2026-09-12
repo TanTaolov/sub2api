@@ -7,7 +7,7 @@
     @close="handleClose"
   >
     <!-- Step 1: Input credentials -->
-    <form
+    <ElForm
       v-if="currentStep === 'input'"
       id="sync-from-crs-form"
       class="space-y-4"
@@ -30,7 +30,7 @@
       <div class="grid grid-cols-1 gap-4">
         <div>
           <label for="crs-base-url" class="input-label">{{ t('admin.accounts.crsBaseUrl') }}</label>
-          <input
+          <ElementInput
             id="crs-base-url"
             v-model="form.base_url"
             type="text"
@@ -43,11 +43,11 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label for="crs-username" class="input-label">{{ t('admin.accounts.crsUsername') }}</label>
-            <input id="crs-username" v-model="form.username" type="text" class="input" required autocomplete="username" />
+            <ElementInput id="crs-username" v-model="form.username" type="text" class="input" required autocomplete="username" />
           </div>
           <div>
             <label for="crs-password" class="input-label">{{ t('admin.accounts.crsPassword') }}</label>
-            <input
+            <ElementInput
               id="crs-password"
               v-model="form.password"
               type="password"
@@ -58,16 +58,10 @@
           </div>
         </div>
 
-        <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-dark-300">
-          <input
-            v-model="form.sync_proxies"
-            type="checkbox"
-            class="rounded border-gray-300 dark:border-dark-600"
-          />
-          {{ t('admin.accounts.syncProxies') }}
-        </label>
+        <ElementCheckbox v-model="form.sync_proxies" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-dark-300&quot;,&quot;&quot;]">
+          {{ t('admin.accounts.syncProxies') }}</ElementCheckbox>
       </div>
-    </form>
+    </ElForm>
 
     <!-- Step 2: Preview & select -->
     <div v-else-if="currentStep === 'preview' && previewResult" class="space-y-4">
@@ -102,37 +96,24 @@
             <span class="ml-1 text-xs text-gray-400">({{ previewResult.new_accounts.length }})</span>
           </div>
           <div class="flex gap-2">
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               class="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400"
               @click="selectAll"
-            >{{ t('admin.accounts.crsSelectAll') }}</button>
-            <button
-              type="button"
+            >{{ t('admin.accounts.crsSelectAll') }}</ElButton>
+            <ElButton text
+              native-type="button"
               class="text-xs text-gray-500 hover:text-gray-600 dark:text-gray-400"
               @click="selectNone"
-            >{{ t('admin.accounts.crsSelectNone') }}</button>
+            >{{ t('admin.accounts.crsSelectNone') }}</ElButton>
           </div>
         </div>
         <div
           class="max-h-48 overflow-auto rounded-lg border border-gray-200 p-2 dark:border-dark-600"
         >
-          <label
-            v-for="acc in previewResult.new_accounts"
-            :key="acc.crs_account_id"
-            class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-dark-700/40"
-          >
-            <input
-              type="checkbox"
-              :checked="selectedIds.has(acc.crs_account_id)"
-              class="rounded border-gray-300 dark:border-dark-600"
-              @change="toggleSelect(acc.crs_account_id)"
-            />
-            <span
+          <ElementCheckbox v-for="acc in previewResult.new_accounts" :key="acc.crs_account_id" :checked="selectedIds.has(acc.crs_account_id)" @change="toggleSelect(acc.crs_account_id)" :class="[&quot;flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-dark-700/40&quot;,&quot;&quot;]"><span
               class="inline-block rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            >{{ acc.platform }} / {{ acc.type }}</span>
-            <span class="truncate text-sm text-gray-700 dark:text-dark-300">{{ acc.name }}</span>
-          </label>
+            >{{ acc.platform }} / {{ acc.type }}</span><span class="truncate text-sm text-gray-700 dark:text-dark-300">{{ acc.name }}</span></ElementCheckbox>
         </div>
         <div class="mt-1 text-xs text-gray-400">
           {{ t('admin.accounts.crsSelectedCount', { count: selectedIds.size }) }}
@@ -191,49 +172,49 @@
       <div class="flex justify-end gap-3">
         <!-- Step 1: Input -->
         <template v-if="currentStep === 'input'">
-          <button
-            class="btn btn-secondary"
-            type="button"
+          <ElButton
+            class=""
+            native-type="button"
             :disabled="previewing"
             @click="handleClose"
           >
             {{ t('common.cancel') }}
-          </button>
-          <button
-            class="btn btn-primary"
-            type="submit"
+          </ElButton>
+          <ElButton type="primary"
+            class=""
+            native-type="submit"
             form="sync-from-crs-form"
             :disabled="previewing"
           >
             {{ previewing ? t('admin.accounts.crsPreviewing') : t('admin.accounts.crsPreview') }}
-          </button>
+          </ElButton>
         </template>
 
         <!-- Step 2: Preview -->
         <template v-else-if="currentStep === 'preview'">
-          <button
-            class="btn btn-secondary"
-            type="button"
+          <ElButton
+            class=""
+            native-type="button"
             :disabled="syncing"
             @click="handleBack"
           >
             {{ t('admin.accounts.crsBack') }}
-          </button>
-          <button
-            class="btn btn-primary"
-            type="button"
+          </ElButton>
+          <ElButton type="primary"
+            class=""
+            native-type="button"
             :disabled="syncing || hasNewButNoneSelected"
             @click="handleSync"
           >
             {{ syncing ? t('admin.accounts.syncing') : t('admin.accounts.syncNow') }}
-          </button>
+          </ElButton>
         </template>
 
         <!-- Step 3: Result -->
         <template v-else-if="currentStep === 'result'">
-          <button class="btn btn-secondary" type="button" @click="handleClose">
+          <ElButton class="" native-type="button" @click="handleClose">
             {{ t('common.close') }}
-          </button>
+          </ElButton>
         </template>
       </div>
     </template>

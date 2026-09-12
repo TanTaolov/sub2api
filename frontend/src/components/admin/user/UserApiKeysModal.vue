@@ -20,7 +20,7 @@
           <div class="mt-3 flex flex-wrap gap-4 text-xs text-gray-500">
             <div class="flex items-center gap-1">
               <span>{{ t('admin.users.group') }}:</span>
-              <button
+              <ElButton text
                 :ref="(el) => setGroupButtonRef(key.id, el)"
                 @click="openGroupSelector(key)"
                 class="-mx-1 -my-0.5 flex cursor-pointer items-center gap-1 rounded-md px-1 py-0.5 transition-colors hover:bg-gray-100 dark:hover:bg-dark-700"
@@ -40,7 +40,7 @@
                 <span v-else class="text-gray-400 italic">{{ t('admin.users.none') }}</span>
                 <svg v-if="updatingKeyIds.has(key.id)" class="h-3 w-3 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 <svg v-else class="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" /></svg>
-              </button>
+              </ElButton>
             </div>
             <div class="flex items-center gap-1"><span>{{ t('admin.users.columns.created') }}: {{ formatDateTime(key.created_at) }}</span></div>
           </div>
@@ -50,16 +50,9 @@
   </BaseDialog>
 
   <!-- Group Selector Dropdown -->
-  <Teleport to="body">
-    <div
-      v-if="groupSelectorKeyId !== null && dropdownPosition"
-      ref="dropdownRef"
-      class="animate-in fade-in slide-in-from-top-2 fixed z-[100000020] w-64 overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black/5 duration-200 dark:bg-dark-800 dark:ring-white/10"
-      :style="{ top: dropdownPosition.top + 'px', left: dropdownPosition.left + 'px' }"
-    >
-      <div class="max-h-64 overflow-y-auto p-1.5">
+  <ElementFloatingPanel :visible="Boolean(groupSelectorKeyId !== null && dropdownPosition)" :anchor="groupButtonRefs.get(groupSelectorKeyId!)" width="256" :interactive="true" @close="closeGroupSelector()"><div ref="dropdownRef"><div class="max-h-64 overflow-y-auto p-1.5">
         <!-- Unbind option -->
-        <button
+        <ElButton text
           @click="changeGroup(selectedKeyForGroup!, null)"
           :class="[
             'flex w-full items-center rounded-lg px-3 py-2 text-sm transition-colors',
@@ -74,9 +67,9 @@
             class="ml-auto h-4 w-4 shrink-0 text-primary-600 dark:text-primary-400"
             fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"
           ><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-        </button>
+        </ElButton>
         <!-- Group options -->
-        <button
+        <ElButton text
           v-for="group in allGroups"
           :key="group.id"
           @click="changeGroup(selectedKeyForGroup!, group.id)"
@@ -99,13 +92,12 @@
             :description="group.description"
             :selected="selectedKeyForGroup?.group_id === group.id"
           />
-        </button>
-      </div>
-    </div>
-  </Teleport>
+        </ElButton>
+      </div></div></ElementFloatingPanel>
 </template>
 
 <script setup lang="ts">
+import { resolveControlElement } from '@/utils/elementRef'
 import { ref, computed, watch, onMounted, onUnmounted, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
@@ -137,8 +129,9 @@ const selectedKeyForGroup = computed(() => {
 })
 
 const setGroupButtonRef = (keyId: number, el: Element | ComponentPublicInstance | null) => {
-  if (el instanceof HTMLElement) {
-    groupButtonRefs.value.set(keyId, el)
+  const element = resolveControlElement(el)
+  if (element) {
+    groupButtonRefs.value.set(keyId, element)
   } else {
     groupButtonRefs.value.delete(keyId)
   }

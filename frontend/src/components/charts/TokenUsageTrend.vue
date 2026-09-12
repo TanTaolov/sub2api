@@ -1,5 +1,5 @@
 <template>
-  <div class="card p-4">
+  <ElCard shadow="never" class="element-surface-card p-4">
     <h3 class="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
       {{ t('admin.dashboard.tokenUsageTrend') }}
     </h3>
@@ -15,7 +15,7 @@
     >
       {{ t('admin.dashboard.noDataAvailable') }}
     </div>
-  </div>
+  </ElCard>
 </template>
 
 <script setup lang="ts">

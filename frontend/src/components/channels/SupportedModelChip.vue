@@ -31,17 +31,7 @@
     <!-- Teleport to body so the popover is not clipped by card/overflow-hidden
          ancestors. Fixed-position coords are computed from the trigger's
          bounding rect; re-measured on enter / scroll / resize. -->
-    <Teleport to="body">
-      <div
-        v-show="show"
-        ref="popoverEl"
-        role="tooltip"
-        class="pointer-events-none fixed z-[99999] w-80 max-w-[min(22rem,calc(100vw-1rem))] rounded-lg border bg-white text-xs shadow-xl dark:bg-dark-800"
-        :class="[popoverBorderClass]"
-        :style="popoverStyle"
-      >
-        <!-- Header：平台主题色背景，含模型名 + 平台徽章 -->
-        <div
+    <ElementFloatingPanel :visible="Boolean(show)" :anchor="triggerEl" width="320" :interactive="false" @close="onLeave()"><div  :class="[popoverBorderClass]"><!-- Header：平台主题色背景，含模型名 + 平台徽章 --><div
           class="flex items-center justify-between gap-2 rounded-t-lg border-b px-3 py-2"
           :class="[popoverHeaderClass, popoverBorderClass]"
         >
@@ -52,9 +42,7 @@
           >
             {{ model.platform }}
           </span>
-        </div>
-
-        <div class="p-3">
+        </div><div class="p-3">
           <div v-if="!model.pricing" class="text-gray-500 dark:text-gray-400">
             {{ noPricingLabel }}
           </div>
@@ -158,14 +146,12 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </Teleport>
+        </div></div></ElementFloatingPanel>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PricingRow from './PricingRow.vue'
 import { formatScaled, resolveIntervalPrices } from '@/utils/pricing'
@@ -255,61 +241,8 @@ function formatInterval(iv: UserPricingInterval, pricing: UserSupportedModelPric
   return `${input} / ${output}`
 }
 
-// ── Popover positioning ─────────────────────────────────────────────
-// Teleport-to-body + fixed positioning avoids being clipped by
-// overflow-hidden ancestors (the parent table card). We re-measure on
-// hover enter, scroll, and resize. Pinning to the trigger's top-center
-// with a flip when the viewport edge is near keeps it aligned without a
-// full-blown positioning lib.
 const show = ref(false)
 const triggerEl = ref<HTMLElement | null>(null)
-const popoverEl = ref<HTMLElement | null>(null)
-const popoverStyle = ref<Record<string, string>>({ top: '0px', left: '0px' })
-
-function updatePosition() {
-  const trigger = triggerEl.value
-  if (!trigger) return
-  const rect = trigger.getBoundingClientRect()
-  const margin = 8
-  const popover = popoverEl.value
-  const popWidth = popover?.offsetWidth ?? 320
-  const popHeight = popover?.offsetHeight ?? 240
-  const vw = window.innerWidth
-  const vh = window.innerHeight
-
-  let top = rect.bottom + margin
-  // Flip upward if it would overflow below.
-  if (top + popHeight > vh - margin) {
-    top = Math.max(margin, rect.top - popHeight - margin)
-  }
-
-  let left = rect.left + rect.width / 2 - popWidth / 2
-  if (left < margin) left = margin
-  if (left + popWidth > vw - margin) left = vw - margin - popWidth
-
-  popoverStyle.value = {
-    top: `${Math.round(top)}px`,
-    left: `${Math.round(left)}px`,
-  }
-}
-
-function onEnter() {
-  show.value = true
-  nextTick(() => {
-    updatePosition()
-    window.addEventListener('scroll', updatePosition, true)
-    window.addEventListener('resize', updatePosition)
-  })
-}
-
-function onLeave() {
-  show.value = false
-  window.removeEventListener('scroll', updatePosition, true)
-  window.removeEventListener('resize', updatePosition)
-}
-
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', updatePosition, true)
-  window.removeEventListener('resize', updatePosition)
-})
+function onEnter() { show.value = true }
+function onLeave() { show.value = false }
 </script>

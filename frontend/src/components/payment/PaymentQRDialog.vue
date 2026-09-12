@@ -16,9 +16,9 @@
         <div class="flex flex-col items-center py-4">
           <div class="h-10 w-10 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
           <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">{{ t('payment.qr.payInNewWindowHint') }}</p>
-          <button v-if="payUrl" class="btn btn-secondary mt-3 text-sm" @click="reopenPopup">
+          <ElButton v-if="payUrl" class="mt-3 text-sm" @click="reopenPopup">
             {{ t('payment.qr.openPayWindow') }}
-          </button>
+          </ElButton>
         </div>
       </template>
       <!-- Countdown -->
@@ -56,15 +56,15 @@
     </div>
     <template #footer>
       <div class="flex justify-end gap-3">
-        <button v-if="!success && !expired" class="btn btn-secondary" :disabled="cancelling" @click="handleCancel">
+        <ElButton v-if="!success && !expired" class="" :disabled="cancelling" @click="handleCancel">
           {{ cancelling ? t('common.processing') : t('payment.qr.cancelOrder') }}
-        </button>
-        <button v-if="success" class="btn btn-primary" @click="handleDone">
+        </ElButton>
+        <ElButton type="primary" v-if="success" class="" @click="handleDone">
           {{ t('common.confirm') }}
-        </button>
-        <button v-if="expired" class="btn btn-primary" @click="handleClose">
+        </ElButton>
+        <ElButton type="primary" v-if="expired" class="" @click="handleClose">
           {{ t('payment.result.backToRecharge') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

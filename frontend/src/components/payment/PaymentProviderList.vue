@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <ElCard shadow="never" class="element-surface-card">
     <!-- Header -->
     <div class="border-b border-gray-100 px-4 py-3 dark:border-dark-700">
       <div class="flex items-center justify-between">
@@ -12,17 +12,17 @@
           </p>
         </div>
         <div class="flex items-center gap-2">
-          <button
-            type="button"
+          <ElButton size="small"
+            native-type="button"
             @click="emit('refresh')"
             :disabled="loading"
-            class="btn btn-secondary btn-sm"
+            class=""
             :title="t('common.refresh')"
           >
             <Icon name="refresh" size="sm" :class="loading ? 'animate-spin' : ''" />
-          </button>
-          <button
-            type="button"
+          </ElButton>
+          <ElButton text
+            native-type="button"
             @click="emit('create')"
             :disabled="!canCreate"
             :class="canCreate
@@ -30,7 +30,7 @@
               : 'btn btn-secondary btn-sm cursor-not-allowed opacity-50'"
           >
             {{ t('admin.settings.payment.createProvider') }}
-          </button>
+          </ElButton>
         </div>
       </div>
     </div>
@@ -78,17 +78,17 @@
             ? t('admin.settings.payment.noProviders')
             : t('admin.settings.payment.enableTypesFirst') }}
         </p>
-        <button
-          type="button"
+        <ElButton type="primary" size="small"
+          native-type="button"
           v-if="canCreate"
           @click="emit('create')"
-          class="btn btn-primary btn-sm mt-2"
+          class="mt-2"
         >
           {{ t('admin.settings.payment.createProvider') }}
-        </button>
+        </ElButton>
       </div>
     </div>
-  </div>
+  </ElCard>
 </template>
 
 <script setup lang="ts">

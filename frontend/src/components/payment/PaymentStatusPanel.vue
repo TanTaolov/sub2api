@@ -4,7 +4,7 @@
 
     <!-- Success -->
     <template v-if="outcome === 'success'">
-      <div class="card p-6">
+      <ElCard shadow="never" class="element-surface-card p-6">
         <div class="flex flex-col items-center space-y-4 py-4">
           <div class="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
             <Icon name="check" size="lg" class="text-green-500" />
@@ -30,14 +30,14 @@
               </div>
             </div>
           </div>
-          <button class="btn btn-primary" @click="handleDone">{{ t('common.confirm') }}</button>
+          <ElButton type="primary" class="" @click="handleDone">{{ t('common.confirm') }}</ElButton>
         </div>
-      </div>
+      </ElCard>
     </template>
 
     <!-- Cancelled -->
     <template v-else-if="outcome === 'cancelled'">
-      <div class="card p-6">
+      <ElCard shadow="never" class="element-surface-card p-6">
         <div class="flex flex-col items-center space-y-4 py-4">
           <div class="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-dark-700">
             <svg class="h-8 w-8 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -46,14 +46,14 @@
           </div>
           <p class="text-lg font-bold text-gray-900 dark:text-white">{{ t('payment.qr.cancelled') }}</p>
           <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('payment.qr.cancelledDesc') }}</p>
-          <button class="btn btn-primary" @click="handleDone">{{ t('common.confirm') }}</button>
+          <ElButton type="primary" class="" @click="handleDone">{{ t('common.confirm') }}</ElButton>
         </div>
-      </div>
+      </ElCard>
     </template>
 
     <!-- Expired / Failed -->
     <template v-else-if="outcome === 'expired'">
-      <div class="card p-6">
+      <ElCard shadow="never" class="element-surface-card p-6">
         <div class="flex flex-col items-center space-y-4 py-4">
           <div class="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
             <svg class="h-8 w-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -62,9 +62,9 @@
           </div>
           <p class="text-lg font-bold text-gray-900 dark:text-white">{{ t('payment.qr.expired') }}</p>
           <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('payment.qr.expiredDesc') }}</p>
-          <button class="btn btn-primary" @click="handleDone">{{ t('common.confirm') }}</button>
+          <ElButton type="primary" class="" @click="handleDone">{{ t('common.confirm') }}</ElButton>
         </div>
-      </div>
+      </ElCard>
     </template>
 
     <!-- ═══ Active States: QR or Popup waiting ═══ -->
@@ -72,7 +72,7 @@
     <!-- Mobile Alipay app handoff. The QR fallback stays hidden until launch timeout. -->
     <template v-else-if="isMobileAlipayDeepLink">
       <template v-if="!deepLinkFallbackVisible">
-        <div class="card p-6">
+        <ElCard shadow="never" class="element-surface-card p-6">
           <div class="flex flex-col items-center space-y-4 py-4 text-center">
             <div
               v-if="deepLinkState === 'launching'"
@@ -88,25 +88,25 @@
               {{ deepLinkState === 'backgrounded' ? t('payment.qr.alipayContinueInApp') : t('payment.qr.alipayOpening') }}
             </p>
             <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('payment.qr.alipayWaitingHint') }}</p>
-            <button
+            <ElButton
               v-if="deepLinkState === 'backgrounded'"
               data-test="reopen-alipay"
-              class="btn btn-alipay inline-flex items-center gap-2 text-sm"
+              class="btn-alipay inline-flex items-center gap-2 text-sm"
               @click="reopenAlipay"
             >
               <Icon name="externalLink" size="sm" />
               {{ t('payment.qr.reopenAlipay') }}
-            </button>
+            </ElButton>
           </div>
-        </div>
-        <div class="card p-4 text-center">
+        </ElCard>
+        <ElCard shadow="never" class="element-surface-card p-4 text-center">
           <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('payment.qr.expiresIn') }}</p>
           <p class="mt-1 text-2xl font-bold tabular-nums text-gray-900 dark:text-white">{{ countdownDisplay }}</p>
           <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ t('payment.qr.waitingPayment') }}</p>
-        </div>
+        </ElCard>
       </template>
       <template v-else>
-        <div data-test="alipay-qr-fallback" class="card p-6">
+        <ElCard shadow="never" data-test="alipay-qr-fallback" class="element-surface-card p-6">
           <div class="flex flex-col items-center space-y-4">
             <div class="text-center">
               <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('payment.qr.alipayFallbackTitle') }}</p>
@@ -140,34 +140,34 @@
               {{ t('payment.qr.alipaySaveAndScanHint') }}
             </p>
             <div class="grid w-full gap-2 sm:grid-cols-2">
-              <button
+              <ElButton
                 data-test="reopen-alipay"
-                class="btn btn-alipay inline-flex items-center justify-center gap-2"
+                class="btn-alipay inline-flex items-center justify-center gap-2"
                 @click="reopenAlipay"
               >
                 <Icon name="externalLink" size="sm" />
                 {{ t('payment.qr.reopenAlipay') }}
-              </button>
-              <button
+              </ElButton>
+              <ElButton
                 data-test="save-alipay-qr"
-                class="btn btn-secondary inline-flex items-center justify-center gap-2"
+                class="inline-flex items-center justify-center gap-2"
                 @click="saveQRCode"
               >
                 <Icon name="download" size="sm" />
                 {{ t('payment.qr.saveQRCode') }}
-              </button>
+              </ElButton>
             </div>
-            <button class="btn btn-secondary w-full" @click="handleDone">
+            <ElButton class="w-full" @click="handleDone">
               {{ t('payment.result.backToRecharge') }}
-            </button>
+            </ElButton>
           </div>
-        </div>
+        </ElCard>
       </template>
     </template>
 
     <!-- QR Code Mode -->
     <template v-else-if="showQRCode">
-      <div class="card p-6">
+      <ElCard shadow="never" class="element-surface-card p-6">
         <div class="flex flex-col items-center space-y-4">
           <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ scanTitle }}</p>
           <div :class="['relative rounded-lg border-2 p-4', qrBorderClass]">
@@ -180,39 +180,39 @@
             </div>
           </div>
           <p v-if="scanHint" class="text-center text-sm text-gray-500 dark:text-gray-400">{{ scanHint }}</p>
-          <button v-if="payUrl" class="btn btn-secondary text-sm" @click="reopenPopup">
+          <ElButton v-if="payUrl" class="text-sm" @click="reopenPopup">
             {{ t('payment.qr.openPayWindow') }}
-          </button>
+          </ElButton>
         </div>
-      </div>
-      <div class="card p-4 text-center">
+      </ElCard>
+      <ElCard shadow="never" class="element-surface-card p-4 text-center">
         <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('payment.qr.expiresIn') }}</p>
         <p class="mt-1 text-2xl font-bold tabular-nums text-gray-900 dark:text-white">{{ countdownDisplay }}</p>
         <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ t('payment.qr.waitingPayment') }}</p>
-      </div>
-      <button class="btn btn-secondary w-full" :disabled="cancelling" @click="handleCancel">
+      </ElCard>
+      <ElButton class="w-full" :disabled="cancelling" @click="handleCancel">
         {{ cancelling ? t('common.processing') : t('payment.qr.cancelOrder') }}
-      </button>
+      </ElButton>
     </template>
 
     <!-- Waiting for Popup/Redirect Mode -->
     <template v-else>
-      <div class="card p-6">
+      <ElCard shadow="never" class="element-surface-card p-6">
         <div class="flex flex-col items-center space-y-4 py-4">
           <div class="h-10 w-10 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
           <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('payment.qr.payInNewWindowHint') }}</p>
-          <button v-if="payUrl" class="btn btn-secondary text-sm" @click="reopenPopup">
+          <ElButton v-if="payUrl" class="text-sm" @click="reopenPopup">
             {{ t('payment.qr.openPayWindow') }}
-          </button>
+          </ElButton>
         </div>
-      </div>
-      <div class="card p-4 text-center">
+      </ElCard>
+      <ElCard shadow="never" class="element-surface-card p-4 text-center">
         <p class="mt-1 text-2xl font-bold tabular-nums text-gray-900 dark:text-white">{{ countdownDisplay }}</p>
         <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ t('payment.qr.waitingPayment') }}</p>
-      </div>
-      <button class="btn btn-secondary w-full" :disabled="cancelling" @click="handleCancel">
+      </ElCard>
+      <ElButton class="w-full" :disabled="cancelling" @click="handleCancel">
         {{ cancelling ? t('common.processing') : t('payment.qr.cancelOrder') }}
-      </button>
+      </ElButton>
     </template>
   </div>
 </template>

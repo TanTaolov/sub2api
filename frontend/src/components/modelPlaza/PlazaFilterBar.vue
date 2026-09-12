@@ -6,10 +6,10 @@
         {{ t('modelPlaza.filters.platformLabel') }}
       </span>
       <div class="flex flex-wrap items-center gap-2">
-        <button
+        <ElButton text
           v-for="p in ['all', ...platforms]"
           :key="`platform-${p}`"
-          type="button"
+          native-type="button"
           class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40 disabled:grayscale"
           :class="p === 'all' ? chipClass(platform === 'all') : platform === p ? 'chip-tinted-active' : 'chip-tinted'"
           :style="p === 'all' ? undefined : { '--chip-accent': platformAccentColor(p) }"
@@ -18,7 +18,7 @@
         >
           <PlatformIcon v-if="p !== 'all'" :platform="p as GroupPlatform" size="xs" />
           {{ p === 'all' ? t('modelPlaza.filters.all') : p }}
-        </button>
+        </ElButton>
       </div>
     </div>
 
@@ -28,18 +28,18 @@
         {{ t('modelPlaza.filters.groupLabel') }}
       </span>
       <div class="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
+        <ElButton text
+          native-type="button"
           class="rounded-lg px-3 py-1.5 text-sm font-medium transition"
           :class="chipClass(groupId === 'all')"
           @click="$emit('update:groupId', 'all')"
         >
           {{ t('modelPlaza.filters.all') }}
-        </button>
-        <button
+        </ElButton>
+        <ElButton text
           v-for="g in groups"
           :key="`group-${g.id}`"
-          type="button"
+          native-type="button"
           class="rounded-lg px-3 py-1.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40 disabled:grayscale"
           :class="groupId === g.id ? 'chip-tinted-active' : 'chip-tinted'"
           :style="{ '--chip-accent': platformAccentColor(g.platform) }"
@@ -47,7 +47,7 @@
           @click="$emit('update:groupId', g.id)"
         >
           {{ g.name }}
-        </button>
+        </ElButton>
       </div>
     </div>
 
@@ -57,25 +57,25 @@
         {{ t('modelPlaza.filters.rateLabel') }}
       </span>
       <div class="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
+        <ElButton text
+          native-type="button"
           class="rounded-lg px-3 py-1.5 text-sm font-medium transition"
           :class="chipClass(rate === 'all')"
           @click="$emit('update:rate', 'all')"
         >
           {{ t('modelPlaza.filters.all') }}
-        </button>
-        <button
+        </ElButton>
+        <ElButton text
           v-for="r in rates"
           :key="`rate-${r}`"
-          type="button"
+          native-type="button"
           class="rounded-lg px-3 py-1.5 font-mono text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40 disabled:grayscale"
           :class="chipClass(rate === r)"
           :disabled="!rateEnabled(r)"
           @click="$emit('update:rate', r)"
         >
           {{ r }}x
-        </button>
+        </ElButton>
       </div>
     </div>
 
@@ -90,21 +90,21 @@
           size="sm"
           class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-dark-500"
         />
-        <input
+        <ElementInput
           :value="search"
           type="text"
           :placeholder="t('modelPlaza.filters.searchPlaceholder')"
           class="input rounded-lg py-1.5 pl-9 pr-9"
           @input="$emit('update:search', ($event.target as HTMLInputElement).value)"
         />
-        <button
+        <ElButton text
           v-if="search"
-          type="button"
+          native-type="button"
           class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600 dark:text-dark-500 dark:hover:text-gray-300"
           @click="$emit('update:search', '')"
         >
           <Icon name="x" size="xs" class="h-3.5 w-3.5" />
-        </button>
+        </ElButton>
       </div>
     </div>
   </div>

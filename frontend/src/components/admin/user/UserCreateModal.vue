@@ -5,46 +5,46 @@
     width="normal"
     @close="$emit('close')"
   >
-    <form id="create-user-form" @submit.prevent="submit" class="space-y-5">
+    <ElForm id="create-user-form" @submit.prevent="submit" class="space-y-5">
       <div>
         <label class="input-label">{{ t('admin.users.email') }}</label>
-        <input v-model="form.email" type="email" required class="input" :placeholder="t('admin.users.enterEmail')" />
+        <ElementInput v-model="form.email" type="email" required class="input" :placeholder="t('admin.users.enterEmail')" />
       </div>
       <div>
         <label class="input-label">{{ t('admin.users.password') }}</label>
         <div class="flex gap-2">
           <div class="relative flex-1">
-            <input v-model="form.password" type="text" required class="input pr-10" :placeholder="t('admin.users.enterPassword')" />
+            <ElementInput v-model="form.password" type="text" required class="input pr-10" :placeholder="t('admin.users.enterPassword')" />
           </div>
-          <button type="button" @click="generateRandomPassword" class="btn btn-secondary px-3">
+          <ElButton native-type="button" @click="generateRandomPassword" class="px-3">
             <Icon name="refresh" size="md" />
-          </button>
+          </ElButton>
         </div>
       </div>
       <div>
         <label class="input-label">{{ t('admin.users.username') }}</label>
-        <input v-model="form.username" type="text" class="input" :placeholder="t('admin.users.enterUsername')" />
+        <ElementInput v-model="form.username" type="text" class="input" :placeholder="t('admin.users.enterUsername')" />
       </div>
       <div>
         <label class="input-label">{{ t('admin.users.form.roleLabel') }}</label>
-        <select v-model="form.role" class="input">
-          <option value="user">{{ t('admin.users.roles.user') }}</option>
-          <option value="admin">{{ t('admin.users.roles.admin') }}</option>
-        </select>
+        <ElementSelect v-model="form.role" class="input">
+          <ElOption :label="(t('admin.users.roles.user'))" value="user">{{ t('admin.users.roles.user') }}</ElOption>
+          <ElOption :label="(t('admin.users.roles.admin'))" value="admin">{{ t('admin.users.roles.admin') }}</ElOption>
+        </ElementSelect>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="input-label">{{ t('admin.users.columns.balance') }}</label>
-          <input v-model="form.balance" type="number" step="any" class="input" />
+          <ElementInput v-model="form.balance" type="number" step="any" class="input" />
         </div>
         <div>
           <label class="input-label">{{ t('admin.users.columns.concurrency') }}</label>
-          <input v-model.number="form.concurrency" type="number" class="input" />
+          <ElementInput v-model.number="form.concurrency" type="number" class="input" />
         </div>
       </div>
       <div>
         <label class="input-label">{{ t('admin.users.form.rpmLimit') }}</label>
-        <input
+        <ElementInput
           v-model.number="form.rpm_limit"
           type="number"
           min="0"
@@ -54,13 +54,13 @@
         />
         <p class="input-hint">{{ t('admin.users.form.rpmLimitHint') }}</p>
       </div>
-    </form>
+    </ElForm>
     <template #footer>
       <div class="flex justify-end gap-3">
-        <button @click="$emit('close')" type="button" class="btn btn-secondary">{{ t('common.cancel') }}</button>
-        <button type="submit" form="create-user-form" :disabled="loading" class="btn btn-primary">
+        <ElButton @click="$emit('close')" native-type="button" class="">{{ t('common.cancel') }}</ElButton>
+        <ElButton type="primary" native-type="submit" form="create-user-form" :disabled="loading" class="">
           {{ loading ? t('admin.users.creating') : t('common.create') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

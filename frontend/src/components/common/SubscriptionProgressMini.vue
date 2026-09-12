@@ -1,7 +1,7 @@
 <template>
   <div v-if="subscriptionFeatureEnabled && hasActiveSubscriptions" class="relative" ref="containerRef">
     <!-- Mini Progress Display -->
-    <button
+    <ElButton text
       @click="toggleTooltip"
       class="flex cursor-pointer items-center gap-2 rounded-xl bg-purple-50 px-3 py-1.5 transition-colors hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30"
       :title="t('subscriptionProgress.viewDetails')"
@@ -21,24 +21,17 @@
           {{ activeSubscriptions.length }}
         </span>
       </div>
-    </button>
+    </ElButton>
 
     <!-- Hover/Click Tooltip -->
-    <transition name="dropdown">
-      <div
-        v-if="tooltipOpen"
-        class="absolute right-0 z-50 mt-2 w-[340px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl dark:border-dark-700 dark:bg-dark-800"
-      >
-        <div class="border-b border-gray-100 p-3 dark:border-dark-700">
+    <ElementFloatingPanel :visible="tooltipOpen" :anchor="containerRef" width="340" placement="bottom-end" @close="tooltipOpen = false"><div ><div class="border-b border-gray-100 p-3 dark:border-dark-700">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
             {{ t('subscriptionProgress.title') }}
           </h3>
           <p class="mt-0.5 text-xs text-gray-500 dark:text-dark-400">
             {{ t('subscriptionProgress.activeCount', { count: activeSubscriptions.length }) }}
           </p>
-        </div>
-
-        <div class="max-h-64 overflow-y-auto">
+        </div><div class="max-h-64 overflow-y-auto">
           <div
             v-for="subscription in displaySubscriptions"
             :key="subscription.id"
@@ -161,9 +154,7 @@
               </template>
             </div>
           </div>
-        </div>
-
-        <div class="border-t border-gray-100 p-2 dark:border-dark-700">
+        </div><div class="border-t border-gray-100 p-2 dark:border-dark-700">
           <router-link
             to="/subscriptions"
             @click="closeTooltip"
@@ -171,9 +162,7 @@
           >
             {{ t('subscriptionProgress.viewAll') }}
           </router-link>
-        </div>
-      </div>
-    </transition>
+        </div></div></ElementFloatingPanel>
   </div>
 </template>
 

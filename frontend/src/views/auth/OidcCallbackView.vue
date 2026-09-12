@@ -40,40 +40,27 @@
                 </p>
               </div>
 
-              <label
-                v-if="suggestedDisplayName"
-                class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3 text-sm dark:border-dark-600 dark:bg-dark-900/50"
-              >
-                <input v-model="adoptDisplayName" type="checkbox" class="mt-1 h-4 w-4" />
-                <span class="space-y-1">
+              <ElementCheckbox v-if="suggestedDisplayName" v-model="adoptDisplayName" :class="[&quot;flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3 text-sm dark:border-dark-600 dark:bg-dark-900/50&quot;,&quot;mt-1&quot;]"><span class="space-y-1">
                   <span class="block font-medium text-gray-900 dark:text-white">
                     {{ t('auth.oauthFlow.useDisplayName') }}
                   </span>
                   <span class="block text-gray-500 dark:text-dark-400">
                     {{ suggestedDisplayName }}
                   </span>
-                </span>
-              </label>
+                </span></ElementCheckbox>
 
-              <label
-                v-if="suggestedAvatarUrl"
-                class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3 text-sm dark:border-dark-600 dark:bg-dark-900/50"
-              >
-                <input v-model="adoptAvatar" type="checkbox" class="mt-1 h-4 w-4" />
-                <img
+              <ElementCheckbox v-if="suggestedAvatarUrl" v-model="adoptAvatar" :class="[&quot;flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3 text-sm dark:border-dark-600 dark:bg-dark-900/50&quot;,&quot;mt-1&quot;]"><img
                   :src="suggestedAvatarUrl"
                   :alt="t('auth.oauthFlow.avatarAlt', { providerName })"
                   class="h-10 w-10 rounded-full border border-gray-200 object-cover dark:border-dark-600"
-                />
-                <span class="space-y-1">
+                /><span class="space-y-1">
                   <span class="block font-medium text-gray-900 dark:text-white">
                     {{ t('auth.oauthFlow.useAvatar') }}
                   </span>
                   <span class="block break-all text-gray-500 dark:text-dark-400">
                     {{ suggestedAvatarUrl }}
                   </span>
-                </span>
-              </label>
+                </span></ElementCheckbox>
             </div>
           </div>
 
@@ -82,7 +69,7 @@
               {{ t('auth.oidc.invitationRequired', { providerName }) }}
             </p>
             <div>
-              <input
+              <ElementInput
                 v-model="invitationCode"
                 type="text"
                 class="input w-full"
@@ -91,8 +78,8 @@
                 @keyup.enter="handleSubmitInvitation"
               />
             </div>
-            <button
-              class="btn btn-primary w-full"
+            <ElButton type="primary"
+              class="w-full"
               :disabled="isSubmitting || !invitationCode.trim()"
               @click="handleSubmitInvitation"
             >
@@ -101,16 +88,16 @@
                   ? t('auth.oidc.completing')
                   : t('auth.oidc.completeRegistration')
               }}
-            </button>
+            </ElButton>
           </template>
 
           <template v-else-if="needsAdoptionConfirmation">
             <p class="text-sm text-gray-700 dark:text-gray-300">
               {{ t('auth.oauthFlow.reviewProfileBeforeContinue', { providerName }) }}
             </p>
-            <button class="btn btn-primary w-full" :disabled="isSubmitting" @click="handleContinueLogin">
+            <ElButton type="primary" class="w-full" :disabled="isSubmitting" @click="handleContinueLogin">
               {{ isSubmitting ? t('common.processing') : t('auth.continue') }}
-            </button>
+            </ElButton>
           </template>
 
           <template v-else-if="needsChooser">
@@ -130,20 +117,20 @@
                 </div>
 
                 <div class="grid gap-3 sm:grid-cols-2">
-                  <button
-                    class="btn btn-secondary w-full"
+                  <ElButton
+                    class="w-full"
                     :disabled="isSubmitting"
                     @click="switchToBindLoginMode()"
                   >
                     {{ t('auth.oauthFlow.bindExistingAccount') }}
-                  </button>
-                  <button
-                    class="btn btn-primary w-full"
+                  </ElButton>
+                  <ElButton type="primary"
+                    class="w-full"
                     :disabled="isSubmitting"
                     @click="switchToCreateAccountMode"
                   >
                     {{ t('auth.oauthFlow.createNewAccount') }}
-                  </button>
+                  </ElButton>
                 </div>
               </div>
             </div>
@@ -168,7 +155,7 @@
               {{ t('auth.oauthFlow.bindLoginHint', { providerName }) }}
             </p>
             <div class="space-y-3">
-              <input
+              <ElementInput
                 v-model="bindLoginEmail"
                 data-testid="oidc-bind-login-email"
                 type="email"
@@ -177,7 +164,7 @@
                 :disabled="isSubmitting"
                 @keyup.enter="handleBindLogin"
               />
-              <input
+              <ElementInput
                 v-model="bindLoginPassword"
                 data-testid="oidc-bind-login-password"
                 type="password"
@@ -186,22 +173,22 @@
                 :disabled="isSubmitting"
                 @keyup.enter="handleBindLogin"
               />
-              <button
+              <ElButton type="primary"
                 data-testid="oidc-bind-login-submit"
-                class="btn btn-primary w-full"
+                class="w-full"
                 :disabled="isSubmitting || !bindLoginEmail.trim() || !bindLoginPassword"
                 @click="handleBindLogin"
               >
                 {{ isSubmitting ? t('common.processing') : t('auth.oauthFlow.logInAndBind') }}
-              </button>
-              <button
+              </ElButton>
+              <ElButton
                 v-if="canReturnToCreateAccount"
-                class="btn btn-secondary w-full"
+                class="w-full"
                 :disabled="isSubmitting"
                 @click="switchToCreateAccountMode"
               >
                 {{ t('auth.oauthFlow.useDifferentEmail') }}
-              </button>
+              </ElButton>
             </div>
           </template>
 
@@ -215,7 +202,7 @@
               }}
             </p>
             <div class="space-y-3">
-              <input
+              <ElementInput
                 v-model="totpCode"
                 data-testid="oidc-bind-login-totp"
                 type="text"
@@ -226,14 +213,14 @@
                 :disabled="isSubmitting"
                 @keyup.enter="handleSubmitTotpChallenge"
               />
-              <button
+              <ElButton type="primary"
                 data-testid="oidc-bind-login-totp-submit"
-                class="btn btn-primary w-full"
+                class="w-full"
                 :disabled="isSubmitting || totpCode.trim().length !== 6"
                 @click="handleSubmitTotpChallenge"
               >
                 {{ isSubmitting ? t('common.processing') : t('auth.oauthFlow.verifyAndContinue') }}
-              </button>
+              </ElButton>
             </div>
           </template>
         </div>

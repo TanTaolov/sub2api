@@ -1,6 +1,6 @@
 <template>
-  <button
-    type="button"
+  <ElButton text
+    native-type="button"
     class="group text-left p-5 rounded-2xl min-h-[280px] w-full bg-white/70 backdrop-blur-xl border border-gray-200/80 shadow-card dark:bg-dark-800/60 dark:border-dark-700/70 hover:-translate-y-1 hover:shadow-card-hover dark:hover:border-primary-500/30 hover:border-gray-300 transition-all duration-300 ease-out flex flex-col"
     @click="emit('click')"
   >
@@ -73,7 +73,7 @@
       :buckets="item.timeline"
       :countdown-seconds="countdownSeconds"
     />
-  </button>
+  </ElButton>
 </template>
 
 <script setup lang="ts">

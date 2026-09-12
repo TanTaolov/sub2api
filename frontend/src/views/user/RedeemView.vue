@@ -2,7 +2,7 @@
   <AppLayout>
     <div class="mx-auto max-w-2xl space-y-6">
       <!-- Current Balance Card -->
-      <div class="card overflow-hidden">
+      <ElCard shadow="never" class="element-surface-card overflow-hidden">
         <div class="bg-gradient-to-br from-primary-500 to-primary-600 px-6 py-8 text-center">
           <div
             class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm"
@@ -17,12 +17,12 @@
             {{ t('redeem.concurrency') }}: {{ user?.concurrency || 0 }} {{ t('redeem.requests') }}
           </p>
         </div>
-      </div>
+      </ElCard>
 
       <!-- Redeem Form -->
-      <div class="card">
+      <ElCard shadow="never" class="element-surface-card">
         <div class="p-6">
-          <form @submit.prevent="handleRedeem" class="space-y-5">
+          <ElForm @submit.prevent="handleRedeem" class="space-y-5">
             <div>
               <label for="code" class="input-label">
                 {{ t('redeem.redeemCodeLabel') }}
@@ -31,7 +31,7 @@
                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                   <Icon name="gift" size="md" class="text-gray-400 dark:text-dark-500" />
                 </div>
-                <input
+                <ElementInput
                   id="code"
                   v-model="redeemCode"
                   type="text"
@@ -46,10 +46,10 @@
               </p>
             </div>
 
-            <button
-              type="submit"
+            <ElButton type="primary"
+              native-type="submit"
               :disabled="!redeemCode || submitting"
-              class="btn btn-primary w-full py-3"
+              class="w-full py-3"
             >
               <svg
                 v-if="submitting"
@@ -73,16 +73,16 @@
               </svg>
               <Icon v-else name="checkCircle" size="md" class="mr-2" />
               {{ submitting ? t('redeem.redeeming') : t('redeem.redeemButton') }}
-            </button>
-          </form>
+            </ElButton>
+          </ElForm>
         </div>
-      </div>
+      </ElCard>
 
       <!-- Success Message -->
       <transition name="fade">
-        <div
+        <ElCard shadow="never"
           v-if="redeemResult"
-          class="card border-emerald-200 bg-emerald-50 dark:border-emerald-800/50 dark:bg-emerald-900/20"
+          class="element-surface-card border-emerald-200 bg-emerald-50 dark:border-emerald-800/50 dark:bg-emerald-900/20"
         >
           <div class="p-6">
             <div class="flex items-start gap-4">
@@ -129,14 +129,14 @@
               </div>
             </div>
           </div>
-        </div>
+        </ElCard>
       </transition>
 
       <!-- Error Message -->
       <transition name="fade">
-        <div
+        <ElCard shadow="never"
           v-if="errorMessage"
-          class="card border-red-200 bg-red-50 dark:border-red-800/50 dark:bg-red-900/20"
+          class="element-surface-card border-red-200 bg-red-50 dark:border-red-800/50 dark:bg-red-900/20"
         >
           <div class="p-6">
             <div class="flex items-start gap-4">
@@ -159,12 +159,12 @@
               </div>
             </div>
           </div>
-        </div>
+        </ElCard>
       </transition>
 
       <!-- Information Card -->
-      <div
-        class="card border-primary-200 bg-primary-50 dark:border-primary-800/50 dark:bg-primary-900/20"
+      <ElCard shadow="never"
+        class="element-surface-card border-primary-200 bg-primary-50 dark:border-primary-800/50 dark:bg-primary-900/20"
       >
         <div class="p-6">
           <div class="flex items-start gap-4">
@@ -196,10 +196,10 @@
             </div>
           </div>
         </div>
-      </div>
+      </ElCard>
 
       <!-- Recent Activity -->
-      <div class="card">
+      <ElCard shadow="never" class="element-surface-card">
         <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ t('redeem.recentActivity') }}
@@ -336,7 +336,7 @@
             </p>
           </div>
         </div>
-      </div>
+      </ElCard>
     </div>
   </AppLayout>
 </template>

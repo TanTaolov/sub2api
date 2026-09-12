@@ -21,8 +21,8 @@
       data-testid="ollama-cloud-seven-day"
     />
     <div v-if="state.configured" class="flex items-center pt-0.5">
-      <button
-        type="button"
+      <ElButton text
+        native-type="button"
         class="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium text-blue-600 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
         :disabled="refreshing"
         data-testid="ollama-cloud-usage-query"
@@ -43,7 +43,7 @@
           />
         </svg>
         {{ t('admin.accounts.usageWindow.activeQuery') }}
-      </button>
+      </ElButton>
     </div>
   </div>
   <span v-else class="text-sm text-gray-400 dark:text-dark-500">-</span>

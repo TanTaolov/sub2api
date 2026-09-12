@@ -11,28 +11,10 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-          <input
-            type="radio"
-            name="announcement-targeting-mode"
-            value="all"
-            :checked="mode === 'all'"
-            @change="setMode('all')"
-            class="h-4 w-4"
-          />
-          {{ t('admin.announcements.form.targetingAll') }}
-        </label>
-        <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-          <input
-            type="radio"
-            name="announcement-targeting-mode"
-            value="custom"
-            :checked="mode === 'custom'"
-            @change="setMode('custom')"
-            class="h-4 w-4"
-          />
-          {{ t('admin.announcements.form.targetingCustom') }}
-        </label>
+        <ElementRadio name="announcement-targeting-mode" value="all" :checked="mode === 'all'" @change="setMode('all')" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+          {{ t('admin.announcements.form.targetingAll') }}</ElementRadio>
+        <ElementRadio name="announcement-targeting-mode" value="custom" :checked="mode === 'custom'" @change="setMode('custom')" :class="[&quot;flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+          {{ t('admin.announcements.form.targetingCustom') }}</ElementRadio>
       </div>
     </div>
 
@@ -44,15 +26,15 @@
             ({{ anyOf.length }}/50)
           </span>
         </div>
-        <button
-          type="button"
-          class="btn btn-secondary"
+        <ElButton
+          native-type="button"
+          class=""
           :disabled="anyOf.length >= 50"
           @click="addOrGroup"
         >
           <Icon name="plus" size="sm" class="mr-1" />
           {{ t('admin.announcements.form.addOrGroup') }}
-        </button>
+        </ElButton>
       </div>
 
       <div v-if="anyOf.length === 0" class="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-dark-600 dark:text-dark-400">
@@ -75,14 +57,14 @@
             </div>
           </div>
 
-          <button
-            type="button"
-            class="btn btn-secondary"
+          <ElButton
+            native-type="button"
+            class=""
             @click="removeOrGroup(groupIndex)"
           >
             <Icon name="trash" size="sm" class="mr-1" />
             {{ t('common.delete') }}
-          </button>
+          </ElButton>
         </div>
 
         <div class="mt-4 space-y-3">
@@ -120,7 +102,7 @@
                 </div>
                 <div class="w-full sm:flex-1">
                   <label class="input-label">{{ t('admin.announcements.form.balanceValue') }}</label>
-                  <input
+                  <ElementInput
                     :value="String(cond.value ?? '')"
                     type="number"
                     step="any"
@@ -131,28 +113,28 @@
               </div>
 
               <div class="flex justify-end">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
+                <ElButton
+                  native-type="button"
+                  class=""
                   @click="removeAndCondition(groupIndex, condIndex)"
                 >
                   <Icon name="trash" size="sm" class="mr-1" />
                   {{ t('common.delete') }}
-                </button>
+                </ElButton>
               </div>
             </div>
           </div>
 
           <div class="flex justify-end">
-            <button
-              type="button"
-              class="btn btn-secondary"
+            <ElButton
+              native-type="button"
+              class=""
               :disabled="(group.all_of?.length || 0) >= 50"
               @click="addAndCondition(groupIndex)"
             >
               <Icon name="plus" size="sm" class="mr-1" />
               {{ t('admin.announcements.form.addAndCondition') }}
-            </button>
+            </ElButton>
           </div>
         </div>
       </div>

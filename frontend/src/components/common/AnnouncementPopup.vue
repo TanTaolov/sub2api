@@ -1,16 +1,6 @@
 <template>
-  <Teleport to="body">
-    <Transition name="popup-fade">
-      <div
-        v-if="displayedAnnouncement"
-        class="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-gradient-to-br from-black/70 via-black/60 to-black/70 p-4 pt-[8vh] backdrop-blur-md"
-      >
-        <div
-          class="w-full max-w-[680px] overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/5 dark:bg-dark-800 dark:ring-white/10"
-          @click.stop
-        >
-          <!-- Header with warm gradient -->
-          <div class="relative overflow-hidden border-b border-amber-100/80 bg-gradient-to-br from-amber-50/80 via-orange-50/50 to-yellow-50/30 px-8 py-6 dark:border-dark-700/50 dark:from-amber-900/20 dark:via-orange-900/10 dark:to-yellow-900/5">
+  <ElDialog :model-value="Boolean(displayedAnnouncement)" :title="displayedAnnouncement?.title ?? ''" width="680px" append-to-body align-center destroy-on-close :show-close="false" :close-on-click-modal="false" :close-on-press-escape="false" class="element-dialog element-dialog-custom" >
+<template v-if="displayedAnnouncement"><!-- Header with warm gradient --><div class="relative overflow-hidden border-b border-amber-100/80 bg-gradient-to-br from-amber-50/80 via-orange-50/50 to-yellow-50/30 px-8 py-6 dark:border-dark-700/50 dark:from-amber-900/20 dark:via-orange-900/10 dark:to-yellow-900/5">
             <!-- Decorative background -->
             <div class="absolute right-0 top-0 h-full w-64 bg-gradient-to-l from-orange-100/30 to-transparent dark:from-orange-900/20"></div>
             <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-to-br from-amber-400/20 to-orange-500/20 blur-3xl"></div>
@@ -46,10 +36,7 @@
                 <time>{{ formatRelativeWithDateTime(displayedAnnouncement.created_at) }}</time>
               </div>
             </div>
-          </div>
-
-          <!-- Body -->
-          <div class="max-h-[50vh] overflow-y-auto bg-white px-8 py-8 dark:bg-dark-800">
+          </div><!-- Body --><div class="max-h-[50vh] overflow-y-auto bg-white px-8 py-8 dark:bg-dark-800">
             <div class="relative">
               <div class="absolute left-0 top-0 bottom-0 w-1 rounded-full bg-gradient-to-b from-amber-500 via-orange-500 to-yellow-500"></div>
               <div class="pl-6">
@@ -59,12 +46,9 @@
                 ></div>
               </div>
             </div>
-          </div>
-
-          <!-- Footer -->
-          <div class="border-t border-gray-100 bg-gray-50/50 px-8 py-5 dark:border-dark-700 dark:bg-dark-900/30">
+          </div><!-- Footer --><div class="border-t border-gray-100 bg-gray-50/50 px-8 py-5 dark:border-dark-700 dark:bg-dark-900/30">
             <div class="flex items-center justify-end">
-              <button
+              <ElButton text
                 @click="handleDismiss"
                 data-testid="announcement-popup-dismiss"
                 class="rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-amber-500/30 transition-all hover:shadow-xl hover:scale-105"
@@ -78,13 +62,10 @@
                   </svg>
                   {{ preview ? t('common.close') : t('announcements.markRead') }}
                 </span>
-              </button>
+              </ElButton>
             </div>
-          </div>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+          </div></template>
+</ElDialog>
 </template>
 
 <script setup lang="ts">

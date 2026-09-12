@@ -145,8 +145,8 @@ const dailyFixedHint = computed(() =>
             </p>
           </div>
         </div>
-        <button
-          type="button"
+        <ElButton text
+          native-type="button"
           @click="localEnabled = !localEnabled"
           :class="[
             'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -159,7 +159,7 @@ const dailyFixedHint = computed(() =>
               localEnabled ? 'translate-x-5' : 'translate-x-0'
             ]"
           />
-        </button>
+        </ElButton>
       </div>
 
       <!-- Collapsible content -->

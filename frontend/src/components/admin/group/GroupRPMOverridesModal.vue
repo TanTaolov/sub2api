@@ -21,8 +21,7 @@
           {{ t('admin.groups.addUserRpm') }}
         </h4>
         <div class="flex items-end gap-2">
-          <div class="relative flex-1">
-            <input
+          <ElementFloatingPanel  :visible="Boolean(showDropdown && searchResults.length > 0)" fit-reference width="192" @close="showDropdown = false"><template #reference><div class="relative flex-1"><ElementInput
               v-model="searchQuery"
               type="text"
               autocomplete="off"
@@ -30,26 +29,19 @@
               :placeholder="t('admin.groups.searchUserPlaceholder')"
               @input="handleSearchUsers"
               @focus="showDropdown = true"
-            />
-            <div
-              v-if="showDropdown && searchResults.length > 0"
-              class="absolute left-0 right-0 top-full z-10 mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-dark-500 dark:bg-dark-700"
-            >
-              <button
+            /></div></template><div  class="max-h-80 overflow-y-auto py-1"><ElButton text
                 v-for="user in searchResults"
                 :key="user.id"
-                type="button"
+                native-type="button"
                 class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-dark-600"
                 @click="selectUser(user)"
               >
                 <span class="text-gray-400">#{{ user.id }}</span>
                 <span class="text-gray-900 dark:text-white">{{ user.username || user.email }}</span>
                 <span v-if="user.username" class="text-xs text-gray-400">{{ user.email }}</span>
-              </button>
-            </div>
-          </div>
+              </ElButton></div></ElementFloatingPanel>
           <div class="w-24">
-            <input
+            <ElementInput
               v-model.number="newRpm"
               type="number"
               step="1"
@@ -59,26 +51,26 @@
               placeholder="100"
             />
           </div>
-          <button
-            type="button"
-            class="btn btn-primary shrink-0"
+          <ElButton type="primary"
+            native-type="button"
+            class="shrink-0"
             :disabled="!selectedUser || newRpm == null || newRpm < 0"
             @click="handleAddLocal"
           >
             {{ t('common.add') }}
-          </button>
+          </ElButton>
         </div>
 
         <div v-if="localEntries.length > 0" class="mt-3 flex items-center justify-end border-t border-gray-100 pt-3 dark:border-dark-600">
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             :disabled="clearing"
             class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
             @click="clearAllLocal"
           >
             <Icon v-if="clearing" name="refresh" size="sm" class="mr-1 inline animate-spin" />
             {{ t('admin.groups.clearAll') }}
-          </button>
+          </ElButton>
         </div>
       </div>
 
@@ -103,30 +95,26 @@
         <div v-else>
           <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-dark-600">
             <div class="max-h-[420px] overflow-auto">
-              <table class="w-full min-w-max text-sm">
-                <thead class="sticky top-0 z-[1]">
-                  <tr class="border-b border-gray-200 bg-gray-50 dark:border-dark-600 dark:bg-dark-700">
-                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.groups.columns.userEmail') }}</th>
-                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">ID</th>
-                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.groups.columns.userName') }}</th>
-                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.groups.columns.userNotes') }}</th>
-                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.groups.columns.userStatus') }}</th>
-                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400" :title="t('admin.groups.columns.rpmOverrideHint')">{{ t('admin.groups.columns.rpmOverride') }}</th>
-                    <th class="w-10 px-2 py-2"></th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-dark-600">
-                  <tr
-                    v-for="entry in paginatedLocalEntries"
-                    :key="entry.user_id"
-                    class="hover:bg-gray-50 dark:hover:bg-dark-700/50"
-                  >
-                    <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ entry.user_email }}</td>
-                    <td class="whitespace-nowrap px-3 py-2 text-gray-400 dark:text-gray-500">{{ entry.user_id }}</td>
-                    <td class="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-white">{{ entry.user_name || '-' }}</td>
-                    <td class="max-w-[160px] truncate px-3 py-2 text-gray-500 dark:text-gray-400" :title="entry.user_notes">{{ entry.user_notes || '-' }}</td>
-                    <td class="whitespace-nowrap px-3 py-2">
-                      <span
+              <ElTable  row-key="user_id" row-class-name="hover:bg-gray-50 dark:hover:bg-dark-700/50" :data="paginatedLocalEntries" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.groups.columns.userEmail') }}</div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="px-3 py-2 text-gray-600 dark:text-gray-400" >{{ entry.user_email }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">ID</div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2 text-gray-400 dark:text-gray-500" >{{ entry.user_id }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.groups.columns.userName') }}</div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2 text-gray-900 dark:text-white" >{{ entry.user_name || '-' }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.groups.columns.userNotes') }}</div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="max-w-[160px] truncate px-3 py-2 text-gray-500 dark:text-gray-400" :title="entry.user_notes" >{{ entry.user_notes || '-' }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('admin.groups.columns.userStatus') }}</div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2" ><span
                         :class="[
                           'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
                           entry.user_status === 'active'
@@ -135,10 +123,11 @@
                         ]"
                       >
                         {{ entry.user_status }}
-                      </span>
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-2">
-                      <input
+                      </span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400" :title="t('admin.groups.columns.rpmOverrideHint')">{{ t('admin.groups.columns.rpmOverride') }}</div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="whitespace-nowrap px-3 py-2" ><ElementInput
                         type="number"
                         step="1"
                         min="0"
@@ -146,20 +135,19 @@
                         :value="entry.rpm_override"
                         class="hide-spinner w-20 rounded border border-gray-200 bg-white px-2 py-1 text-center text-sm font-medium transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500/20 dark:border-dark-500 dark:bg-dark-700 dark:focus:border-primary-500"
                         @change="updateLocalRpm(entry.user_id, ($event.target as HTMLInputElement).value)"
-                      />
-                    </td>
-                    <td class="px-2 py-2">
-                      <button
-                        type="button"
+                      /></div></template>
+  </ElTableColumn>
+  <ElTableColumn :width="40" align="left">
+    <template #header><div class="w-10 px-2 py-2"></div></template>
+    <template #default="{ row: entry, $index: rowIndex }"><div class="px-2 py-2" ><ElButton text
+                        native-type="button"
                         class="rounded p-1 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                         @click="removeLocal(entry.user_id)"
                       >
                         <Icon name="trash" size="sm" />
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                      </ElButton></div></template>
+  </ElTableColumn>
+</ElTable>
             </div>
           </div>
 
@@ -177,28 +165,28 @@
       <div class="flex items-center gap-3 border-t border-gray-200 pt-4 dark:border-dark-600">
         <template v-if="isDirty">
           <span class="text-xs text-amber-600 dark:text-amber-400">{{ t('admin.groups.unsavedChanges') }}</span>
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             class="text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
             @click="handleCancel"
           >
             {{ t('admin.groups.revertChanges') }}
-          </button>
+          </ElButton>
         </template>
         <div class="ml-auto flex items-center gap-3">
-          <button type="button" class="btn btn-sm px-4 py-1.5" @click="handleClose">
+          <ElButton size="small" native-type="button" class="px-4 py-1.5" @click="handleClose">
             {{ t('common.close') }}
-          </button>
-          <button
+          </ElButton>
+          <ElButton type="primary" size="small"
             v-if="isDirty"
-            type="button"
-            class="btn btn-primary btn-sm px-4 py-1.5"
+            native-type="button"
+            class="px-4 py-1.5"
             :disabled="saving"
             @click="handleSave"
           >
             <Icon v-if="saving" name="refresh" size="sm" class="mr-1 animate-spin" />
             {{ t('common.save') }}
-          </button>
+          </ElButton>
         </div>
       </div>
     </div>

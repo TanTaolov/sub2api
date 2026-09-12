@@ -1,15 +1,15 @@
 <template>
   <div class="space-y-6">
     <!-- Date Range Filter -->
-    <div class="card p-4">
+    <ElCard shadow="never" class="element-surface-card p-4">
       <div class="flex flex-wrap items-center gap-4">
         <div class="flex items-center gap-2">
           <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('dashboard.timeRange') }}:</span>
           <DateRangePicker :start-date="startDate" :end-date="endDate" @update:startDate="$emit('update:startDate', $event)" @update:endDate="$emit('update:endDate', $event)" @change="$emit('dateRangeChange', $event)" />
         </div>
-        <button @click="$emit('refresh')" :disabled="loading" class="btn btn-secondary">
+        <ElButton @click="$emit('refresh')" :disabled="loading" class="">
           {{ t('common.refresh') }}
-        </button>
+        </ElButton>
         <div class="ml-auto flex items-center gap-2">
           <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('dashboard.granularity') }}:</span>
           <div class="w-28">
@@ -17,12 +17,12 @@
           </div>
         </div>
       </div>
-    </div>
+    </ElCard>
 
     <!-- Charts Grid -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <!-- Model Distribution Chart -->
-      <div class="card relative overflow-hidden p-4">
+      <ElCard shadow="never" class="element-surface-card relative overflow-hidden p-4">
         <div v-if="loading" class="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm dark:bg-dark-800/50">
           <LoadingSpinner size="md" />
         </div>
@@ -33,29 +33,31 @@
             <div v-else class="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400">{{ t('dashboard.noDataAvailable') }}</div>
           </div>
           <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-            <table class="w-full text-xs">
-              <thead>
-                <tr class="text-gray-500 dark:text-gray-400">
-                  <th class="pb-2 text-left">{{ t('dashboard.model') }}</th>
-                  <th class="pb-2 text-right">{{ t('dashboard.requests') }}</th>
-                  <th class="pb-2 text-right">{{ t('dashboard.tokens') }}</th>
-                  <th class="pb-2 text-right">{{ t('dashboard.actual') }}</th>
-                  <th class="pb-2 text-right">{{ t('dashboard.standard') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="model in models" :key="model.model" class="border-t border-gray-100 dark:border-dark-700">
-                  <td class="max-w-[100px] truncate py-1.5 font-medium text-gray-900 dark:text-white" :title="model.model">{{ model.model }}</td>
-                  <td class="py-1.5 text-right text-gray-600 dark:text-gray-400">{{ formatNumber(model.requests) }}</td>
-                  <td class="py-1.5 text-right text-gray-600 dark:text-gray-400">{{ formatTokens(model.total_tokens) }}</td>
-                  <td class="py-1.5 text-right text-green-600 dark:text-green-400">${{ formatCost(model.actual_cost) }}</td>
-                  <td class="py-1.5 text-right text-gray-400 dark:text-gray-500">${{ formatCost(model.cost) }}</td>
-                </tr>
-              </tbody>
-            </table>
+            <ElTable  row-key="model" row-class-name="border-t border-gray-100 dark:border-dark-700" :data="models" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="pb-2 text-left">{{ t('dashboard.model') }}</div></template>
+    <template #default="{ row: model, $index: rowIndex }"><div class="max-w-[100px] truncate py-1.5 font-medium text-gray-900 dark:text-white" :title="model.model" >{{ model.model }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="right">
+    <template #header><div class="pb-2 text-right">{{ t('dashboard.requests') }}</div></template>
+    <template #default="{ row: model, $index: rowIndex }"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400" >{{ formatNumber(model.requests) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="right">
+    <template #header><div class="pb-2 text-right">{{ t('dashboard.tokens') }}</div></template>
+    <template #default="{ row: model, $index: rowIndex }"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400" >{{ formatTokens(model.total_tokens) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="right">
+    <template #header><div class="pb-2 text-right">{{ t('dashboard.actual') }}</div></template>
+    <template #default="{ row: model, $index: rowIndex }"><div class="py-1.5 text-right text-green-600 dark:text-green-400" >${{ formatCost(model.actual_cost) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="right">
+    <template #header><div class="pb-2 text-right">{{ t('dashboard.standard') }}</div></template>
+    <template #default="{ row: model, $index: rowIndex }"><div class="py-1.5 text-right text-gray-400 dark:text-gray-500" >${{ formatCost(model.cost) }}</div></template>
+  </ElTableColumn>
+</ElTable>
           </div>
         </div>
-      </div>
+      </ElCard>
 
       <!-- Token Usage Trend Chart -->
       <TokenUsageTrend :trend-data="trend" :loading="loading" />

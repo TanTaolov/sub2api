@@ -15,9 +15,9 @@
         :wechat-mp-enabled="wechatOAuthMPEnabled"
       />
 
-      <div
+      <ElCard shadow="never"
         v-if="contactInfo"
-        class="card border-primary-200 bg-primary-50 p-6 dark:bg-primary-900/20"
+        class="element-surface-card border-primary-200 bg-primary-50 p-6 dark:bg-primary-900/20"
       >
         <div class="flex items-center gap-4">
           <div class="rounded-xl bg-primary-100 p-3 text-primary-600">
@@ -30,7 +30,7 @@
             <p class="text-sm font-medium">{{ contactInfo }}</p>
           </div>
         </div>
-      </div>
+      </ElCard>
 
       <ProfilePasswordForm />
 

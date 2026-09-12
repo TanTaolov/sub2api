@@ -13,7 +13,7 @@
                 size="md"
                 class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               />
-              <input
+              <ElementInput
                 v-model="searchQuery"
                 type="text"
                 :placeholder="t('admin.users.searchUsers')"
@@ -79,7 +79,7 @@
                 class="relative w-full sm:w-36"
               >
                 <!-- Text/Email/URL/Textarea/Date type: styled input -->
-                <input
+                <ElementInput
                   v-if="['text', 'textarea', 'email', 'url', 'date'].includes(getAttributeDefinition(Number(attrId))?.type || 'text')"
                   :value="value"
                   @input="(e) => updateAttributeFilter(Number(attrId), (e.target as HTMLInputElement).value)"
@@ -88,7 +88,7 @@
                   class="input w-full"
                 />
                 <!-- Number type: number input -->
-                <input
+                <ElementInput
                   v-else-if="getAttributeDefinition(Number(attrId))?.type === 'number'"
                   :value="value"
                   type="number"
@@ -111,7 +111,7 @@
                   </div>
                 </template>
                 <!-- Fallback -->
-                <input
+                <ElementInput
                   v-else
                   :value="value"
                   @input="(e) => updateAttributeFilter(Number(attrId), (e.target as HTMLInputElement).value)"
@@ -128,31 +128,23 @@
             <!-- Mobile: Secondary buttons (icon only) -->
             <div class="flex items-center gap-2 md:contents">
               <!-- Refresh Button -->
-              <button
+              <ElButton
                 @click="loadUsers"
                 :disabled="loading"
-                class="btn btn-secondary px-2 md:px-3"
+                class="px-2 md:px-3"
                 :title="t('common.refresh')"
               >
                 <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
-              </button>
+              </ElButton>
               <!-- Filter Settings Dropdown -->
-              <div class="relative" ref="filterDropdownRef">
-                <button
+              <ElementFloatingPanel  :visible="Boolean(showFilterDropdown)"  width="192" @close="showFilterDropdown = false"><template #reference><div class="relative" ref="filterDropdownRef"><ElButton
                   @click="showFilterDropdown = !showFilterDropdown"
-                  class="btn btn-secondary px-2 md:px-3"
+                  class="px-2 md:px-3"
                   :title="t('admin.users.filterSettings')"
                 >
                   <Icon name="filter" size="sm" class="md:mr-1.5" />
                   <span class="hidden md:inline">{{ t('admin.users.filterSettings') }}</span>
-                </button>
-                <!-- Dropdown menu -->
-                <div
-                  v-if="showFilterDropdown"
-                  class="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-dark-600 dark:bg-dark-800"
-                >
-                  <!-- Built-in filters -->
-                  <button
+                </ElButton><!-- Dropdown menu --></div></template><div  class="max-h-80 overflow-y-auto py-1"><!-- Built-in filters --><ElButton text
                     v-for="filter in builtInFilters"
                     :key="filter.key"
                     @click="toggleBuiltInFilter(filter.key)"
@@ -166,14 +158,10 @@
                       class="text-primary-500"
                       :stroke-width="2"
                     />
-                  </button>
-                  <!-- Divider if custom attributes exist -->
-                  <div
+                  </ElButton><!-- Divider if custom attributes exist --><div
                     v-if="filterableAttributes.length > 0"
                     class="my-1 border-t border-gray-100 dark:border-dark-700"
-                  ></div>
-                  <!-- Custom attribute filters -->
-                  <button
+                  ></div><!-- Custom attribute filters --><ElButton text
                     v-for="attr in filterableAttributes"
                     :key="attr.id"
                     @click="toggleAttributeFilter(attr)"
@@ -187,27 +175,18 @@
                       class="text-primary-500"
                       :stroke-width="2"
                     />
-                  </button>
-                </div>
-              </div>
+                  </ElButton></div></ElementFloatingPanel>
               <!-- Column Settings Dropdown -->
-              <div class="relative" ref="columnDropdownRef">
-                <button
+              <ElementFloatingPanel  :visible="Boolean(showColumnDropdown)"  width="192" @close="showColumnDropdown = false"><template #reference><div class="relative" ref="columnDropdownRef"><ElButton
                   @click="showColumnDropdown = !showColumnDropdown"
-                  class="btn btn-secondary px-2 md:px-3"
+                  class="px-2 md:px-3"
                   :title="t('admin.users.columnSettings')"
                 >
                   <svg class="h-4 w-4 md:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" />
                   </svg>
                   <span class="hidden md:inline">{{ t('admin.users.columnSettings') }}</span>
-                </button>
-                <!-- Dropdown menu -->
-                <div
-                  v-if="showColumnDropdown"
-                  class="absolute right-0 top-full z-50 mt-1 max-h-80 w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-dark-600 dark:bg-dark-800"
-                >
-                  <button
+                </ElButton><!-- Dropdown menu --></div></template><div  class="max-h-80 overflow-y-auto py-1"><ElButton text
                     v-for="col in toggleableColumns"
                     :key="col.key"
                     :disabled="isForcedVisibleColumn(col.key)"
@@ -228,46 +207,44 @@
                       :class="isForcedVisibleColumn(col.key) ? 'text-gray-400 dark:text-gray-500' : 'text-primary-500'"
                       :stroke-width="2"
                     />
-                  </button>
-                </div>
-              </div>
+                  </ElButton></div></ElementFloatingPanel>
               <!-- Attributes Config Button -->
-              <button
+              <ElButton
                 @click="showAttributesModal = true"
-                class="btn btn-secondary px-2 md:px-3"
+                class="px-2 md:px-3"
                 :title="t('admin.users.attributes.configButton')"
               >
                 <Icon name="cog" size="sm" class="md:mr-1.5" />
                 <span class="hidden md:inline">{{ t('admin.users.attributes.configButton') }}</span>
-              </button>
+              </ElButton>
             </div>
 
-            <button
+            <ElButton
               v-if="selectedCount > 0"
-              class="btn btn-secondary flex-1 md:flex-initial"
+              class="flex-1 md:flex-initial"
               data-test="bulk-edit-limits"
               @click="showBulkEditModal = true"
             >
               <Icon name="users" size="md" class="mr-2" />
               {{ t('admin.users.bulkLimits.action', { count: selectedCount }) }}
-            </button>
+            </ElButton>
 
-            <button
+            <ElButton type="danger"
               v-if="selectedCount > 0"
-              class="btn btn-danger flex-1 md:flex-initial"
+              class="flex-1 md:flex-initial"
               data-test="bulk-delete-users"
               :disabled="bulkDeleting"
               @click="bulkDeleteIds = [...selectedIds]"
             >
               <Icon name="trash" size="md" class="mr-2" />
               {{ t('admin.users.bulkDelete.action', { count: selectedCount }) }}
-            </button>
+            </ElButton>
 
             <!-- Create User Button (full width on mobile, auto width on desktop) -->
-            <button @click="showCreateModal = true" class="btn btn-primary flex-1 md:flex-initial">
+            <ElButton type="primary" @click="showCreateModal = true" class="flex-1 md:flex-initial">
               <Icon name="plus" size="md" class="mr-2" />
               {{ t('admin.users.createUser') }}
-            </button>
+            </ElButton>
           </div>
         </div>
       </template>
@@ -345,33 +322,11 @@
           <template #cell-groups="{ row }">
             <div v-if="allGroups.length > 0" class="flex flex-col gap-1">
               <!-- 专属分组行 -->
-              <span
-                v-if="getUserGroups(row).exclusive.length > 0"
-                class="group/ex relative inline-flex cursor-pointer items-center gap-1 whitespace-nowrap text-xs"
-                @click.stop="toggleExpandedGroup(row.id)"
-              >
-                <Icon name="shield" size="xs" class="h-3.5 w-3.5 text-purple-500 dark:text-purple-400" />
-                <span class="font-medium text-purple-600 dark:text-purple-400">{{ getUserGroups(row).exclusive.length }}</span>
-                <span class="text-gray-500 dark:text-dark-400">{{ t('admin.users.exclusiveLabel') }}</span>
-                <!-- Hover tooltip（操作菜单未打开时显示） -->
-                <div
-                  v-if="expandedGroupUserId !== row.id"
-                  class="pointer-events-none absolute left-0 top-full z-50 mt-1.5 rounded bg-gray-900 px-2.5 py-1.5 text-xs text-white opacity-0 shadow-lg transition-opacity duration-75 group-hover/ex:opacity-100 dark:bg-dark-600"
-                >
-                  <div class="absolute left-4 bottom-full border-4 border-transparent border-b-gray-900 dark:border-b-dark-600"></div>
-                  <div class="flex flex-col gap-0.5 whitespace-nowrap">
+              <ElementFloatingPanel v-if="getUserGroups(row).exclusive.length > 0" :visible="Boolean(expandedGroupUserId === row.id)"  width="192" @close="expandedGroupUserId = null"><template #reference><ElPopover  :trigger="['hover', 'focus']" :disabled="!(expandedGroupUserId !== row.id)" :width="256" placement="top" :show-after="100" :hide-after="150"><template #reference><span class="group/ex relative inline-flex cursor-pointer items-center gap-1 whitespace-nowrap text-xs" @click.stop="toggleExpandedGroup(row.id)" tabindex="0"><Icon name="shield" size="xs" class="h-3.5 w-3.5 text-purple-500 dark:text-purple-400" /><span class="font-medium text-purple-600 dark:text-purple-400">{{ getUserGroups(row).exclusive.length }}</span><span class="text-gray-500 dark:text-dark-400">{{ t('admin.users.exclusiveLabel') }}</span><!-- Hover tooltip（操作菜单未打开时显示） --><!-- 点击展开分组操作菜单 --></span></template><div class="rounded bg-gray-900 px-2.5 py-1.5 text-xs text-white shadow-lg transition-opacity duration-75 dark:bg-dark-600"><div class="absolute left-4 bottom-full border-4 border-transparent border-b-gray-900 dark:border-b-dark-600"></div><div class="flex flex-col gap-0.5 whitespace-nowrap">
                     <span v-for="g in getUserGroups(row).exclusive" :key="g.id">{{ g.name }}</span>
-                  </div>
-                </div>
-                <!-- 点击展开分组操作菜单 -->
-                <div
-                  v-if="expandedGroupUserId === row.id"
-                  class="absolute left-0 top-full z-50 mt-1.5 min-w-[160px] overflow-hidden rounded-lg border border-gray-200 bg-white py-1 text-xs shadow-xl dark:border-dark-600 dark:bg-dark-700"
-                >
-                  <div class="border-b border-gray-100 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:border-dark-600 dark:text-dark-400">
+                  </div></div></ElPopover></template><div  class="max-h-80 overflow-y-auto py-1"><div class="border-b border-gray-100 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:border-dark-600 dark:text-dark-400">
                     {{ t('admin.users.clickToReplace') }}
-                  </div>
-                  <div
+                  </div><div
                     v-for="g in getUserGroups(row).exclusive"
                     :key="g.id"
                     class="flex cursor-pointer items-center gap-2 px-3 py-2 text-gray-700 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:text-dark-200 dark:hover:bg-primary-900/30 dark:hover:text-primary-400"
@@ -379,25 +334,11 @@
                   >
                     <Icon name="swap" size="xs" class="h-3.5 w-3.5 flex-shrink-0 opacity-50" />
                     <span class="flex-1">{{ g.name }}</span>
-                  </div>
-                </div>
-              </span>
+                  </div></div></ElementFloatingPanel>
               <!-- 公开分组行 -->
-              <span
-                v-if="getUserGroups(row).publicGroups.length > 0"
-                class="group/pub relative inline-flex cursor-default items-center gap-1 whitespace-nowrap text-xs"
-              >
-                <Icon name="globe" size="xs" class="h-3.5 w-3.5 text-gray-400 dark:text-dark-500" />
-                <span class="font-medium text-gray-600 dark:text-dark-300">{{ getUserGroups(row).publicGroups.length }}</span>
-                <span class="text-gray-400 dark:text-dark-500">{{ t('admin.users.publicLabel') }}</span>
-                <!-- Tooltip: 向下弹出 -->
-                <div class="pointer-events-none absolute left-0 top-full z-50 mt-1.5 rounded bg-gray-900 px-2.5 py-1.5 text-xs text-white opacity-0 shadow-lg transition-opacity duration-75 group-hover/pub:opacity-100 dark:bg-dark-600">
-                  <div class="absolute left-4 bottom-full border-4 border-transparent border-b-gray-900 dark:border-b-dark-600"></div>
-                  <div class="flex flex-col gap-0.5 whitespace-nowrap">
+              <ElPopover v-if="getUserGroups(row).publicGroups.length > 0" :trigger="['hover', 'focus']"  :width="256" placement="top" :show-after="100" :hide-after="150"><template #reference><span class="group/pub relative inline-flex cursor-default items-center gap-1 whitespace-nowrap text-xs" tabindex="0"><Icon name="globe" size="xs" class="h-3.5 w-3.5 text-gray-400 dark:text-dark-500" /><span class="font-medium text-gray-600 dark:text-dark-300">{{ getUserGroups(row).publicGroups.length }}</span><span class="text-gray-400 dark:text-dark-500">{{ t('admin.users.publicLabel') }}</span><!-- Tooltip: 向下弹出 --></span></template><div class="rounded bg-gray-900 px-2.5 py-1.5 text-xs text-white shadow-lg transition-opacity duration-75 dark:bg-dark-600"><div class="absolute left-4 bottom-full border-4 border-transparent border-b-gray-900 dark:border-b-dark-600"></div><div class="flex flex-col gap-0.5 whitespace-nowrap">
                     <span v-for="g in getUserGroups(row).publicGroups" :key="g.id">{{ g.name }}</span>
-                  </div>
-                </div>
-              </span>
+                  </div></div></ElPopover>
               <!-- 都没有 -->
               <span
                 v-if="getUserGroups(row).exclusive.length === 0 && getUserGroups(row).publicGroups.length === 0"
@@ -434,38 +375,32 @@
 
           <template #cell-balance="{ value, row }">
             <div class="flex items-center gap-2">
-              <div class="group relative">
-                <button
+              <ElPopover  :trigger="['hover', 'focus']"  :width="256" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative" tabindex="0"><ElButton text
                   class="font-medium text-gray-900 underline decoration-dashed decoration-gray-300 underline-offset-4 transition-colors hover:text-primary-600 dark:text-white dark:decoration-dark-500 dark:hover:text-primary-400"
                   @click="handleBalanceHistory(row)"
                 >
                   ${{ value.toFixed(2) }}
-                </button>
-                <!-- Instant tooltip -->
-                <div class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity duration-75 group-hover:opacity-100 dark:bg-dark-600">
-                  {{ t('admin.users.balanceHistoryTip') }}
-                  <div class="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-dark-600"></div>
-                </div>
-              </div>
-              <button
+                </ElButton><!-- Instant tooltip --></div></template><div class="whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white shadow-lg transition-opacity duration-75 dark:bg-dark-600">{{ t('admin.users.balanceHistoryTip') }}
+                  <div class="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-dark-600"></div></div></ElPopover>
+              <ElButton text
                 @click.stop="handleDeposit(row)"
                 class="rounded px-2 py-0.5 text-xs font-medium text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
                 :title="t('admin.users.deposit')"
               >
                 {{ t('admin.users.deposit') }}
-              </button>
+              </ElButton>
             </div>
           </template>
 
           <template #cell-balance_platform_quota="{ row }">
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               class="block text-left underline decoration-dashed decoration-gray-300 underline-offset-4 transition-colors hover:decoration-primary-400 dark:decoration-dark-500"
               :title="t('admin.users.platformQuota.cellColumnTooltip')"
               @click="handlePlatformQuota(row)"
             >
               <UserPlatformQuotaCell :quotas="platformQuotaStats[row.id]" />
-            </button>
+            </ElButton>
           </template>
 
           <!-- 用量列自定义表头：列名 + 单个排序图标按钮，点击展开"今日/近30天"菜单。
@@ -478,9 +413,8 @@
           >
             <div class="flex items-center gap-1.5">
               <span>{{ column.label }}</span>
-              <div class="usage-sort-trigger relative">
-                <button
-                  type="button"
+              <ElementFloatingPanel  :visible="Boolean(openUsageSortMenu === usageKey)"  width="192" @close="openUsageSortMenu = null"><template #reference><div class="usage-sort-trigger relative"><ElButton text
+                  native-type="button"
                   class="flex items-center gap-1 rounded px-1 py-0.5 transition-colors hover:bg-gray-200 dark:hover:bg-dark-700"
                   :class="usageSort && usageSort.key === usageKey
                     ? 'text-primary-600 dark:text-primary-400'
@@ -509,16 +443,10 @@
                   <svg v-else class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 3l-4 5h8l-4-5zM10 17l4-5H6l4 5z" />
                   </svg>
-                </button>
-                <!-- 弹出菜单：今日 / 近30天，点击进行三态循环切换。 -->
-                <div
-                  v-if="openUsageSortMenu === usageKey"
-                  class="absolute right-0 top-full z-50 mt-1 min-w-[120px] rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-dark-600 dark:bg-dark-800"
-                >
-                  <button
+                </ElButton><!-- 弹出菜单：今日 / 近30天，点击进行三态循环切换。 --></div></template><div  class="max-h-80 overflow-y-auto py-1"><ElButton text
                     v-for="metric in (['today', 'total'] as const)"
                     :key="metric"
-                    type="button"
+                    native-type="button"
                     class="flex w-full items-center justify-between gap-3 px-3 py-1.5 text-left text-xs normal-case tracking-normal hover:bg-gray-100 dark:hover:bg-dark-700"
                     :class="isUsageSortActive(usageKey, metric)
                       ? 'font-medium text-primary-600 dark:text-primary-400'
@@ -540,12 +468,9 @@
                         clip-rule="evenodd"
                       />
                     </svg>
-                  </button>
-                  <div class="mt-1 border-t border-gray-100 px-3 py-1 text-[10px] normal-case tracking-normal text-gray-400 dark:border-dark-700 dark:text-dark-500">
+                  </ElButton><div class="mt-1 border-t border-gray-100 px-3 py-1 text-[10px] normal-case tracking-normal text-gray-400 dark:border-dark-700 dark:text-dark-500">
                     {{ t('admin.users.sortCurrentPageOnly') }}
-                  </div>
-                </div>
-              </div>
+                  </div></div></ElementFloatingPanel>
             </div>
           </template>
 
@@ -613,16 +538,16 @@
           <template #cell-actions="{ row }">
             <div class="flex items-center gap-1">
               <!-- Edit Button -->
-              <button
+              <ElButton text
                 @click="handleEdit(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary-600 dark:hover:bg-dark-700 dark:hover:text-primary-400"
               >
                 <Icon name="edit" size="sm" />
                 <span class="text-xs">{{ t('common.edit') }}</span>
-              </button>
+              </ElButton>
 
               <!-- Toggle Status Button (not for admin) -->
-              <button
+              <ElButton text
                 v-if="row.role !== 'admin'"
                 @click="handleToggleStatus(row)"
                 :class="[
@@ -635,17 +560,17 @@
                 <Icon v-if="row.status === 'active'" name="ban" size="sm" />
                 <Icon v-else name="checkCircle" size="sm" />
                 <span class="text-xs">{{ row.status === 'active' ? t('admin.users.disable') : t('admin.users.enable') }}</span>
-              </button>
+              </ElButton>
 
               <!-- More Actions Menu Trigger -->
-              <button
+              <ElButton text
                 @click="openActionMenu(row, $event)"
                 class="action-menu-trigger flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-dark-700 dark:hover:text-white"
                 :class="{ 'bg-gray-100 text-gray-900 dark:bg-dark-700 dark:text-white': activeMenuId === row.id }"
               >
                 <Icon name="more" size="sm" />
                 <span class="text-xs">{{ t('common.more') }}</span>
-              </button>
+              </ElButton>
             </div>
           </template>
 
@@ -674,46 +599,40 @@
     </TablePageLayout>
 
     <!-- Action Menu (Teleported) -->
-    <Teleport to="body">
-      <div
-        v-if="activeMenuId !== null && menuPosition"
-        class="action-menu-content fixed z-[9999] w-48 overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black/5 dark:bg-dark-800 dark:ring-white/10"
-        :style="{ top: menuPosition.top + 'px', left: menuPosition.left + 'px' }"
-      >
-        <div class="py-1">
+    <ElementFloatingPanel :visible="Boolean(activeMenuId !== null && menuPosition)" :position="menuPosition" width="192" :interactive="true" @close="closeActionMenu()"><div ><div class="py-1">
           <template v-for="user in users" :key="user.id">
             <template v-if="user.id === activeMenuId">
               <!-- View API Keys -->
-              <button
+              <ElButton text
                 @click="handleViewApiKeys(user); closeActionMenu()"
                 class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700"
               >
                 <Icon name="key" size="sm" class="text-gray-400" :stroke-width="2" />
                 {{ t('admin.users.apiKeys') }}
-              </button>
+              </ElButton>
 
               <!-- Allowed Groups -->
-              <button
+              <ElButton text
                 @click="handleAllowedGroups(user); closeActionMenu()"
                 class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700"
               >
                 <Icon name="users" size="sm" class="text-gray-400" :stroke-width="2" />
                 {{ t('admin.users.groups') }}
-              </button>
+              </ElButton>
 
               <div class="my-1 border-t border-gray-100 dark:border-dark-700"></div>
 
               <!-- Deposit -->
-              <button
+              <ElButton text
                 @click="handleDeposit(user); closeActionMenu()"
                 class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700"
               >
                 <Icon name="plus" size="sm" class="text-emerald-500" :stroke-width="2" />
                 {{ t('admin.users.deposit') }}
-              </button>
+              </ElButton>
 
               <!-- Withdraw -->
-              <button
+              <ElButton text
                 @click="handleWithdraw(user); closeActionMenu()"
                 class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700"
               >
@@ -721,42 +640,40 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
                 </svg>
                 {{ t('admin.users.withdraw') }}
-              </button>
+              </ElButton>
 
               <!-- Platform Quotas -->
-              <button
+              <ElButton text
                 @click="handlePlatformQuota(user); closeActionMenu()"
                 class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700"
               >
                 <Icon name="chartBar" size="sm" class="text-gray-400" :stroke-width="2" />
                 {{ t('admin.users.platformQuota.menuItem') }}
-              </button>
+              </ElButton>
 
               <!-- Balance History -->
-              <button
+              <ElButton text
                 @click="handleBalanceHistory(user); closeActionMenu()"
                 class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700"
               >
                 <Icon name="dollar" size="sm" class="text-gray-400" :stroke-width="2" />
                 {{ t('admin.users.balanceHistory') }}
-              </button>
+              </ElButton>
 
               <div class="my-1 border-t border-gray-100 dark:border-dark-700"></div>
 
               <!-- Delete (not for admin) -->
-              <button
+              <ElButton text
                 v-if="user.role !== 'admin'"
                 @click="handleDelete(user); closeActionMenu()"
                 class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
               >
                 <Icon name="trash" size="sm" :stroke-width="2" />
                 {{ t('common.delete') }}
-              </button>
+              </ElButton>
             </template>
           </template>
-        </div>
-      </div>
-    </Teleport>
+        </div></div></ElementFloatingPanel>
 
     <ConfirmDialog :show="showDeleteDialog" :title="t('admin.users.deleteUser')" :message="t('admin.users.deleteConfirm', { email: deletingUser?.email })" :danger="true" @confirm="confirmDelete" @cancel="showDeleteDialog = false" />
     <ConfirmDialog

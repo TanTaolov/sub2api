@@ -5,78 +5,58 @@
       <!-- Left: filters (allowed to wrap to multiple rows) -->
       <div class="flex flex-1 flex-wrap items-end gap-4">
         <!-- User Search -->
-        <div ref="userSearchRef" class="usage-filter-dropdown relative w-full sm:w-auto sm:min-w-[240px]">
-          <label class="input-label">{{ t('admin.usage.userFilter') }}</label>
-          <input
+        <ElementFloatingPanel  :visible="Boolean(showUserDropdown && (userResults.length > 0 || userKeyword))" fit-reference width="192" @close="showUserDropdown = false"><template #reference><div ref="userSearchRef" class="usage-filter-dropdown relative w-full sm:w-auto sm:min-w-[240px]"><label class="input-label">{{ t('admin.usage.userFilter') }}</label><ElementInput
             v-model="userKeyword"
             type="text"
             class="input pr-8"
             :placeholder="t('admin.usage.searchUserPlaceholder')"
             @input="debounceUserSearch"
             @focus="showUserDropdown = true"
-          />
-          <button
+          /><ElButton text
             v-if="filters.user_id"
-            type="button"
+            native-type="button"
             @click="clearUser"
             class="absolute right-2 top-9 text-gray-400"
             aria-label="Clear user filter"
           >
             ✕
-          </button>
-          <div
-            v-if="showUserDropdown && (userResults.length > 0 || userKeyword)"
-            class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg dark:bg-dark-800"
-          >
-            <button
+          </ElButton></div></template><div  class="max-h-80 overflow-y-auto py-1"><ElButton text
               v-for="u in userResults"
               :key="u.id"
-              type="button"
+              native-type="button"
               @click="selectUser(u)"
               class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-dark-700"
             >
               <span>{{ u.email }}<span v-if="u.deleted" class="ml-1 text-xs text-gray-400">（{{ t('admin.usage.userDeletedBadge') }}）</span></span>
               <span class="ml-2 text-xs text-gray-400">#{{ u.id }}</span>
-            </button>
-          </div>
-        </div>
+            </ElButton></div></ElementFloatingPanel>
 
         <!-- API Key Search -->
-        <div ref="apiKeySearchRef" class="usage-filter-dropdown relative w-full sm:w-auto sm:min-w-[240px]">
-          <label class="input-label">{{ t('usage.apiKeyFilter') }}</label>
-          <input
+        <ElementFloatingPanel  :visible="Boolean(showApiKeyDropdown && apiKeyResults.length > 0)" fit-reference width="192" @close="showApiKeyDropdown = false"><template #reference><div ref="apiKeySearchRef" class="usage-filter-dropdown relative w-full sm:w-auto sm:min-w-[240px]"><label class="input-label">{{ t('usage.apiKeyFilter') }}</label><ElementInput
             v-model="apiKeyKeyword"
             type="text"
             class="input pr-8"
             :placeholder="t('admin.usage.searchApiKeyPlaceholder')"
             @input="debounceApiKeySearch"
             @focus="onApiKeyFocus"
-          />
-          <button
+          /><ElButton text
             v-if="filters.api_key_id"
-            type="button"
+            native-type="button"
             @click="onClearApiKey"
             class="absolute right-2 top-9 text-gray-400"
             aria-label="Clear API key filter"
           >
             ✕
-          </button>
-          <div
-            v-if="showApiKeyDropdown && apiKeyResults.length > 0"
-            class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg dark:bg-dark-800"
-          >
-            <button
+          </ElButton></div></template><div  class="max-h-80 overflow-y-auto py-1"><ElButton text
               v-for="k in apiKeyResults"
               :key="k.id"
-              type="button"
+              native-type="button"
               @click="selectApiKey(k)"
               class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-dark-700"
             >
               <span class="truncate">{{ k.name || `#${k.id}` }}</span>
               <span class="ml-2 text-xs text-gray-400">#{{ k.id }}</span>
-            </button>
-          </div>
-        </div>
+            </ElButton></div></ElementFloatingPanel>
 
         <!-- Model Filter -->
         <div class="w-full sm:w-auto sm:min-w-[220px]">
@@ -85,41 +65,31 @@
         </div>
 
         <!-- Account Filter -->
-        <div ref="accountSearchRef" class="usage-filter-dropdown relative w-full sm:w-auto sm:min-w-[220px]">
-          <label class="input-label">{{ t('admin.usage.account') }}</label>
-          <input
+        <ElementFloatingPanel  :visible="Boolean(showAccountDropdown && (accountResults.length > 0 || accountKeyword))" fit-reference width="192" @close="showAccountDropdown = false"><template #reference><div ref="accountSearchRef" class="usage-filter-dropdown relative w-full sm:w-auto sm:min-w-[220px]"><label class="input-label">{{ t('admin.usage.account') }}</label><ElementInput
             v-model="accountKeyword"
             type="text"
             class="input pr-8"
             :placeholder="t('admin.usage.searchAccountPlaceholder')"
             @input="debounceAccountSearch"
             @focus="showAccountDropdown = true"
-          />
-          <button
+          /><ElButton text
             v-if="filters.account_id"
-            type="button"
+            native-type="button"
             @click="clearAccount"
             class="absolute right-2 top-9 text-gray-400"
             aria-label="Clear account filter"
           >
             ✕
-          </button>
-          <div
-            v-if="showAccountDropdown && (accountResults.length > 0 || accountKeyword)"
-            class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg dark:bg-dark-800"
-          >
-            <button
+          </ElButton></div></template><div  class="max-h-80 overflow-y-auto py-1"><ElButton text
               v-for="a in accountResults"
               :key="a.id"
-              type="button"
+              native-type="button"
               @click="selectAccount(a)"
               class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-dark-700"
             >
               <span class="truncate">{{ a.name }}</span>
               <span class="ml-2 text-xs text-gray-400">#{{ a.id }}</span>
-            </button>
-          </div>
-        </div>
+            </ElButton></div></ElementFloatingPanel>
 
         <!-- Request Type Filter (usage only) -->
         <div v-if="mode !== 'errors'" class="w-full sm:w-auto sm:min-w-[180px]">
@@ -178,20 +148,20 @@
 
       <!-- Right: actions -->
       <div v-if="showActions" class="flex w-full flex-wrap items-center justify-end gap-3 sm:w-auto">
-        <button type="button" @click="$emit('refresh')" class="btn btn-secondary">
+        <ElButton native-type="button" @click="$emit('refresh')" class="">
           {{ t('common.refresh') }}
-        </button>
-        <button type="button" @click="$emit('reset')" class="btn btn-secondary">
+        </ElButton>
+        <ElButton native-type="button" @click="$emit('reset')" class="">
           {{ t('common.reset') }}
-        </button>
+        </ElButton>
         <slot name="after-reset" />
         <template v-if="mode === 'usage'">
-          <button type="button" @click="$emit('cleanup')" class="btn btn-danger">
+          <ElButton type="danger" native-type="button" @click="$emit('cleanup')" class="">
             {{ t('admin.usage.cleanup.button') }}
-          </button>
-          <button type="button" @click="$emit('export')" :disabled="exporting" class="btn btn-primary">
+          </ElButton>
+          <ElButton type="primary" native-type="button" @click="$emit('export')" :disabled="exporting" class="">
             {{ t('usage.exportExcel') }}
-          </button>
+          </ElButton>
         </template>
       </div>
     </div>

@@ -27,10 +27,10 @@
         <span v-if="provider.payment_mode" class="text-xs text-gray-400 dark:text-gray-500">· {{ modeLabel }}</span>
         <span v-if="enabled && availableTypes.length" class="text-xs text-gray-300 dark:text-gray-600">|</span>
         <div v-if="enabled" class="flex items-center gap-1">
-          <button
+          <ElButton text
             v-for="pt in availableTypes"
             :key="pt.value"
-            type="button"
+            native-type="button"
             @click="emit('toggleType', pt.value)"
             :class="[
               'rounded px-2 py-0.5 text-xs font-medium transition-all',
@@ -38,7 +38,7 @@
                 ? 'bg-primary-500 text-white'
                 : 'bg-gray-100 text-gray-400 dark:bg-dark-700 dark:text-gray-500',
             ]"
-          >{{ pt.label }}</button>
+          >{{ pt.label }}</ElButton>
         </div>
       </div>
 
@@ -48,14 +48,14 @@
         <ToggleSwitch :label="t('admin.settings.payment.refundEnabled')" :checked="provider.refund_enabled" @toggle="emit('toggleField', 'refund_enabled')" />
         <ToggleSwitch v-if="provider.refund_enabled" :label="t('admin.settings.payment.allowUserRefund')" :checked="provider.allow_user_refund" @toggle="emit('toggleField', 'allow_user_refund')" />
         <div class="flex items-center gap-2 border-l border-gray-200 pl-3 dark:border-dark-600">
-          <button type="button" @click="emit('edit')" class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400">
+          <ElButton text native-type="button" @click="emit('edit')" class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400">
             <Icon name="edit" size="sm" />
             <span class="text-xs">{{ t('common.edit') }}</span>
-          </button>
-          <button type="button" @click="emit('delete')" class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400">
+          </ElButton>
+          <ElButton text native-type="button" @click="emit('delete')" class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400">
             <Icon name="trash" size="sm" />
             <span class="text-xs">{{ t('common.delete') }}</span>
-          </button>
+          </ElButton>
         </div>
       </div>
     </div>

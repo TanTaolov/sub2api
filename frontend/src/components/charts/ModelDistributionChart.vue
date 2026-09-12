@@ -1,5 +1,5 @@
 <template>
-  <div class="card p-4">
+  <ElCard shadow="never" class="element-surface-card p-4">
     <div class="mb-4 flex items-center justify-between gap-3">
       <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
         {{ !enableRankingView || activeView === 'model_distribution'
@@ -11,8 +11,8 @@
           v-if="showSourceToggle"
           class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 dark:border-dark-700 dark:bg-dark-800"
         >
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
             :class="source === 'requested'
               ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
@@ -20,9 +20,9 @@
             @click="emit('update:source', 'requested')"
           >
             {{ t('usage.requestedModel') }}
-          </button>
-          <button
-            type="button"
+          </ElButton>
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
             :class="source === 'upstream'
               ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
@@ -30,9 +30,9 @@
             @click="emit('update:source', 'upstream')"
           >
             {{ t('usage.upstreamModel') }}
-          </button>
-          <button
-            type="button"
+          </ElButton>
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
             :class="source === 'mapping'
               ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
@@ -40,14 +40,14 @@
             @click="emit('update:source', 'mapping')"
           >
             {{ t('usage.mapping') }}
-          </button>
+          </ElButton>
         </div>
         <div
           v-if="showMetricToggle"
           class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 dark:border-dark-700 dark:bg-dark-800"
         >
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
             :class="metric === 'tokens'
               ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
@@ -55,9 +55,9 @@
             @click="emit('update:metric', 'tokens')"
           >
             {{ t('admin.dashboard.metricTokens') }}
-          </button>
-          <button
-            type="button"
+          </ElButton>
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
             :class="metric === 'actual_cost'
               ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
@@ -65,11 +65,11 @@
             @click="emit('update:metric', 'actual_cost')"
           >
             {{ t('admin.dashboard.metricActualCost') }}
-          </button>
+          </ElButton>
         </div>
         <div v-if="enableRankingView" class="inline-flex rounded-lg bg-gray-100 p-1 dark:bg-dark-800">
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
             :class="
               activeView === 'model_distribution'
@@ -79,9 +79,9 @@
             @click="activeView = 'model_distribution'"
           >
             {{ t('admin.dashboard.viewModelDistribution') }}
-          </button>
-          <button
-            type="button"
+          </ElButton>
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
             :class="
               activeView === 'spending_ranking'
@@ -91,7 +91,7 @@
             @click="activeView = 'spending_ranking'"
           >
             {{ t('admin.dashboard.viewSpendingRanking') }}
-          </button>
+          </ElButton>
         </div>
       </div>
     </div>
@@ -107,63 +107,18 @@
         <Doughnut :data="chartData" :options="doughnutOptions" />
       </div>
       <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-        <table class="w-full text-xs">
-          <thead>
-            <tr class="text-gray-500 dark:text-gray-400">
-              <th class="pb-2 text-left">{{ t('admin.dashboard.model') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.requests') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.tokens') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.actual') }}</th>
-              <th v-if="showAccountCost" class="pb-2 text-right">{{ t('admin.dashboard.accountCost') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.standard') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <template v-for="model in displayModelStats" :key="model.model">
-              <tr
-                class="border-t border-gray-100 transition-colors dark:border-dark-700"
-                :class="enableBreakdown ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-700/40' : ''"
-                @click="enableBreakdown && toggleBreakdown('model', model.model)"
-              >
-                <td
-                  class="max-w-[100px] truncate py-1.5 font-medium"
-                  :class="enableBreakdown ? 'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300' : 'text-gray-900 dark:text-white'"
-                  :title="model.model"
-                >
-                  <span class="inline-flex items-center gap-1">
-                    <svg v-if="enableBreakdown && expandedKey === `model-${model.model}`" class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    <svg v-else-if="enableBreakdown" class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    {{ model.model }}
-                  </span>
-                </td>
-                <td class="py-1.5 text-right text-gray-600 dark:text-gray-400">
-                  {{ formatNumber(model.requests) }}
-                </td>
-                <td class="py-1.5 text-right text-gray-600 dark:text-gray-400">
-                  {{ formatTokens(model.total_tokens) }}
-                </td>
-                <td class="py-1.5 text-right text-green-600 dark:text-green-400">
-                  ${{ formatCost(model.actual_cost) }}
-                </td>
-                <td v-if="showAccountCost" class="py-1.5 text-right text-orange-500 dark:text-orange-400">
-                  ${{ formatCost(model.account_cost) }}
-                </td>
-                <td class="py-1.5 text-right text-gray-400 dark:text-gray-500">
-                  ${{ formatCost(model.cost) }}
-                </td>
-              </tr>
-              <tr v-if="expandedKey === `model-${model.model}`">
-                <td :colspan="distributionColspan" class="p-0">
-                  <UserBreakdownSubTable
+        <ElTable :data="displayModelStats" :row-key="(model) => `model-${model.model}`" :expand-row-keys="expandedKey === null ? [] : [expandedKey]" size="small" class="element-data-table" @row-click="(model) => { enableBreakdown &amp;&amp; toggleBreakdown('model', model.model) }" @expand-change="(model, expandedRows) => { if (expandedRows.includes(model) !== (expandedKey === `model-${model.model}`)) { enableBreakdown &amp;&amp; toggleBreakdown('model', model.model) } }"><ElTableColumn v-if="enableBreakdown" type="expand"><template #default="{row: model}"><UserBreakdownSubTable
                     :items="breakdownItems"
                     :loading="breakdownLoading"
                     :show-account-cost="showAccountCost"
-                  />
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
+                  /></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('admin.dashboard.model') }}</template><template #default="{row: model}"><div class="max-w-[100px] truncate py-1.5 font-medium" :class="enableBreakdown ? 'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300' : 'text-gray-900 dark:text-white'" :title="model.model"><span class="inline-flex items-center gap-1">
+                    <svg v-if="enableBreakdown && expandedKey === `model-${model.model}`" class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <svg v-else-if="enableBreakdown" class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    {{ model.model }}
+                  </span></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('admin.dashboard.requests') }}</template><template #default="{row: model}"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400">{{ formatNumber(model.requests) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('admin.dashboard.tokens') }}</template><template #default="{row: model}"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400">{{ formatTokens(model.total_tokens) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('admin.dashboard.actual') }}</template><template #default="{row: model}"><div class="py-1.5 text-right text-green-600 dark:text-green-400">
+                  ${{ formatCost(model.actual_cost) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  v-if="showAccountCost" align="right"><template #header>{{ t('admin.dashboard.accountCost') }}</template><template #default="{row: model}"><div class="py-1.5 text-right text-orange-500 dark:text-orange-400">
+                  ${{ formatCost(model.account_cost) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('admin.dashboard.standard') }}</template><template #default="{row: model}"><div class="py-1.5 text-right text-gray-400 dark:text-gray-500">
+                  ${{ formatCost(model.cost) }}</div></template></ElTableColumn></ElTable>
       </div>
     </div>
     <div
@@ -187,27 +142,12 @@
         <Doughnut :data="rankingChartData" :options="rankingDoughnutOptions" />
       </div>
       <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-        <table class="w-full text-xs">
-          <thead>
-            <tr class="text-gray-500 dark:text-gray-400">
-              <th class="pb-2 text-left">{{ t('admin.dashboard.spendingRankingUser') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.spendingRankingRequests') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.spendingRankingTokens') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.spendingRankingSpend') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(item, index) in rankingDisplayItems"
-              :key="item.isOther ? 'others' : `${item.user_id}-${index}`"
-              class="border-t border-gray-100 transition-colors dark:border-dark-700"
-              :class="item.isOther
+        <ElTable  @row-click="(item) => { item.isOther ? undefined : emit('ranking-click', item) }" :row-class-name="({ row: item }) => &quot;border-t border-gray-100 transition-colors dark:border-dark-700&quot; + ' ' + (item.isOther
                 ? 'bg-gray-50/70 dark:bg-dark-700/20'
-                : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-700/40'"
-              @click="item.isOther ? undefined : emit('ranking-click', item)"
-            >
-              <td class="py-1.5">
-                <div class="flex min-w-0 items-center gap-2">
+                : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-700/40')" :data="rankingDisplayItems" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="pb-2 text-left">{{ t('admin.dashboard.spendingRankingUser') }}</div></template>
+    <template #default="{ row: item, $index: index }"><div class="py-1.5" ><div class="flex min-w-0 items-center gap-2">
                   <span class="shrink-0 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
                     {{ item.isOther ? 'Σ' : `#${index + 1}` }}
                   </span>
@@ -217,20 +157,22 @@
                   >
                     {{ getRankingRowLabel(item) }}
                   </span>
-                </div>
-              </td>
-              <td class="py-1.5 text-right text-gray-600 dark:text-gray-400">
-                {{ formatNumber(item.requests) }}
-              </td>
-              <td class="py-1.5 text-right text-gray-600 dark:text-gray-400">
-                {{ formatTokens(item.tokens) }}
-              </td>
-              <td class="py-1.5 text-right text-green-600 dark:text-green-400">
-                ${{ formatCost(item.actual_cost) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </div></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="right">
+    <template #header><div class="pb-2 text-right">{{ t('admin.dashboard.spendingRankingRequests') }}</div></template>
+    <template #default="{ row: item, $index: index }"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400" >{{ formatNumber(item.requests) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="right">
+    <template #header><div class="pb-2 text-right">{{ t('admin.dashboard.spendingRankingTokens') }}</div></template>
+    <template #default="{ row: item, $index: index }"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400" >{{ formatTokens(item.tokens) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="right">
+    <template #header><div class="pb-2 text-right">{{ t('admin.dashboard.spendingRankingSpend') }}</div></template>
+    <template #default="{ row: item, $index: index }"><div class="py-1.5 text-right text-green-600 dark:text-green-400" >
+                ${{ formatCost(item.actual_cost) }}</div></template>
+  </ElTableColumn>
+</ElTable>
       </div>
     </div>
     <div
@@ -239,7 +181,7 @@
     >
       {{ t('admin.dashboard.noDataAvailable') }}
     </div>
-  </div>
+  </ElCard>
 </template>
 
 <script setup lang="ts">
@@ -336,7 +278,7 @@ const emit = defineEmits<{
 
 const enableRankingView = computed(() => props.enableRankingView)
 const showAccountCost = computed(() => props.showAccountCost)
-const distributionColspan = computed(() => showAccountCost.value ? 6 : 5)
+
 const activeView = ref<'model_distribution' | 'spending_ranking'>('model_distribution')
 
 const chartColors = [

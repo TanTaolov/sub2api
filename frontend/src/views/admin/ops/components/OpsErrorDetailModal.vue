@@ -167,8 +167,8 @@
                 <div class="font-mono text-xs text-gray-500 dark:text-gray-400">
                   {{ ev.status_code ?? '—' }}
                 </div>
-                <button
-                  type="button"
+                <ElButton text
+                  native-type="button"
                   class="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-[10px] font-bold text-primary-700 hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-primary-200 dark:hover:bg-dark-700"
                   :disabled="!getUpstreamResponsePreview(ev)"
                   :title="getUpstreamResponsePreview(ev) ? '' : t('common.noData')"
@@ -186,7 +186,7 @@
                         : t('admin.ops.errorDetail.responsePreview.expand')
                     }}
                   </span>
-                </button>
+                </ElButton>
               </div>
             </div>
 
@@ -212,14 +212,14 @@
       </div>
     </div>
     <template v-if="backToList" #footer>
-      <button
-        type="button"
-        class="btn btn-secondary"
+      <ElButton
+        native-type="button"
+        class=""
         data-testid="error-detail-back-to-list"
         @click="goBack"
       >
         {{ t('admin.ops.errorDetail.backToList') }}
-      </button>
+      </ElButton>
     </template>
   </BaseDialog>
 </template>

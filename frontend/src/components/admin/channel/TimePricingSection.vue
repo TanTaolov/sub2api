@@ -36,14 +36,14 @@
           </div>
         </div>
       </div>
-      <button
-        type="button"
+      <ElButton text
+        native-type="button"
         class="self-start text-xs text-primary-600 hover:text-primary-700 sm:self-end sm:pb-2"
         data-testid="add-time-period"
         @click="addPeriod"
       >
         + {{ t('admin.channels.form.addTimePeriod') }}
-      </button>
+      </ElButton>
     </div>
 
     <div v-if="modelValue.periods.length > 0" class="mt-3 space-y-3">
@@ -56,7 +56,7 @@
           <label :for="`${inputIdPrefix}-start-${index}`" class="block text-xs text-gray-400">
             {{ t('admin.channels.form.startTime') }}
           </label>
-          <input
+          <ElementInput
             :id="`${inputIdPrefix}-start-${index}`"
             :value="period.start_time"
             type="text"
@@ -73,7 +73,7 @@
           <label :for="`${inputIdPrefix}-end-${index}`" class="block text-xs text-gray-400">
             {{ t('admin.channels.form.endTime') }}
           </label>
-          <input
+          <ElementInput
             :id="`${inputIdPrefix}-end-${index}`"
             :value="period.end_time"
             type="text"
@@ -90,7 +90,7 @@
           <label :for="`${inputIdPrefix}-multiplier-${index}`" class="block text-xs text-gray-400">
             {{ t('admin.channels.form.multiplier') }}
           </label>
-          <input
+          <ElementInput
             :id="`${inputIdPrefix}-multiplier-${index}`"
             :value="period.multiplier"
             type="number"
@@ -101,8 +101,8 @@
             @blur="formatMultiplier(index, ($event.target as HTMLInputElement).value)"
           />
         </div>
-        <button
-          type="button"
+        <ElButton text
+          native-type="button"
           class="flex h-8 w-8 items-center justify-center rounded text-gray-400 hover:text-red-500"
           :title="t('admin.channels.form.removeTimePeriod')"
           :aria-label="t('admin.channels.form.removeTimePeriod')"
@@ -110,7 +110,7 @@
           @click="removePeriod(index)"
         >
           <Icon name="trash" size="sm" />
-        </button>
+        </ElButton>
       </div>
     </div>
   </section>

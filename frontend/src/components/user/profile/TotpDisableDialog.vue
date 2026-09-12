@@ -24,12 +24,12 @@
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
         </div>
 
-        <form v-else @submit.prevent="handleDisable" class="space-y-4">
+        <ElForm v-else @submit.prevent="handleDisable" class="space-y-4">
           <!-- Email verification -->
           <div v-if="verificationMethod === 'email'">
             <label class="input-label">{{ t('profile.totp.emailCode') }}</label>
             <div class="flex gap-2">
-              <input
+              <ElementInput
                 v-model="form.emailCode"
                 type="text"
                 maxlength="6"
@@ -37,14 +37,14 @@
                 class="input flex-1"
                 :placeholder="t('profile.totp.enterEmailCode')"
               />
-              <button
-                type="button"
-                class="btn btn-secondary whitespace-nowrap"
+              <ElButton
+                native-type="button"
+                class="whitespace-nowrap"
                 :disabled="sendingCode || codeCooldown > 0"
                 @click="handleSendCode"
               >
                 {{ codeCooldown > 0 ? `${codeCooldown}s` : (sendingCode ? t('common.sending') : t('profile.totp.sendCode')) }}
-              </button>
+              </ElButton>
             </div>
           </div>
 
@@ -53,7 +53,7 @@
             <label for="password" class="input-label">
               {{ t('profile.currentPassword') }}
             </label>
-            <input
+            <ElementInput
               id="password"
               v-model="form.password"
               type="password"
@@ -65,18 +65,18 @@
 
           <!-- Actions -->
           <div class="flex justify-end gap-3 pt-4">
-            <button type="button" class="btn btn-secondary" @click="$emit('close')">
+            <ElButton native-type="button" class="" @click="$emit('close')">
               {{ t('common.cancel') }}
-            </button>
-            <button
-              type="submit"
-              class="btn btn-danger"
+            </ElButton>
+            <ElButton type="danger"
+              native-type="submit"
+              class=""
               :disabled="loading || !canSubmit"
             >
               {{ loading ? t('common.processing') : t('profile.totp.confirmDisable') }}
-            </button>
+            </ElButton>
           </div>
-        </form>
+        </ElForm>
       </div>
     </div>
   </div>

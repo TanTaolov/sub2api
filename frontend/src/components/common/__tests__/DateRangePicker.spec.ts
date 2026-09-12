@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { ElPopover, ElButton } from 'element-plus'
 import { ref } from 'vue'
 
 import DateRangePicker from '../DateRangePicker.vue'
@@ -34,6 +35,7 @@ const formatLocalDate = (date: Date): string => {
 }
 
 describe('DateRangePicker', () => {
+  afterEach(() => { document.body.innerHTML = '' })
   it('uses last 24 hours as the default recognized preset', () => {
     const now = new Date()
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
@@ -51,6 +53,7 @@ describe('DateRangePicker', () => {
     })
 
     expect(wrapper.text()).toContain('Last 24 Hours')
+    wrapper.unmount()
   })
 
   it('emits range updates with last24Hours preset when applied', async () => {
@@ -69,14 +72,13 @@ describe('DateRangePicker', () => {
       }
     })
 
-    await wrapper.find('.date-picker-trigger').trigger('click')
-    const presetButton = wrapper.findAll('.date-picker-preset').find((node) =>
-      node.text().includes('Last 24 Hours')
-    )
+    wrapper.getComponent(ElPopover).vm.$emit('update:visible', true)
+    await wrapper.vm.$nextTick()
+    const buttons = wrapper.findAllComponents(ElButton)
+    const presetButton = buttons.find(button => button.text() === 'Last 24 Hours')
     expect(presetButton).toBeDefined()
-
     await presetButton!.trigger('click')
-    await wrapper.find('.date-picker-apply').trigger('click')
+    await buttons.find(button => button.text() === 'Apply')!.trigger('click')
 
     const nowAfterClick = new Date()
     const yesterdayAfterClick = new Date(nowAfterClick.getTime() - 24 * 60 * 60 * 1000)
@@ -92,5 +94,6 @@ describe('DateRangePicker', () => {
         preset: 'last24Hours'
       }
     ])
+    wrapper.unmount()
   })
 })

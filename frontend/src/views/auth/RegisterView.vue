@@ -27,7 +27,7 @@
       </div>
 
       <!-- Registration Form -->
-      <form v-else @submit.prevent="handleRegister" class="space-y-5">
+      <ElForm v-else @submit.prevent="handleRegister" class="space-y-5">
         <!-- Email Input -->
         <div>
           <label for="email" class="input-label">
@@ -37,7 +37,7 @@
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
               <Icon name="mail" size="md" class="text-gray-400 dark:text-dark-500" />
             </div>
-            <input
+            <ElementInput
               id="email"
               v-model="formData.email"
               type="email"
@@ -61,7 +61,7 @@
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
               <Icon name="lock" size="md" class="text-gray-400 dark:text-dark-500" />
             </div>
-            <input
+            <ElementInput
               id="password"
               v-model="formData.password"
               :type="showPassword ? 'text' : 'password'"
@@ -72,15 +72,15 @@
               :class="{ 'input-error': errors.password }"
               :placeholder="t('auth.createPasswordPlaceholder')"
             />
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               :disabled="registrationActionDisabled"
               @click="showPassword = !showPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-dark-300"
             >
               <Icon v-if="showPassword" name="eyeOff" size="md" />
               <Icon v-else name="eye" size="md" />
-            </button>
+            </ElButton>
           </div>
           <p class="input-hint">
             {{ t('auth.passwordHint') }}
@@ -96,7 +96,7 @@
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
               <Icon name="key" size="md" :class="invitationValidation.valid ? 'text-green-500' : 'text-gray-400 dark:text-dark-500'" />
             </div>
-            <input
+            <ElementInput
               id="invitation_code"
               v-model="formData.invitation_code"
               type="text"
@@ -144,7 +144,7 @@
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
               <Icon name="key" size="md" class="text-gray-400 dark:text-dark-500" />
             </div>
-            <input
+            <ElementInput
               id="affiliate_code"
               v-model="formData.aff_code"
               type="text"
@@ -165,7 +165,7 @@
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
               <Icon name="gift" size="md" :class="promoValidation.valid ? 'text-green-500' : 'text-gray-400 dark:text-dark-500'" />
             </div>
-            <input
+            <ElementInput
               id="promo_code"
               v-model="formData.promo_code"
               type="text"
@@ -235,10 +235,10 @@
         />
 
         <!-- Submit Button -->
-        <button
-          type="submit"
+        <ElButton type="primary"
+          native-type="submit"
           :disabled="registrationActionDisabled || (turnstileEnabled && !turnstileToken)"
-          class="btn btn-primary w-full"
+          class="w-full"
         >
           <svg
             v-if="isLoading"
@@ -268,9 +268,9 @@
                 ? t('auth.continue')
                 : t('auth.createAccount')
           }}
-        </button>
+        </ElButton>
 
-      </form>
+      </ElForm>
 
       <div v-if="showOAuthLogin" class="space-y-3 pt-1">
         <div class="flex items-center gap-3">

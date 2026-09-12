@@ -29,29 +29,25 @@
           <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
             {{ t('monitorCommon.extraModelsHeader') }}
           </div>
-          <table class="w-full text-left text-[11px]">
-            <thead>
-              <tr class="text-gray-400">
-                <th class="py-0.5 pr-2 font-medium">{{ t('admin.channelMonitor.columns.primaryModel') }}</th>
-                <th class="py-0.5 pr-2 font-medium">{{ t('admin.channelMonitor.columns.actions') }}</th>
-                <th class="py-0.5 font-medium">{{ t('admin.channelMonitor.columns.latency') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="m in (row.extra_models_status || [])" :key="m.model">
-                <td class="py-0.5 pr-2 text-gray-100">{{ m.model }}</td>
-                <td class="py-0.5 pr-2">
-                  <span
+          <ElTable  row-key="model" row-class-name="" :data="(row.extra_models_status || [])" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="py-0.5 pr-2 font-medium">{{ t('admin.channelMonitor.columns.primaryModel') }}</div></template>
+    <template #default="{ row: m, $index: rowIndex }"><div class="py-0.5 pr-2 text-gray-100" >{{ m.model }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="py-0.5 pr-2 font-medium">{{ t('admin.channelMonitor.columns.actions') }}</div></template>
+    <template #default="{ row: m, $index: rowIndex }"><div class="py-0.5 pr-2" ><span
                     class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px]"
                     :class="statusBadgeClass(m.status)"
                   >
                     {{ statusLabel(m.status) }}
-                  </span>
-                </td>
-                <td class="py-0.5 text-gray-100">{{ formatLatency(m.latency_ms) }}</td>
-              </tr>
-            </tbody>
-          </table>
+                  </span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="py-0.5 font-medium">{{ t('admin.channelMonitor.columns.latency') }}</div></template>
+    <template #default="{ row: m, $index: rowIndex }"><div class="py-0.5 text-gray-100" >{{ formatLatency(m.latency_ms) }}</div></template>
+  </ElTableColumn>
+</ElTable>
         </div>
       </div>
       </HelpTooltip>

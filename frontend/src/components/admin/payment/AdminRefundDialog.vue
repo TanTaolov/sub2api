@@ -5,7 +5,7 @@
     width="normal"
     @close="emit('cancel')"
   >
-    <form id="refund-form" @submit.prevent="handleSubmit" class="space-y-4">
+    <ElForm id="refund-form" @submit.prevent="handleSubmit" class="space-y-4">
       <!-- Refund Request Info -->
       <div
         v-if="order?.refund_requested_at || order?.refund_request_reason"
@@ -50,11 +50,11 @@
       <!-- Deduct Balance -->
       <div>
         <div class="flex items-center gap-2">
-          <input
+          <ElementCheckbox
             id="deduct-balance"
             v-model="form.deduct_balance"
-            type="checkbox"
-            class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+
+            class=""
           />
           <label for="deduct-balance" class="text-sm text-gray-700 dark:text-gray-300">
             {{ t('payment.admin.deductBalance') }}
@@ -96,7 +96,7 @@
         <label class="input-label">{{ t('payment.admin.refundAmount') }}</label>
         <div class="relative">
           <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{{ creditedAmountSymbol }}</span>
-          <input
+          <ElementInput
             v-model.number="form.amount"
             type="number"
             step="0.01"
@@ -114,13 +114,13 @@
       <!-- Reason -->
       <div>
         <label class="input-label">{{ t('payment.admin.refundReason') }}</label>
-        <textarea
+        <ElementInput type="textarea"
           v-model="form.reason"
-          rows="3"
+          :rows="3"
           class="input"
           :placeholder="t('payment.admin.refundReasonPlaceholder')"
           required
-        ></textarea>
+        ></ElementInput>
       </div>
 
       <!-- Warning -->
@@ -133,31 +133,31 @@
 
       <!-- Force Refund -->
       <div v-if="requireForce" class="flex items-center gap-2">
-        <input
+        <ElementCheckbox
           id="force-refund"
           v-model="form.force"
-          type="checkbox"
-          class="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+
+          class=""
         />
         <label for="force-refund" class="text-sm font-medium text-red-600 dark:text-red-400">
           {{ t('payment.admin.forceRefund') }}
         </label>
       </div>
-    </form>
+    </ElForm>
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <button type="button" @click="emit('cancel')" class="btn btn-secondary">
+        <ElButton native-type="button" @click="emit('cancel')" class="">
           {{ t('common.cancel') }}
-        </button>
-        <button
-          type="submit"
+        </ElButton>
+        <ElButton type="danger"
+          native-type="submit"
           form="refund-form"
           :disabled="submitting || form.amount <= 0 || (requireForce && !form.force)"
           class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-dark-800"
         >
           {{ submitting ? t('common.processing') : t('payment.admin.confirmRefund') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

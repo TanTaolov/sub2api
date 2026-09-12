@@ -1,43 +1,43 @@
 <template>
-  <button
-    type="button"
+  <ElButton text
+    native-type="button"
     class="rounded-lg bg-primary-50 px-3 py-1 text-xs text-primary-700 transition-colors hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-400 dark:hover:bg-primary-900/50"
     @click="toggleImportPanel"
   >
     {{ t('admin.accounts.headerOverride.importJson') }}
-  </button>
-  <button
-    type="button"
+  </ElButton>
+  <ElButton text
+    native-type="button"
     class="rounded-lg bg-primary-50 px-3 py-1 text-xs text-primary-700 transition-colors hover:bg-primary-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-primary-900/30 dark:text-primary-400 dark:hover:bg-primary-900/50"
     :disabled="!hasNamedRows"
     @click="copyAsJson"
   >
     {{ t('admin.accounts.headerOverride.copyJson') }}
-  </button>
+  </ElButton>
 
   <div v-if="showImportPanel" ref="importPanelRef" class="w-full space-y-2">
-    <textarea
+    <ElementInput type="textarea"
       ref="importTextareaRef"
       v-model="importText"
-      rows="5"
+      :rows="5"
       class="input font-mono text-xs"
       :placeholder="IMPORT_JSON_PLACEHOLDER"
-    ></textarea>
+    ></ElementInput>
     <div class="flex gap-2">
-      <button
-        type="button"
+      <ElButton type="primary"
+        native-type="button"
         class="rounded-lg bg-primary-600 px-3 py-1 text-xs text-white transition-colors hover:bg-primary-700"
         @click="applyImport"
       >
         {{ t('admin.accounts.headerOverride.importJsonApply') }}
-      </button>
-      <button
-        type="button"
+      </ElButton>
+      <ElButton text
+        native-type="button"
         class="rounded-lg bg-gray-100 px-3 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-200 dark:bg-dark-600 dark:text-gray-400 dark:hover:bg-dark-500"
         @click="closeImportPanel"
       >
         {{ t('admin.accounts.headerOverride.importJsonCancel') }}
-      </button>
+      </ElButton>
     </div>
     <p class="text-xs text-gray-500 dark:text-gray-400">
       {{ t('admin.accounts.headerOverride.importJsonHint') }}

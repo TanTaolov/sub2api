@@ -1,10 +1,5 @@
 <template>
-  <div v-if="controller.visible.value" class="fixed inset-0 z-[60] overflow-y-auto">
-    <div class="flex min-h-full items-center justify-center p-4">
-      <div class="fixed inset-0 bg-black/50 transition-opacity" @click="handleCancel"></div>
-
-      <div class="relative w-full max-w-md transform rounded-xl bg-white p-6 shadow-xl transition-all dark:bg-dark-800">
-        <div class="mb-6 text-center">
+  <ElDialog :model-value="Boolean(controller.visible.value)" :title="t('stepUp.title')" width="448px" append-to-body align-center destroy-on-close class="element-dialog element-dialog-custom" :show-close="false" @update:model-value="visible => { if (!visible) { handleCancel() } }" @opened="inputRefs[0]?.focus()"><template v-if="controller.visible.value"><div class="mb-6 text-center">
           <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/30">
             <svg class="h-6 w-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
@@ -16,10 +11,8 @@
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {{ t('stepUp.hint') }}
           </p>
-        </div>
-
-        <div class="mb-6">
-          <input
+        </div><div class="mb-6">
+          <ElementInput
             ref="hiddenOtpInputRef"
             type="text"
             inputmode="numeric"
@@ -31,7 +24,7 @@
             @input="handleHiddenOtpInput"
           />
           <div class="flex justify-center gap-2">
-            <input
+            <ElementInput
               v-for="(_, index) in 6"
               :key="index"
               :ref="(el) => setInputRef(el, index)"
@@ -51,19 +44,14 @@
             <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500"></div>
             {{ t('common.verifying') }}
           </div>
-        </div>
-
-        <button
-          type="button"
-          class="btn btn-secondary w-full"
+        </div><ElButton
+          native-type="button"
+          class="w-full"
           :disabled="verifying"
           @click="handleCancel"
         >
           {{ t('common.cancel') }}
-        </button>
-      </div>
-    </div>
-  </div>
+        </ElButton></template></ElDialog>
 </template>
 
 <script setup lang="ts">

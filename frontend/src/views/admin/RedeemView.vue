@@ -5,7 +5,7 @@
         <div class="flex flex-wrap items-center gap-3">
           <!-- Left: Search + Filters -->
           <div class="flex-1 sm:max-w-64">
-            <input
+            <ElementInput
               v-model="searchQuery"
               type="text"
               :placeholder="t('admin.redeem.searchCodes')"
@@ -28,29 +28,29 @@
 
           <!-- Right: Action buttons -->
           <div class="flex flex-1 flex-wrap items-center justify-end gap-2">
-            <button
+            <ElButton
               @click="loadCodes"
               :disabled="loading"
-              class="btn btn-secondary"
+              class=""
               :title="t('common.refresh')"
             >
               <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
-            </button>
-            <button @click="handleExportCodes" class="btn btn-secondary">
+            </ElButton>
+            <ElButton @click="handleExportCodes" class="">
               {{ t('admin.redeem.exportCsv') }}
-            </button>
-            <button
+            </ElButton>
+            <ElButton
               data-test="batch-update-open"
               @click="openBatchUpdateDialog"
               :disabled="selectedCount === 0 || batchUpdating"
-              class="btn btn-secondary"
+              class=""
             >
               <Icon name="edit" size="md" class="mr-2" />
               {{ t('admin.redeem.batchUpdate') }}
-            </button>
-            <button @click="showGenerateDialog = true" class="btn btn-primary">
+            </ElButton>
+            <ElButton type="primary" @click="showGenerateDialog = true" class="">
               {{ t('admin.redeem.generateCodes') }}
-            </button>
+            </ElButton>
           </div>
         </div>
       </template>
@@ -66,10 +66,10 @@
           @sort="handleSort"
         >
           <template #header-select>
-            <input
+            <ElementCheckbox
               data-test="select-all-codes"
-              type="checkbox"
-              class="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+
+              class="cursor-pointer"
               :checked="allVisibleSelected"
               @click.stop
               @change="toggleSelectAllVisible($event)"
@@ -77,10 +77,10 @@
           </template>
 
           <template #cell-select="{ row }">
-            <input
+            <ElementCheckbox
               data-test="select-code"
-              type="checkbox"
-              class="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+
+              class="cursor-pointer"
               :checked="selectedCodeIds.has(row.id)"
               @click.stop
               @change="toggleSelectRow(row.id, $event)"
@@ -90,7 +90,7 @@
           <template #cell-code="{ value }">
             <div class="flex items-center space-x-2">
               <code class="font-mono text-sm text-gray-900 dark:text-gray-100">{{ value }}</code>
-              <button
+              <ElButton text
                 @click="copyToClipboard(value)"
                 :class="[
                   'flex items-center transition-colors',
@@ -109,7 +109,7 @@
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
-              </button>
+              </ElButton>
             </div>
           </template>
 
@@ -183,7 +183,7 @@
 
           <template #cell-actions="{ row }">
             <div class="flex items-center space-x-2">
-              <button
+              <ElButton text
                 v-if="row.status === 'unused'"
                 @click="handleDelete(row)"
                 class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
@@ -197,7 +197,7 @@
                   />
                 </svg>
                 <span class="text-xs">{{ t('common.delete') }}</span>
-              </button>
+              </ElButton>
               <span v-else class="text-gray-400 dark:text-dark-500">-</span>
             </div>
           </template>
@@ -213,20 +213,20 @@
             {{ t('admin.redeem.selectedCount', { count: selectedCount }) }}
           </span>
           <div class="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               class="text-xs font-medium text-primary-700 hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200"
               @click="clearSelectedCodes"
             >
               {{ t('admin.redeem.clearSelection') }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary btn-sm"
+            </ElButton>
+            <ElButton type="primary" size="small"
+              native-type="button"
+              class=""
               @click="openBatchUpdateDialog"
             >
               {{ t('admin.redeem.batchUpdate') }}
-            </button>
+            </ElButton>
           </div>
         </div>
 
@@ -241,9 +241,9 @@
 
         <!-- Batch Actions -->
         <div v-if="filters.status === 'unused'" class="flex justify-end">
-          <button @click="showDeleteUnusedDialog = true" class="btn btn-danger">
+          <ElButton type="danger" @click="showDeleteUnusedDialog = true" class="">
             {{ t('admin.redeem.deleteAllUnused') }}
-          </button>
+          </ElButton>
         </div>
       </template>
     </TablePageLayout>
@@ -273,16 +273,8 @@
     />
 
     <!-- Generate Codes Dialog -->
-    <Teleport to="body">
-      <div v-if="showGenerateDialog" class="fixed inset-0 z-50 flex items-center justify-center">
-        <div class="fixed inset-0 bg-black/50" @click="showGenerateDialog = false"></div>
-        <div
-          class="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-dark-800"
-        >
-          <h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-            {{ t('admin.redeem.generateCodesTitle') }}
-          </h2>
-          <form @submit.prevent="handleGenerateCodes" class="space-y-4">
+    <ElDialog :model-value="Boolean(showGenerateDialog)" :title="t('admin.redeem.generateCodesTitle')" width="448px" append-to-body align-center destroy-on-close :show-close="true" :close-on-click-modal="true" :close-on-press-escape="true" class="element-dialog " @update:model-value="visible => { if (!visible) { showGenerateDialog = false } }">
+<template v-if="showGenerateDialog"><ElForm @submit.prevent="handleGenerateCodes" class="space-y-4">
             <div>
               <label class="input-label">{{ t('admin.redeem.codeType') }}</label>
               <Select v-model="generateForm.type" :options="typeOptions" />
@@ -296,7 +288,7 @@
                     : t('admin.redeem.columns.value')
                 }}
               </label>
-              <input
+              <ElementInput
                 v-model.number="generateForm.value"
                 type="number"
                 :step="generateForm.type === 'balance' ? '0.01' : '1'"
@@ -346,7 +338,7 @@
               </div>
               <div>
                 <label class="input-label">{{ t('admin.redeem.validityDays') }}</label>
-                <input
+                <ElementInput
                   v-model.number="generateForm.validity_days"
                   type="number"
                   min="1"
@@ -359,10 +351,10 @@
             <div>
               <label class="input-label">{{ t('admin.redeem.codeExpiry') }}</label>
               <div class="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                <button
+                <ElButton text
                   v-for="option in redeemCodeExpiryOptions"
                   :key="option.value"
-                  type="button"
+                  native-type="button"
                   @click="generateForm.expiry_option = option.value"
                   :class="[
                     'rounded-lg border px-3 py-2 text-sm transition-colors',
@@ -372,9 +364,9 @@
                   ]"
                 >
                   {{ option.label }}
-                </button>
+                </ElButton>
               </div>
-              <input
+              <ElementInput
                 v-if="generateForm.expiry_option === 'custom'"
                 v-model.number="generateForm.custom_expiry_days"
                 type="number"
@@ -387,7 +379,7 @@
             </div>
             <div>
               <label class="input-label">{{ t('admin.redeem.count') }}</label>
-              <input
+              <ElementInput
                 v-model.number="generateForm.count"
                 type="number"
                 min="1"
@@ -397,46 +389,24 @@
               />
             </div>
             <div class="flex justify-end gap-3 pt-2">
-              <button type="button" @click="showGenerateDialog = false" class="btn btn-secondary">
+              <ElButton native-type="button" @click="showGenerateDialog = false" class="">
                 {{ t('common.cancel') }}
-              </button>
-              <button type="submit" :disabled="generating" class="btn btn-primary">
+              </ElButton>
+              <ElButton type="primary" native-type="submit" :disabled="generating" class="">
                 {{ generating ? t('admin.redeem.generating') : t('admin.redeem.generate') }}
-              </button>
+              </ElButton>
             </div>
-          </form>
-        </div>
-      </div>
-    </Teleport>
+          </ElForm></template>
+</ElDialog>
 
     <!-- Batch Update Dialog -->
-    <Teleport to="body">
-      <div
-        v-if="showBatchUpdateDialog"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4"
-      >
-        <div class="fixed inset-0 bg-black/50" @click="closeBatchUpdateDialog"></div>
-        <div
-          class="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-dark-800"
-        >
-          <h2 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">
-            {{ t('admin.redeem.batchUpdateTitle') }}
-          </h2>
-          <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
+    <ElDialog :model-value="Boolean(showBatchUpdateDialog)" :title="t('admin.redeem.batchUpdateTitle')" width="512px" append-to-body align-center destroy-on-close :show-close="true" :close-on-click-modal="true" :close-on-press-escape="true" class="element-dialog " @update:model-value="visible => { if (!visible) { closeBatchUpdateDialog() } }">
+<template v-if="showBatchUpdateDialog"><p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
             {{ t('admin.redeem.selectedCount', { count: selectedCount }) }}
-          </p>
-
-          <form data-test="batch-update-form" class="space-y-4" @submit.prevent="handleBatchUpdate">
+          </p><ElForm data-test="batch-update-form" class="space-y-4" @submit.prevent="handleBatchUpdate">
             <div class="space-y-2">
-              <label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                <input
-                  data-test="batch-field-status"
-                  v-model="batchUpdateForm.update_status"
-                  type="checkbox"
-                  class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                {{ t('admin.redeem.batchFields.status') }}
-              </label>
+              <ElementCheckbox data-test="batch-field-status" v-model="batchUpdateForm.update_status" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+                {{ t('admin.redeem.batchFields.status') }}</ElementCheckbox>
               <Select
                 v-if="batchUpdateForm.update_status"
                 v-model="batchUpdateForm.status"
@@ -446,17 +416,11 @@
             </div>
 
             <div class="space-y-2">
-              <label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                <input
-                  v-model="batchUpdateForm.update_expires_at"
-                  type="checkbox"
-                  class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                {{ t('admin.redeem.batchFields.expiresAt') }}
-              </label>
+              <ElementCheckbox v-model="batchUpdateForm.update_expires_at" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+                {{ t('admin.redeem.batchFields.expiresAt') }}</ElementCheckbox>
               <template v-if="batchUpdateForm.update_expires_at">
                 <Select v-model="batchUpdateForm.expires_mode" :options="batchExpiryModeOptions" />
-                <input
+                <ElementInput
                   v-if="batchUpdateForm.expires_mode === 'custom'"
                   v-model="batchUpdateForm.expires_at_local"
                   type="datetime-local"
@@ -469,34 +433,21 @@
             </div>
 
             <div class="space-y-2">
-              <label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                <input
-                  data-test="batch-field-notes"
-                  v-model="batchUpdateForm.update_notes"
-                  type="checkbox"
-                  class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                {{ t('admin.redeem.batchFields.notes') }}
-              </label>
-              <textarea
+              <ElementCheckbox data-test="batch-field-notes" v-model="batchUpdateForm.update_notes" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+                {{ t('admin.redeem.batchFields.notes') }}</ElementCheckbox>
+              <ElementInput type="textarea"
                 v-if="batchUpdateForm.update_notes"
                 data-test="batch-notes-input"
                 v-model="batchUpdateForm.notes"
-                rows="3"
+                :rows="3"
                 class="input"
                 :placeholder="t('admin.redeem.batchNotesPlaceholder')"
-              ></textarea>
+              ></ElementInput>
             </div>
 
             <div class="space-y-2">
-              <label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                <input
-                  v-model="batchUpdateForm.update_group_id"
-                  type="checkbox"
-                  class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                {{ t('admin.redeem.batchFields.group') }}
-              </label>
+              <ElementCheckbox v-model="batchUpdateForm.update_group_id" :class="[&quot;flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300&quot;,&quot;&quot;]">
+                {{ t('admin.redeem.batchFields.group') }}</ElementCheckbox>
               <Select
                 v-if="batchUpdateForm.update_group_id"
                 v-model="batchUpdateForm.group_id"
@@ -506,30 +457,24 @@
             </div>
 
             <div class="flex justify-end gap-3 pt-2">
-              <button type="button" @click="closeBatchUpdateDialog" class="btn btn-secondary">
+              <ElButton native-type="button" @click="closeBatchUpdateDialog" class="">
                 {{ t('common.cancel') }}
-              </button>
-              <button
+              </ElButton>
+              <ElButton type="primary"
                 data-test="batch-update-submit"
-                type="submit"
+                native-type="submit"
                 :disabled="batchUpdating"
-                class="btn btn-primary"
+                class=""
               >
                 {{ batchUpdating ? t('common.submitting') : t('admin.redeem.batchUpdate') }}
-              </button>
+              </ElButton>
             </div>
-          </form>
-        </div>
-      </div>
-    </Teleport>
+          </ElForm></template>
+</ElDialog>
 
     <!-- Generated Codes Result Dialog -->
-    <Teleport to="body">
-      <div v-if="showResultDialog" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/50" @click="closeResultDialog"></div>
-        <div class="relative z-10 w-full max-w-lg rounded-xl bg-white shadow-xl dark:bg-dark-800">
-          <!-- Header -->
-          <div
+    <ElDialog :model-value="Boolean(showResultDialog)"  width="512px" append-to-body align-center destroy-on-close :show-close="false" :close-on-click-modal="true" :close-on-press-escape="true" class="element-dialog element-dialog-custom" @update:model-value="visible => { if (!visible) { closeResultDialog() } }">
+<template v-if="showResultDialog"><!-- Header --><div
             class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-dark-600"
           >
             <div class="flex items-center gap-3">
@@ -559,29 +504,25 @@
                 </p>
               </div>
             </div>
-            <button
+            <ElButton text
               @click="closeResultDialog"
               class="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-dark-700 dark:hover:text-gray-300"
             >
               <Icon name="x" size="md" :stroke-width="2" />
-            </button>
-          </div>
-          <!-- Content -->
-          <div class="p-5">
+            </ElButton>
+          </div><!-- Content --><div class="p-5">
             <div class="relative">
-              <textarea
+              <ElementInput type="textarea"
                 readonly
                 :value="generatedCodesText"
                 :style="{ height: textareaHeight }"
                 class="w-full resize-none rounded-lg border border-gray-200 bg-gray-50 p-3 font-mono text-sm text-gray-800 focus:outline-none dark:border-dark-600 dark:bg-dark-700 dark:text-gray-200"
-              ></textarea>
+              ></ElementInput>
             </div>
-          </div>
-          <!-- Footer -->
-          <div
+          </div><!-- Footer --><div
             class="flex justify-end gap-2 rounded-b-xl border-t border-gray-200 bg-gray-50 px-5 py-4 dark:border-dark-600 dark:bg-dark-700/50"
           >
-            <button
+            <ElButton text
               @click="copyGeneratedCodes"
               :class="[
                 'btn flex items-center gap-2 transition-all',
@@ -598,15 +539,13 @@
                 />
               </svg>
               {{ copiedAll ? t('admin.redeem.copied') : t('admin.redeem.copyAll') }}
-            </button>
-            <button @click="downloadGeneratedCodes" class="btn btn-primary flex items-center gap-2">
+            </ElButton>
+            <ElButton type="primary" @click="downloadGeneratedCodes" class="flex items-center gap-2">
               <Icon name="download" size="sm" :stroke-width="2" />
               {{ t('admin.redeem.download') }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+            </ElButton>
+          </div></template>
+</ElDialog>
   </AppLayout>
 </template>
 

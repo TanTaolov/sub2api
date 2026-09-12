@@ -41,7 +41,7 @@
       </div>
 
       <!-- Form State -->
-      <form v-else @submit.prevent="handleSubmit" class="space-y-5">
+      <ElForm v-else @submit.prevent="handleSubmit" class="space-y-5">
         <!-- Email Input -->
         <div>
           <label for="email" class="input-label">
@@ -51,7 +51,7 @@
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
               <Icon name="mail" size="md" class="text-gray-400 dark:text-dark-500" />
             </div>
-            <input
+            <ElementInput
               id="email"
               v-model="formData.email"
               type="email"
@@ -86,10 +86,10 @@
         </div>
 
         <!-- Submit Button -->
-        <button
-          type="submit"
+        <ElButton type="primary"
+          native-type="submit"
           :disabled="isLoading || (turnstileEnabled && !turnstileToken)"
-          class="btn btn-primary w-full"
+          class="w-full"
         >
           <svg
             v-if="isLoading"
@@ -113,8 +113,8 @@
           </svg>
           <Icon v-else name="mail" size="md" class="mr-2" />
           {{ isLoading ? t('auth.sendingResetLink') : t('auth.sendResetLink') }}
-        </button>
-      </form>
+        </ElButton>
+      </ElForm>
     </div>
 
     <!-- Footer -->

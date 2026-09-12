@@ -1,8 +1,8 @@
 <template>
   <div v-if="sceneId && prefix" class="aliyun-captcha-wrapper">
-    <button
+    <ElButton text
       :id="buttonId"
-      type="button"
+      native-type="button"
       class="aliyun-captcha-button"
       :class="state === 'verified' ? 'aliyun-captcha-button--verified' : ''"
       :disabled="state === 'verified'"
@@ -34,7 +34,7 @@
         />
       </svg>
       <span>{{ buttonText }}</span>
-    </button>
+    </ElButton>
     <div :id="elementId"></div>
   </div>
 </template>

@@ -19,20 +19,20 @@
     <div v-else>
       <!-- 全选/全不选 -->
       <div class="mb-2 flex items-center gap-3 text-xs">
-        <button
-          type="button"
+        <ElButton text
+          native-type="button"
           class="text-primary-600 hover:underline dark:text-primary-400"
           @click="selectAll"
         >
           {{ t('common.selectAll') }}
-        </button>
-        <button
-          type="button"
+        </ElButton>
+        <ElButton text
+          native-type="button"
           class="text-gray-500 hover:underline dark:text-gray-400"
           @click="selectNone"
         >
           {{ t('admin.channelMonitor.template.selectNone') }}
-        </button>
+        </ElButton>
         <span class="ml-auto text-gray-500 dark:text-gray-400">
           {{ t('admin.channelMonitor.template.selectedCount', {
             n: selectedIds.length,
@@ -48,10 +48,10 @@
           class="flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-dark-800"
           @click="toggle(m.id)"
         >
-          <input
-            type="checkbox"
+          <ElementCheckbox
+
             :checked="selectedSet.has(m.id)"
-            class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            class=""
             @click.stop="toggle(m.id)"
           />
           <span class="font-medium text-gray-900 dark:text-white">{{ m.name }}</span>
@@ -69,18 +69,18 @@
 
     <template #footer>
       <div class="flex justify-end gap-2">
-        <button class="btn btn-secondary" @click="$emit('close')">
+        <ElButton class="" @click="$emit('close')">
           {{ t('common.cancel') }}
-        </button>
-        <button
-          class="btn btn-primary"
+        </ElButton>
+        <ElButton type="primary"
+          class=""
           :disabled="submitting || selectedIds.length === 0"
           @click="handleApply"
         >
           {{ submitting
             ? t('common.submitting')
             : t('admin.channelMonitor.template.applyPickerConfirm', { n: selectedIds.length }) }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

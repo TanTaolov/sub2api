@@ -1,5 +1,5 @@
 <template>
-  <div class="card p-4">
+  <ElCard shadow="never" class="element-surface-card p-4">
     <div class="mb-4 flex items-center justify-between gap-3">
       <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
         {{ title || t('usage.endpointDistribution') }}
@@ -9,8 +9,8 @@
           v-if="showSourceToggle"
           class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 dark:border-dark-700 dark:bg-dark-800"
         >
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
             :class="source === 'inbound'
               ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
@@ -18,9 +18,9 @@
             @click="emit('update:source', 'inbound')"
           >
             {{ t('usage.inbound') }}
-          </button>
-          <button
-            type="button"
+          </ElButton>
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
             :class="source === 'upstream'
               ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
@@ -28,9 +28,9 @@
             @click="emit('update:source', 'upstream')"
           >
             {{ t('usage.upstream') }}
-          </button>
-          <button
-            type="button"
+          </ElButton>
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
             :class="source === 'path'
               ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
@@ -38,15 +38,15 @@
             @click="emit('update:source', 'path')"
           >
             {{ t('usage.path') }}
-          </button>
+          </ElButton>
         </div>
 
         <div
           v-if="showMetricToggle"
           class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 dark:border-dark-700 dark:bg-dark-800"
         >
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
             :class="metric === 'tokens'
               ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
@@ -54,9 +54,9 @@
             @click="emit('update:metric', 'tokens')"
           >
             {{ t('admin.dashboard.metricTokens') }}
-          </button>
-          <button
-            type="button"
+          </ElButton>
+          <ElButton text
+            native-type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
             :class="metric === 'actual_cost'
               ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
@@ -64,7 +64,7 @@
             @click="emit('update:metric', 'actual_cost')"
           >
             {{ t('admin.dashboard.metricActualCost') }}
-          </button>
+          </ElButton>
         </div>
       </div>
     </div>
@@ -76,60 +76,22 @@
         <Doughnut :data="chartData" :options="doughnutOptions" />
       </div>
       <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-        <table class="w-full text-xs">
-          <thead>
-            <tr class="text-gray-500 dark:text-gray-400">
-              <th class="pb-2 text-left">{{ t('usage.endpoint') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.requests') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.tokens') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.actual') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.standard') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <template v-for="item in displayEndpointStats" :key="item.endpoint">
-              <tr
-                class="border-t border-gray-100 transition-colors dark:border-dark-700"
-                :class="enableBreakdown ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-700/40' : ''"
-                @click="enableBreakdown && toggleBreakdown(item.endpoint)"
-              >
-                <td class="max-w-[180px] truncate py-1.5 font-medium" :class="enableBreakdown ? 'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300' : 'text-gray-900 dark:text-white'" :title="item.endpoint">
-                  <span class="inline-flex items-center gap-1">
+        <ElTable :data="displayEndpointStats" row-key="endpoint" :expand-row-keys="expandedKey === null ? [] : [expandedKey]" size="small" class="element-data-table" @row-click="(item) => { enableBreakdown &amp;&amp; toggleBreakdown(item.endpoint) }" @expand-change="(item, expandedRows) => { if (expandedRows.includes(item) !== (expandedKey === item.endpoint)) { enableBreakdown &amp;&amp; toggleBreakdown(item.endpoint) } }"><ElTableColumn v-if="enableBreakdown" type="expand"><template #default="{row: item}"><UserBreakdownSubTable
+                    :items="breakdownItems"
+                    :loading="breakdownLoading"
+                  /></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('usage.endpoint') }}</template><template #default="{row: item}"><div class="max-w-[180px] truncate py-1.5 font-medium" :class="enableBreakdown ? 'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300' : 'text-gray-900 dark:text-white'" :title="item.endpoint"><span class="inline-flex items-center gap-1">
                     <svg v-if="enableBreakdown && expandedKey === item.endpoint" class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     <svg v-else-if="enableBreakdown" class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     {{ item.endpoint }}
-                  </span>
-                </td>
-                <td class="py-1.5 text-right text-gray-600 dark:text-gray-400">
-                  {{ formatNumber(item.requests) }}
-                </td>
-                <td class="py-1.5 text-right text-gray-600 dark:text-gray-400">
-                  {{ formatTokens(item.total_tokens) }}
-                </td>
-                <td class="py-1.5 text-right text-green-600 dark:text-green-400">
-                  ${{ formatCost(item.actual_cost) }}
-                </td>
-                <td class="py-1.5 text-right text-gray-400 dark:text-gray-500">
-                  ${{ formatCost(item.cost) }}
-                </td>
-              </tr>
-              <tr v-if="expandedKey === item.endpoint">
-                <td colspan="5" class="p-0">
-                  <UserBreakdownSubTable
-                    :items="breakdownItems"
-                    :loading="breakdownLoading"
-                  />
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
+                  </span></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('admin.dashboard.requests') }}</template><template #default="{row: item}"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400">{{ formatNumber(item.requests) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('admin.dashboard.tokens') }}</template><template #default="{row: item}"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400">{{ formatTokens(item.total_tokens) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('admin.dashboard.actual') }}</template><template #default="{row: item}"><div class="py-1.5 text-right text-green-600 dark:text-green-400">
+                  ${{ formatCost(item.actual_cost) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('admin.dashboard.standard') }}</template><template #default="{row: item}"><div class="py-1.5 text-right text-gray-400 dark:text-gray-500">
+                  ${{ formatCost(item.cost) }}</div></template></ElTableColumn></ElTable>
       </div>
     </div>
     <div v-else class="flex h-48 items-center justify-center text-sm text-gray-500 dark:text-gray-400">
       {{ t('admin.dashboard.noDataAvailable') }}
     </div>
-  </div>
+  </ElCard>
 </template>
 
 <script setup lang="ts">

@@ -11,7 +11,7 @@
         </p>
       </div>
       <!-- Login Form -->
-      <form @submit.prevent="handleLogin" class="space-y-5">
+      <ElForm @submit.prevent="handleLogin" class="space-y-5">
         <!-- Email Input -->
         <div>
           <label for="email" class="input-label">
@@ -21,7 +21,7 @@
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
               <Icon name="mail" size="md" class="text-gray-400 dark:text-dark-500" />
             </div>
-            <input
+            <ElementInput
               id="email"
               v-model="formData.email"
               type="email"
@@ -45,7 +45,7 @@
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
               <Icon name="lock" size="md" class="text-gray-400 dark:text-dark-500" />
             </div>
-            <input
+            <ElementInput
               id="password"
               v-model="formData.password"
               :type="showPassword ? 'text' : 'password'"
@@ -56,15 +56,15 @@
               :class="{ 'input-error': errors.password }"
               :placeholder="t('auth.passwordPlaceholder')"
             />
-            <button
-              type="button"
+            <ElButton text
+              native-type="button"
               @click="showPassword = !showPassword"
               :disabled="authActionDisabled"
               class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-dark-300"
             >
               <Icon v-if="showPassword" name="eyeOff" size="md" />
               <Icon v-else name="eye" size="md" />
-            </button>
+            </ElButton>
           </div>
           <div class="mt-1 flex items-center justify-between">
             <span></span>
@@ -98,10 +98,10 @@
         </div>
 
         <!-- Submit Button -->
-        <button
-          type="submit"
+        <ElButton type="primary"
+          native-type="submit"
           :disabled="authActionDisabled || (turnstileEnabled && !turnstileToken)"
-          class="btn btn-primary w-full"
+          class="w-full"
         >
           <svg
             v-if="isLoading"
@@ -125,7 +125,7 @@
           </svg>
           <Icon v-else name="login" size="md" class="mr-2" />
           {{ isLoading ? t('auth.signingIn') : t('auth.signIn') }}
-        </button>
+        </ElButton>
 
         <LoginAgreementPrompt
           v-if="loginAgreementEnabled"
@@ -148,16 +148,16 @@
             <div class="h-px flex-1 bg-gray-200 dark:bg-dark-700"></div>
           </div>
 
-          <button
+          <ElButton
             v-if="showPasskeyLogin"
-            type="button"
-            class="btn btn-secondary w-full"
+            native-type="button"
+            class="w-full"
             :disabled="authActionDisabled"
             @click="handlePasskeyLogin"
           >
             <Icon name="key" size="md" class="mr-2" />
             {{ passkeyLoading ? t('auth.passkeySigningIn') : t('auth.passkeySignIn') }}
-          </button>
+          </ElButton>
 
           <EmailOAuthButtons
             :disabled="authActionDisabled"
@@ -193,7 +193,7 @@
             @start="handleOAuthStart"
           />
         </div>
-      </form>
+      </ElForm>
     </div>
 
     <!-- Footer -->

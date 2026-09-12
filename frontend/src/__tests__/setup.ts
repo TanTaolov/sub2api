@@ -4,6 +4,9 @@
  */
 import { config } from '@vue/test-utils'
 import { vi } from 'vitest'
+import { elementPlugin } from '@/plugins/element'
+
+config.global.plugins = [elementPlugin]
 
 function createMemoryStorage(): Storage {
   const values = new Map<string, string>()

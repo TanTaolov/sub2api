@@ -16,65 +16,12 @@
 
     <!-- Table -->
     <div class="overflow-x-auto">
-      <table class="w-full min-w-max divide-y divide-gray-200 dark:divide-dark-700">
-        <thead class="bg-gray-50 dark:bg-dark-800">
-          <tr>
-            <th class="w-16 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-dark-400 sm:px-6">#</th>
-            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-dark-400">
-              {{ t('admin.usage.tokenRanking.columns.user') }}
-            </th>
-            <th
-              v-for="col in sortableColumns"
-              :key="col.key"
-              class="cursor-pointer select-none whitespace-nowrap px-4 py-3 text-right text-xs font-medium uppercase tracking-wider transition-colors hover:bg-gray-100 dark:hover:bg-dark-700"
-              :class="sortBy === col.key ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-dark-400'"
-              @click="setSort(col.key)"
-            >
-              {{ t(col.label) }}
-              <span v-if="sortBy === col.key" aria-hidden="true">↓</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200 bg-white dark:divide-dark-700 dark:bg-dark-900">
-          <tr v-if="loading">
-            <td :colspan="sortableColumns.length + 2" class="py-12 text-center">
-              <LoadingSpinner />
-            </td>
-          </tr>
-          <tr v-else-if="items.length === 0">
-            <td :colspan="sortableColumns.length + 2" class="py-12 text-center text-sm text-gray-400">
-              {{ t('admin.dashboard.noDataAvailable') }}
-            </td>
-          </tr>
-          <tr
-            v-for="(item, index) in items"
-            v-else
-            :key="item.user_id"
-            class="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-dark-700/40"
-            :title="t('admin.usage.tokenRanking.rowHint')"
-            @click="$emit('select-user', item.user_id, item.email)"
-          >
-            <td class="px-4 py-3 sm:px-6">
-              <span
+      <ElTable :data="loading ? [] : items" row-key="user_id" class="element-data-table cursor-pointer" @row-click="item => $emit('select-user', item.user_id, item.email)"><ElTableColumn :min-width="120" :width="64" align="left"><template #header>#</template><template #default="{ row: item, $index: index }"><div class="px-4 py-3 sm:px-6"><span
                 v-if="index < 3"
                 class="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold"
                 :class="RANK_BADGE_CLASSES[index]"
-              >{{ index + 1 }}</span>
-              <span v-else class="inline-block w-6 text-center text-sm tabular-nums text-gray-400">{{ index + 1 }}</span>
-            </td>
-            <td class="max-w-[260px] truncate px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200" :title="item.email">
-              {{ item.email || `User #${item.user_id}` }}
-              <span class="ml-1 font-normal text-gray-400 dark:text-gray-500">#{{ item.user_id }}</span>
-            </td>
-            <td class="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-500 dark:text-gray-400">{{ item.requests.toLocaleString() }}</td>
-            <td class="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-500 dark:text-gray-400">{{ fmtTokens(item.input_tokens) }}</td>
-            <td class="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-500 dark:text-gray-400">{{ fmtTokens(item.output_tokens) }}</td>
-            <td class="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-500 dark:text-gray-400">{{ fmtTokens(item.cache_tokens) }}</td>
-            <td class="whitespace-nowrap px-4 py-3 text-right text-sm font-medium tabular-nums text-gray-900 dark:text-gray-100">{{ fmtTokens(item.total_tokens) }}</td>
-            <td class="whitespace-nowrap px-4 py-3 text-right text-sm font-medium tabular-nums text-green-600 dark:text-green-400">${{ fmtCost(item.actual_cost) }}</td>
-          </tr>
-        </tbody>
-      </table>
+              >{{ index + 1 }}</span><span v-else class="inline-block w-6 text-center text-sm tabular-nums text-gray-400">{{ index + 1 }}</span></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('admin.usage.tokenRanking.columns.user') }}</template><template #default="{ row: item, $index: index }"><div class="max-w-[260px] truncate px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200" :title="item.email">{{ item.email || `User #${item.user_id}` }}
+              <span class="ml-1 font-normal text-gray-400 dark:text-gray-500">#{{ item.user_id }}</span></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header><ElButton text size="small" @click="setSort(sortableColumns[0].key)">{{ t(sortableColumns[0].label) }}<span v-if="sortBy === sortableColumns[0].key">↓</span></ElButton></template><template #default="{ row: item, $index: index }"><div class="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-500 dark:text-gray-400">{{ item.requests.toLocaleString() }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header><ElButton text size="small" @click="setSort(sortableColumns[1].key)">{{ t(sortableColumns[1].label) }}<span v-if="sortBy === sortableColumns[1].key">↓</span></ElButton></template><template #default="{ row: item, $index: index }"><div class="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-500 dark:text-gray-400">{{ fmtTokens(item.input_tokens) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header><ElButton text size="small" @click="setSort(sortableColumns[2].key)">{{ t(sortableColumns[2].label) }}<span v-if="sortBy === sortableColumns[2].key">↓</span></ElButton></template><template #default="{ row: item, $index: index }"><div class="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-500 dark:text-gray-400">{{ fmtTokens(item.output_tokens) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header><ElButton text size="small" @click="setSort(sortableColumns[3].key)">{{ t(sortableColumns[3].label) }}<span v-if="sortBy === sortableColumns[3].key">↓</span></ElButton></template><template #default="{ row: item, $index: index }"><div class="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-500 dark:text-gray-400">{{ fmtTokens(item.cache_tokens) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header><ElButton text size="small" @click="setSort(sortableColumns[4].key)">{{ t(sortableColumns[4].label) }}<span v-if="sortBy === sortableColumns[4].key">↓</span></ElButton></template><template #default="{ row: item, $index: index }"><div class="whitespace-nowrap px-4 py-3 text-right text-sm font-medium tabular-nums text-gray-900 dark:text-gray-100">{{ fmtTokens(item.total_tokens) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header><ElButton text size="small" @click="setSort(sortableColumns[5].key)">{{ t(sortableColumns[5].label) }}<span v-if="sortBy === sortableColumns[5].key">↓</span></ElButton></template><template #default="{ row: item, $index: index }"><div class="whitespace-nowrap px-4 py-3 text-right text-sm font-medium tabular-nums text-green-600 dark:text-green-400">${{ fmtCost(item.actual_cost) }}</div></template></ElTableColumn><template #empty><LoadingSpinner v-if="loading" /><span v-else>{{ t('admin.dashboard.noDataAvailable') }}</span></template></ElTable>
     </div>
   </div>
 </template>

@@ -53,25 +53,25 @@
             {{ t('profile.avatar.uploadAction') }}
           </label>
 
-          <button
+          <ElButton type="primary" size="small"
             data-testid="profile-avatar-save"
-            type="button"
-            class="btn btn-primary btn-sm"
+            native-type="button"
+            class=""
             :disabled="avatarSaving || !avatarDraft"
             @click="handleAvatarSave"
           >
             {{ t('common.save') }}
-          </button>
+          </ElButton>
 
-          <button
+          <ElButton size="small"
             data-testid="profile-avatar-delete"
-            type="button"
-            class="btn btn-secondary btn-sm"
+            native-type="button"
+            class=""
             :disabled="avatarSaving"
             @click="handleAvatarDelete"
           >
             {{ t('common.delete') }}
-          </button>
+          </ElButton>
         </div>
       </div>
     </div>

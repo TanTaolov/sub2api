@@ -7,10 +7,10 @@
       data-testid="payment-method-grid"
       class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
     >
-      <button
+      <ElButton text
         v-for="method in sortedMethods"
         :key="method.type"
-        type="button"
+        native-type="button"
         :title="methodLabel(method)"
         :disabled="!method.available"
         :class="[
@@ -37,7 +37,7 @@
             </span>
           </span>
         </span>
-      </button>
+      </ElButton>
     </div>
   </div>
 </template>

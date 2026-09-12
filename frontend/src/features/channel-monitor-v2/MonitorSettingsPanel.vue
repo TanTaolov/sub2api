@@ -14,15 +14,15 @@
           {{ t('channelMonitorV2.settings.description') }}
         </p>
       </div>
-      <button
-        type="button"
-        class="btn btn-primary"
+      <ElButton type="primary"
+        native-type="button"
+        class=""
         :disabled="saving || !dirty"
         @click="save"
       >
         <Icon name="check" size="sm" />
         {{ t('channelMonitorV2.settings.save') }}
-      </button>
+      </ElButton>
     </header>
 
     <div
@@ -39,15 +39,15 @@
       <router-link class="ml-1 font-medium underline" to="/admin/settings">{{ t('admin.settings.tabs.features') }}</router-link>
     </div>
 
-    <div
+    <ElCard shadow="never"
       v-if="loading"
-      class="card flex min-h-[200px] items-center justify-center !rounded-3xl !border-0 text-sm text-gray-400 shadow-sm ring-1 ring-gray-900/5 dark:ring-dark-700"
+      class="element-surface-card flex min-h-[200px] items-center justify-center !rounded-3xl !border-0 text-sm text-gray-400 shadow-sm ring-1 ring-gray-900/5 dark:ring-dark-700"
     >
       <span class="animate-pulse">{{ t('channelMonitorV2.settings.loading') }}</span>
-    </div>
+    </ElCard>
 
     <template v-else-if="draft">
-      <div class="card divide-y divide-gray-100 !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:divide-dark-700 dark:!bg-dark-800 dark:ring-dark-700">
+      <ElCard shadow="never" class="element-surface-card divide-y divide-gray-100 !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:divide-dark-700 dark:!bg-dark-800 dark:ring-dark-700">
         <div class="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
           <div>
             <strong class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('channelMonitorV2.settings.enableTitle') }}</strong>
@@ -62,28 +62,16 @@
             <strong class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('channelMonitorV2.settings.refreshTitle') }}</strong>
             <p class="mt-0.5 text-xs text-gray-500 dark:text-dark-400">{{ t('channelMonitorV2.settings.refreshHint') }}</p>
           </div>
-          <div class="tabs inline-flex w-auto" role="group" :aria-label="t('channelMonitorV2.settings.refreshAria')">
-            <button
-              type="button"
-              class="tab"
-              :class="draft.refresh_interval_seconds === 60 ? 'tab-active' : ''"
-              @click="draft.refresh_interval_seconds = 60"
-            >
+          <ElTabs v-model="draft.refresh_interval_seconds" :aria-label="t('channelMonitorV2.settings.refreshAria')" class="element-page-tabs"><ElTabPane  :name="60"><template #label>
               1 min
-            </button>
-            <button
-              type="button"
-              class="tab"
-              :class="draft.refresh_interval_seconds === 300 ? 'tab-active' : ''"
-              @click="draft.refresh_interval_seconds = 300"
-            >
+            </template></ElTabPane>
+<ElTabPane  :name="300"><template #label>
               5 min
-            </button>
-          </div>
+            </template></ElTabPane></ElTabs>
         </div>
-      </div>
+      </ElCard>
 
-      <div class="card overflow-hidden !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:!bg-dark-800 dark:ring-dark-700">
+      <ElCard shadow="never" class="element-surface-card overflow-hidden !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:!bg-dark-800 dark:ring-dark-700">
         <div class="card-header !py-3">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('channelMonitorV2.settings.platformsTitle') }}</h3>
           <p class="mt-0.5 text-xs text-gray-500 dark:text-dark-400">
@@ -98,7 +86,7 @@
           >
             <Toggle v-model="platform.enabled" />
             <strong class="text-sm font-medium text-gray-900 dark:text-white">{{ platformLabel(platform.platform) }}</strong>
-            <input
+            <ElementInput
               class="input"
               :value="platform.models.join(', ')"
               type="text"
@@ -113,9 +101,9 @@
             </span>
           </div>
         </div>
-      </div>
+      </ElCard>
 
-      <div class="card overflow-hidden !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:!bg-dark-800 dark:ring-dark-700">
+      <ElCard shadow="never" class="element-surface-card overflow-hidden !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:!bg-dark-800 dark:ring-dark-700">
         <div class="card-header flex flex-wrap items-center justify-between gap-2 !py-3">
           <div>
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('channelMonitorV2.settings.groupsTitle') }}</h3>
@@ -127,37 +115,24 @@
               }}
             </p>
           </div>
-          <button
+          <ElButton size="small"
             v-if="draft.group_ids.length"
-            type="button"
-            class="btn btn-ghost btn-sm"
+            native-type="button"
+            class=""
             @click="draft.group_ids = []"
           >
             {{ t('channelMonitorV2.settings.groupsAll') }}
-          </button>
+          </ElButton>
         </div>
         <div class="max-h-[min(40vh,280px)] overflow-y-auto px-3 py-2 sm:px-4">
           <div class="grid grid-cols-1 gap-1 sm:grid-cols-2">
-            <label
-              v-for="group in groups"
-              :key="group.id"
-              class="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-gray-50 dark:hover:bg-dark-800/60"
-            >
-              <input
-                type="checkbox"
-                class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500/40"
-                :checked="draft.group_ids.includes(group.id)"
-                @change="toggleGroup(group.id)"
-              />
-              <span class="min-w-0 flex-1 truncate font-medium text-gray-800 dark:text-gray-100">{{ group.name }}</span>
-              <small class="shrink-0 text-xs text-gray-400">{{ platformLabel(group.platform) }} · #{{ group.id }}</small>
-            </label>
+            <ElementCheckbox v-for="group in groups" :key="group.id" :checked="draft.group_ids.includes(group.id)" @change="toggleGroup(group.id)" :class="[&quot;flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-gray-50 dark:hover:bg-dark-800/60&quot;,&quot;&quot;]"><span class="min-w-0 flex-1 truncate font-medium text-gray-800 dark:text-gray-100">{{ group.name }}</span><small class="shrink-0 text-xs text-gray-400">{{ platformLabel(group.platform) }} · #{{ group.id }}</small></ElementCheckbox>
           </div>
           <p v-if="groups.length === 0" class="empty-state py-8 text-sm text-gray-400">{{ t('channelMonitorV2.settings.groupsEmpty') }}</p>
         </div>
-      </div>
+      </ElCard>
 
-      <div class="card overflow-hidden !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:!bg-dark-800 dark:ring-dark-700">
+      <ElCard shadow="never" class="element-surface-card overflow-hidden !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:!bg-dark-800 dark:ring-dark-700">
         <div class="card-header !py-3">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('channelMonitorV2.settings.errorsTitle') }}</h3>
           <p class="mt-0.5 text-xs text-gray-500 dark:text-dark-400">
@@ -166,22 +141,9 @@
         </div>
         <div class="max-h-[min(40vh,320px)] overflow-y-auto px-3 py-2 sm:px-4">
           <div class="grid grid-cols-1 gap-1 sm:grid-cols-2">
-            <label
-              v-for="category in errorCategories"
-              :key="category"
-              class="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-gray-50 dark:hover:bg-dark-800/60"
-            >
-              <input
-                type="checkbox"
-                class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500/40"
-                :checked="isCategoryIgnored(category)"
-                @change="toggleIgnoredCategory(category)"
-              />
-              <span class="min-w-0 flex-1 truncate font-medium text-gray-800 dark:text-gray-100">
+            <ElementCheckbox v-for="category in errorCategories" :key="category" :checked="isCategoryIgnored(category)" @change="toggleIgnoredCategory(category)" :class="[&quot;flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition hover:bg-gray-50 dark:hover:bg-dark-800/60&quot;,&quot;&quot;]"><span class="min-w-0 flex-1 truncate font-medium text-gray-800 dark:text-gray-100">
                 {{ categoryLabel(category) }}
-              </span>
-              <small class="shrink-0 font-mono text-[10px] text-gray-400">{{ category }}</small>
-            </label>
+              </span><small class="shrink-0 font-mono text-[10px] text-gray-400">{{ category }}</small></ElementCheckbox>
           </div>
         </div>
         <div class="border-t border-gray-100 px-5 py-3 text-xs text-gray-500 dark:border-dark-700 dark:text-dark-400">
@@ -192,9 +154,9 @@
             })
           }}
         </div>
-      </div>
+      </ElCard>
 
-      <div class="card overflow-hidden !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:!bg-dark-800 dark:ring-dark-700">
+      <ElCard shadow="never" class="element-surface-card overflow-hidden !rounded-3xl !border-0 shadow-sm ring-1 ring-gray-900/5 dark:!bg-dark-800 dark:ring-dark-700">
         <div class="card-header !py-3">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('channelMonitorV2.settings.healthTitle') }}</h3>
           <p class="mt-0.5 text-xs text-gray-500 dark:text-dark-400">
@@ -204,38 +166,38 @@
         <div class="grid grid-cols-1 gap-4 px-5 py-4 sm:grid-cols-2 lg:grid-cols-4">
           <label class="block">
             <span class="input-label">{{ t('channelMonitorV2.settings.fields.minimumSample') }}</span>
-            <input v-model.number="draft.health_thresholds.minimum_sample" class="input" type="number" min="1" max="10000" />
+            <ElementInput v-model.number="draft.health_thresholds.minimum_sample" class="input" type="number" min="1" max="10000" />
           </label>
           <label class="block">
             <span class="input-label">{{ t('channelMonitorV2.settings.fields.warningError') }}</span>
-            <input v-model.number="warningErrorPercent" class="input" type="number" min="0" max="100" step="0.1" />
+            <ElementInput v-model.number="warningErrorPercent" class="input" type="number" min="0" max="100" step="0.1" />
           </label>
           <label class="block">
             <span class="input-label">{{ t('channelMonitorV2.settings.fields.criticalError') }}</span>
-            <input v-model.number="criticalErrorPercent" class="input" type="number" min="0" max="100" step="0.1" />
+            <ElementInput v-model.number="criticalErrorPercent" class="input" type="number" min="0" max="100" step="0.1" />
           </label>
           <label class="block">
             <span class="input-label">{{ t('channelMonitorV2.settings.fields.targetTtft') }}</span>
-            <input v-model.number="draft.health_thresholds.target_ttft_ms" class="input" type="number" min="1" step="100" />
+            <ElementInput v-model.number="draft.health_thresholds.target_ttft_ms" class="input" type="number" min="1" step="100" />
           </label>
           <label class="block">
             <span class="input-label">{{ t('channelMonitorV2.settings.fields.warningTtft') }}</span>
-            <input v-model.number="draft.health_thresholds.warning_ttft_ms" class="input" type="number" min="1" step="100" />
+            <ElementInput v-model.number="draft.health_thresholds.warning_ttft_ms" class="input" type="number" min="1" step="100" />
           </label>
           <label class="block">
             <span class="input-label">{{ t('channelMonitorV2.settings.fields.criticalTtft') }}</span>
-            <input v-model.number="draft.health_thresholds.critical_ttft_ms" class="input" type="number" min="1" step="100" />
+            <ElementInput v-model.number="draft.health_thresholds.critical_ttft_ms" class="input" type="number" min="1" step="100" />
           </label>
           <label class="block">
             <span class="input-label">{{ t('channelMonitorV2.settings.fields.warningCache') }}</span>
-            <input v-model.number="warningCachePercent" class="input" type="number" min="0" max="100" step="0.1" />
+            <ElementInput v-model.number="warningCachePercent" class="input" type="number" min="0" max="100" step="0.1" />
           </label>
           <label class="block">
             <span class="input-label">{{ t('channelMonitorV2.settings.fields.criticalCache') }}</span>
-            <input v-model.number="criticalCachePercent" class="input" type="number" min="0" max="100" step="0.1" />
+            <ElementInput v-model.number="criticalCachePercent" class="input" type="number" min="0" max="100" step="0.1" />
           </label>
         </div>
-      </div>
+      </ElCard>
 
       <div class="space-y-2">
         <div class="rounded-2xl border border-primary-200 bg-primary-50/80 px-4 py-3 text-sm text-primary-900 dark:border-primary-800/50 dark:bg-primary-900/20 dark:text-primary-100">

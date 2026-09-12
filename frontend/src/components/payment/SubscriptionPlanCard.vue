@@ -93,13 +93,13 @@
       <div class="flex-1" />
 
       <!-- Subscribe Button -->
-      <button
-        type="button"
+      <ElButton text
+        native-type="button"
         :class="['w-full rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.98]', btnClass]"
         @click="emit('select', plan)"
       >
         {{ isRenewal ? t('payment.renewNow') : t('payment.subscribeNow') }}
-      </button>
+      </ElButton>
     </div>
   </div>
 </template>

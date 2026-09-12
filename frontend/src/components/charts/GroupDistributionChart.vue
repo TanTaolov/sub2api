@@ -1,5 +1,5 @@
 <template>
-  <div class="card p-4">
+  <ElCard shadow="never" class="element-surface-card p-4">
     <div class="mb-4 flex items-center justify-between gap-3">
       <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
         {{ t('admin.dashboard.groupDistribution') }}
@@ -8,8 +8,8 @@
         v-if="showMetricToggle"
         class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 dark:border-dark-700 dark:bg-dark-800"
       >
-        <button
-          type="button"
+        <ElButton text
+          native-type="button"
           class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
           :class="metric === 'tokens'
             ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
@@ -17,9 +17,9 @@
           @click="emit('update:metric', 'tokens')"
         >
           {{ t('admin.dashboard.metricTokens') }}
-        </button>
-        <button
-          type="button"
+        </ElButton>
+        <ElButton text
+          native-type="button"
           class="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
           :class="metric === 'actual_cost'
             ? 'bg-white text-gray-900 shadow-sm dark:bg-dark-700 dark:text-white'
@@ -27,7 +27,7 @@
           @click="emit('update:metric', 'actual_cost')"
         >
           {{ t('admin.dashboard.metricActualCost') }}
-        </button>
+        </ElButton>
       </div>
     </div>
     <div v-if="loading" class="flex h-48 items-center justify-center">
@@ -38,64 +38,18 @@
         <Doughnut :data="chartData" :options="doughnutOptions" />
       </div>
       <div class="max-h-48 w-full min-w-0 flex-1 overflow-auto">
-        <table class="w-full text-xs">
-          <thead>
-            <tr class="text-gray-500 dark:text-gray-400">
-              <th class="pb-2 text-left">{{ t('admin.dashboard.group') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.requests') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.tokens') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.actual') }}</th>
-              <th v-if="showAccountCost" class="pb-2 text-right">{{ t('admin.dashboard.accountCost') }}</th>
-              <th class="pb-2 text-right">{{ t('admin.dashboard.standard') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <template v-for="group in displayGroupStats" :key="group.group_id">
-              <tr
-                class="border-t border-gray-100 transition-colors dark:border-dark-700"
-                :class="enableBreakdown && group.group_id > 0 ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-700/40' : ''"
-                @click="enableBreakdown && group.group_id > 0 && toggleBreakdown('group', group.group_id)"
-              >
-                <td
-                  class="max-w-[100px] truncate py-1.5 font-medium"
-                  :class="enableBreakdown && group.group_id > 0 ? 'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300' : 'text-gray-900 dark:text-white'"
-                  :title="group.group_name || String(group.group_id)"
-                >
-                  <span class="inline-flex items-center gap-1">
-                    <svg v-if="enableBreakdown && group.group_id > 0 && expandedKey === `group-${group.group_id}`" class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    <svg v-else-if="enableBreakdown && group.group_id > 0" class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    {{ group.group_name || t('admin.dashboard.noGroup') }}
-                  </span>
-                </td>
-                <td class="py-1.5 text-right text-gray-600 dark:text-gray-400">
-                  {{ formatNumber(group.requests) }}
-                </td>
-                <td class="py-1.5 text-right text-gray-600 dark:text-gray-400">
-                  {{ formatTokens(group.total_tokens) }}
-                </td>
-                <td class="py-1.5 text-right text-green-600 dark:text-green-400">
-                  ${{ formatCost(group.actual_cost) }}
-                </td>
-                <td v-if="showAccountCost" class="py-1.5 text-right text-orange-500 dark:text-orange-400">
-                  ${{ formatCost(group.account_cost) }}
-                </td>
-                <td class="py-1.5 text-right text-gray-400 dark:text-gray-500">
-                  ${{ formatCost(group.cost) }}
-                </td>
-              </tr>
-              <!-- User breakdown sub-rows -->
-              <tr v-if="expandedKey === `group-${group.group_id}`">
-                <td :colspan="distributionColspan" class="p-0">
-                  <UserBreakdownSubTable
+        <ElTable :data="displayGroupStats" :row-key="(group) => `group-${group.group_id}`" :expand-row-keys="expandedKey === null ? [] : [expandedKey]" size="small" class="element-data-table" @row-click="(group) => { enableBreakdown &amp;&amp; group.group_id > 0 &amp;&amp; toggleBreakdown('group', group.group_id) }" @expand-change="(group, expandedRows) => { if (expandedRows.includes(group) !== (expandedKey === `group-${group.group_id}`)) { enableBreakdown &amp;&amp; group.group_id > 0 &amp;&amp; toggleBreakdown('group', group.group_id) } }"><ElTableColumn v-if="enableBreakdown" type="expand"><template #default="{row: group}"><UserBreakdownSubTable
                     :items="breakdownItems"
                     :loading="breakdownLoading"
                     :show-account-cost="showAccountCost"
-                  />
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
+                  /></template></ElTableColumn><ElTableColumn :min-width="120"  align="left"><template #header>{{ t('admin.dashboard.group') }}</template><template #default="{row: group}"><div class="max-w-[100px] truncate py-1.5 font-medium" :class="enableBreakdown && group.group_id > 0 ? 'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300' : 'text-gray-900 dark:text-white'" :title="group.group_name || String(group.group_id)"><span class="inline-flex items-center gap-1">
+                    <svg v-if="enableBreakdown && group.group_id > 0 && expandedKey === `group-${group.group_id}`" class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <svg v-else-if="enableBreakdown && group.group_id > 0" class="h-3 w-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    {{ group.group_name || t('admin.dashboard.noGroup') }}
+                  </span></div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('admin.dashboard.requests') }}</template><template #default="{row: group}"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400">{{ formatNumber(group.requests) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('admin.dashboard.tokens') }}</template><template #default="{row: group}"><div class="py-1.5 text-right text-gray-600 dark:text-gray-400">{{ formatTokens(group.total_tokens) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('admin.dashboard.actual') }}</template><template #default="{row: group}"><div class="py-1.5 text-right text-green-600 dark:text-green-400">
+                  ${{ formatCost(group.actual_cost) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  v-if="showAccountCost" align="right"><template #header>{{ t('admin.dashboard.accountCost') }}</template><template #default="{row: group}"><div class="py-1.5 text-right text-orange-500 dark:text-orange-400">
+                  ${{ formatCost(group.account_cost) }}</div></template></ElTableColumn><ElTableColumn :min-width="120"  align="right"><template #header>{{ t('admin.dashboard.standard') }}</template><template #default="{row: group}"><div class="py-1.5 text-right text-gray-400 dark:text-gray-500">
+                  ${{ formatCost(group.cost) }}</div></template></ElTableColumn></ElTable>
       </div>
     </div>
     <div
@@ -104,7 +58,7 @@
     >
       {{ t('admin.dashboard.noDataAvailable') }}
     </div>
-  </div>
+  </ElCard>
 </template>
 
 <script setup lang="ts">
@@ -149,7 +103,7 @@ const expandedKey = ref<string | null>(null)
 const breakdownItems = ref<UserBreakdownItem[]>([])
 const breakdownLoading = ref(false)
 const showAccountCost = computed(() => props.showAccountCost)
-const distributionColspan = computed(() => showAccountCost.value ? 6 : 5)
+
 
 const toggleBreakdown = async (type: string, id: number | string) => {
   const key = `${type}-${id}`

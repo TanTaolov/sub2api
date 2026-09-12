@@ -927,9 +927,9 @@ function handleToolbarRefresh() {
           @update:model-value="handleQueryModeChange"
         />
 
-        <button
+        <ElButton text
           v-if="!props.fullscreen"
-          type="button"
+          native-type="button"
           class="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200 dark:bg-dark-700 dark:text-gray-400 dark:hover:bg-dark-600"
           :disabled="loading"
           :title="t('common.refresh')"
@@ -943,14 +943,14 @@ function handleToolbarRefresh() {
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             />
           </svg>
-        </button>
+        </ElButton>
 
         <div v-if="!props.fullscreen" class="mx-1 hidden h-4 w-[1px] bg-gray-200 dark:bg-dark-700 sm:block"></div>
 
         <!-- Alert Rules Button (hidden in fullscreen) -->
-        <button
+        <ElButton text
           v-if="!props.fullscreen"
-          type="button"
+          native-type="button"
           class="flex h-8 items-center gap-1.5 rounded-lg bg-blue-100 px-3 text-xs font-bold text-blue-700 transition-colors hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
           :title="t('admin.ops.alertRules.title')"
           @click="emit('openAlertRules')"
@@ -959,12 +959,12 @@ function handleToolbarRefresh() {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
           <span class="hidden sm:inline">{{ t('admin.ops.alertRules.manage') }}</span>
-        </button>
+        </ElButton>
 
         <!-- Settings Button (hidden in fullscreen) -->
-        <button
+        <ElButton text
           v-if="!props.fullscreen"
-          type="button"
+          native-type="button"
           class="flex h-8 items-center gap-1.5 rounded-lg bg-gray-100 px-3 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-dark-700 dark:text-gray-300 dark:hover:bg-dark-600"
           :title="t('admin.ops.settings.title')"
           @click="emit('openSettings')"
@@ -974,12 +974,12 @@ function handleToolbarRefresh() {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           <span class="hidden sm:inline">{{ t('common.settings') }}</span>
-        </button>
+        </ElButton>
 
         <!-- Enter Fullscreen Button (hidden in fullscreen mode) -->
-        <button
+        <ElButton text
           v-if="!props.fullscreen"
-          type="button"
+          native-type="button"
           class="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200 dark:bg-dark-700 dark:text-gray-300 dark:hover:bg-dark-600"
           :title="t('admin.ops.fullscreen.enter')"
           @click="emit('enterFullscreen')"
@@ -987,7 +987,7 @@ function handleToolbarRefresh() {
           <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
           </svg>
-        </button>
+        </ElButton>
       </div>
     </div>
 
@@ -996,14 +996,52 @@ function handleToolbarRefresh() {
       <div :class="['rounded-2xl bg-gray-50 dark:bg-dark-900 lg:col-span-5', props.fullscreen ? 'p-6' : 'p-4']">
         <div class="grid h-full grid-cols-1 gap-6 md:grid-cols-[200px_1fr] md:items-center">
           <!-- 1) Health Score -->
-          <div
-            class="group relative flex cursor-pointer flex-col items-center justify-center rounded-xl py-2 transition-all hover:bg-white/60 dark:hover:bg-dark-800/60 md:border-r md:border-gray-200 md:pr-6 dark:md:border-dark-700"
-          >
-            <!-- Diagnosis Popover (hover) -->
-            <div
-              class="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-72 -translate-x-1/2 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 md:left-full md:top-0 md:ml-2 md:mt-0 md:translate-x-0"
-            >
-              <div class="rounded-xl bg-white p-4 shadow-xl ring-1 ring-black/5 dark:bg-dark-800 dark:ring-white/10">
+          <ElPopover  :trigger="['hover', 'focus']"  :width="288" placement="top" :show-after="100" :hide-after="150"><template #reference><div class="group relative flex cursor-pointer flex-col items-center justify-center rounded-xl py-2 transition-all hover:bg-white/60 dark:hover:bg-dark-800/60 md:border-r md:border-gray-200 md:pr-6 dark:md:border-dark-700" tabindex="0"><!-- Diagnosis Popover (hover) --><div class="relative flex items-center justify-center">
+              <svg :width="circleSize" :height="circleSize" class="-rotate-90 transform">
+                <circle
+                  :cx="circleSize / 2"
+                  :cy="circleSize / 2"
+                  :r="radius"
+                  :stroke-width="strokeWidth"
+                  fill="transparent"
+                  class="text-gray-200 dark:text-dark-700"
+                  stroke="currentColor"
+                />
+                <circle
+                  :cx="circleSize / 2"
+                  :cy="circleSize / 2"
+                  :r="radius"
+                  :stroke-width="strokeWidth"
+                  fill="transparent"
+                  :stroke="healthScoreColor"
+                  stroke-linecap="round"
+                  :stroke-dasharray="circumference"
+                  :stroke-dashoffset="dashOffset"
+                  class="transition-all duration-1000 ease-out"
+                />
+              </svg>
+
+              <div class="absolute flex flex-col items-center">
+                <span :class="[props.fullscreen ? 'text-5xl' : 'text-3xl', 'font-black', healthScoreClass]">
+                  {{ isSystemIdle ? t('admin.ops.idleStatus') : (overview.health_score ?? '--') }}
+                </span>
+                <span :class="[props.fullscreen ? 'text-xs' : 'text-[10px]', 'font-bold uppercase tracking-wider text-gray-400']">{{ t('admin.ops.health') }}</span>
+              </div>
+            </div><div class="mt-4 text-center" v-if="!props.fullscreen">
+              <div class="flex items-center justify-center gap-1 text-xs font-medium text-gray-500">
+                {{ t('admin.ops.healthCondition') }}
+                <HelpTooltip :content="t('admin.ops.healthHelp')" />
+              </div>
+              <div class="mt-1 text-xs font-bold" :class="healthScoreClass">
+                {{
+                  isSystemIdle
+                    ? t('admin.ops.idleStatus')
+                    : typeof overview.health_score === 'number' && overview.health_score >= 90
+                      ? t('admin.ops.healthyStatus')
+                      : t('admin.ops.riskyStatus')
+                }}
+              </div>
+            </div></div></template><div class="w-72 transition-opacity duration-200 md:left-full md:top-0 md:ml-2 md:mt-0"><div class="rounded-xl bg-white p-4 shadow-xl ring-1 ring-black/5 dark:bg-dark-800 dark:ring-white/10">
                 <h4 class="mb-3 border-b border-gray-100 pb-2 text-sm font-bold text-gray-900 dark:border-dark-700 dark:text-white flex items-center gap-2">
                   <Icon name="brain" size="sm" class="text-blue-500" />
                   {{ t('admin.ops.diagnosis.title') }}
@@ -1048,58 +1086,7 @@ function handleToolbarRefresh() {
                 <div class="mt-3 border-t border-gray-100 pt-2 text-[10px] text-gray-400 dark:border-dark-700">
                   {{ t('admin.ops.diagnosis.footer') }}
                 </div>
-              </div>
-            </div>
-
-            <div class="relative flex items-center justify-center">
-              <svg :width="circleSize" :height="circleSize" class="-rotate-90 transform">
-                <circle
-                  :cx="circleSize / 2"
-                  :cy="circleSize / 2"
-                  :r="radius"
-                  :stroke-width="strokeWidth"
-                  fill="transparent"
-                  class="text-gray-200 dark:text-dark-700"
-                  stroke="currentColor"
-                />
-                <circle
-                  :cx="circleSize / 2"
-                  :cy="circleSize / 2"
-                  :r="radius"
-                  :stroke-width="strokeWidth"
-                  fill="transparent"
-                  :stroke="healthScoreColor"
-                  stroke-linecap="round"
-                  :stroke-dasharray="circumference"
-                  :stroke-dashoffset="dashOffset"
-                  class="transition-all duration-1000 ease-out"
-                />
-              </svg>
-
-              <div class="absolute flex flex-col items-center">
-                <span :class="[props.fullscreen ? 'text-5xl' : 'text-3xl', 'font-black', healthScoreClass]">
-                  {{ isSystemIdle ? t('admin.ops.idleStatus') : (overview.health_score ?? '--') }}
-                </span>
-                <span :class="[props.fullscreen ? 'text-xs' : 'text-[10px]', 'font-bold uppercase tracking-wider text-gray-400']">{{ t('admin.ops.health') }}</span>
-              </div>
-            </div>
-
-            <div class="mt-4 text-center" v-if="!props.fullscreen">
-              <div class="flex items-center justify-center gap-1 text-xs font-medium text-gray-500">
-                {{ t('admin.ops.healthCondition') }}
-                <HelpTooltip :content="t('admin.ops.healthHelp')" />
-              </div>
-              <div class="mt-1 text-xs font-bold" :class="healthScoreClass">
-                {{
-                  isSystemIdle
-                    ? t('admin.ops.idleStatus')
-                    : typeof overview.health_score === 'number' && overview.health_score >= 90
-                      ? t('admin.ops.healthyStatus')
-                      : t('admin.ops.riskyStatus')
-                }}
-              </div>
-            </div>
-          </div>
+              </div></div></ElPopover>
 
           <!-- 2) Realtime Traffic -->
           <div class="flex h-full flex-col justify-center py-2">
@@ -1115,10 +1102,10 @@ function handleToolbarRefresh() {
 
               <!-- Time Window Selector -->
               <div class="flex flex-wrap gap-1">
-                <button
+                <ElButton text
                   v-for="window in availableRealtimeWindows"
                   :key="window"
-                  type="button"
+                  native-type="button"
                   class="rounded px-1.5 py-0.5 text-[9px] font-bold transition-colors sm:px-2 sm:text-[10px]"
                   :class="realtimeWindow === window
                     ? 'bg-blue-500 text-white'
@@ -1126,7 +1113,7 @@ function handleToolbarRefresh() {
                   @click="realtimeWindow = window"
                 >
                   {{ window }}
-                </button>
+                </ElButton>
               </div>
             </div>
 
@@ -1215,14 +1202,14 @@ function handleToolbarRefresh() {
               <span class="text-[10px] font-bold uppercase text-gray-400">{{ t('admin.ops.requestsTitle') }}</span>
               <HelpTooltip v-if="!props.fullscreen" :content="t('admin.ops.tooltips.totalRequests')" />
             </div>
-            <button
+            <ElButton text
               v-if="!props.fullscreen"
               class="text-[10px] font-bold text-blue-500 hover:underline"
-              type="button"
+              native-type="button"
               @click="openDetails({ title: t('admin.ops.requestDetails.title') })"
             >
               {{ t('admin.ops.requestDetails.details') }}
-            </button>
+            </ElButton>
           </div>
           <div class="mt-2 space-y-2 text-xs">
             <div class="flex justify-between">
@@ -1252,14 +1239,14 @@ function handleToolbarRefresh() {
               <HelpTooltip v-if="!props.fullscreen" :content="t('admin.ops.tooltips.sla')" />
               <span class="h-1.5 w-1.5 rounded-full" :class="getSLAThresholdLevel(slaPercent) === 'critical' ? 'bg-red-500' : getSLAThresholdLevel(slaPercent) === 'warning' ? 'bg-yellow-500' : 'bg-green-500'"></span>
             </div>
-            <button
+            <ElButton text
               v-if="!props.fullscreen"
               class="text-[10px] font-bold text-blue-500 hover:underline"
-              type="button"
+              native-type="button"
               @click="openDetails({ title: t('admin.ops.requestDetails.title'), kind: 'error' })"
             >
               {{ t('admin.ops.requestDetails.details') }}
-            </button>
+            </ElButton>
           </div>
           <div class="mt-2 text-3xl font-black" :class="getThresholdColorClass(getSLAThresholdLevel(slaPercent))">
             {{ slaPercent == null ? '-' : `${slaPercent.toFixed(3)}%` }}
@@ -1282,14 +1269,14 @@ function handleToolbarRefresh() {
               <span class="text-[10px] font-bold uppercase text-gray-400">{{ t('admin.ops.latencyDuration') }}</span>
               <HelpTooltip v-if="!props.fullscreen" :content="t('admin.ops.tooltips.latency')" />
             </div>
-            <button
+            <ElButton text
               v-if="!props.fullscreen"
               class="text-[10px] font-bold text-blue-500 hover:underline"
-              type="button"
+              native-type="button"
               @click="openDetails({ title: t('admin.ops.latencyDuration'), sort: 'duration_desc' })"
             >
               {{ t('admin.ops.requestDetails.details') }}
-            </button>
+            </ElButton>
           </div>
           <div class="mt-2 flex items-baseline gap-2">
             <div class="text-3xl font-black text-gray-900 dark:text-white">
@@ -1333,14 +1320,14 @@ function handleToolbarRefresh() {
               <span class="text-[10px] font-bold uppercase text-gray-400">TTFT</span>
               <HelpTooltip v-if="!props.fullscreen" :content="t('admin.ops.tooltips.ttft')" />
             </div>
-            <button
+            <ElButton text
               v-if="!props.fullscreen"
               class="text-[10px] font-bold text-blue-500 hover:underline"
-              type="button"
+              native-type="button"
               @click="openDetails({ title: t('admin.ops.ttftLabel'), kind: 'success', sort: 'ttft_desc' })"
             >
               {{ t('admin.ops.requestDetails.details') }}
-            </button>
+            </ElButton>
           </div>
           <div class="mt-2 flex items-baseline gap-2">
             <div class="text-3xl font-black" :class="getThresholdColorClass(getTTFTThresholdLevel(ttftP99Ms))">
@@ -1384,9 +1371,9 @@ function handleToolbarRefresh() {
               <span class="text-[10px] font-bold uppercase text-gray-400">{{ t('admin.ops.requestErrors') }}</span>
               <HelpTooltip v-if="!props.fullscreen" :content="t('admin.ops.tooltips.errors')" />
             </div>
-            <button v-if="!props.fullscreen" class="text-[10px] font-bold text-blue-500 hover:underline" type="button" @click="openErrorDetails('request')">
+            <ElButton text v-if="!props.fullscreen" class="text-[10px] font-bold text-blue-500 hover:underline" native-type="button" @click="openErrorDetails('request')">
               {{ t('admin.ops.requestDetails.details') }}
-            </button>
+            </ElButton>
           </div>
           <div class="mt-2 text-3xl font-black" :class="getThresholdColorClass(getRequestErrorRateThresholdLevel(errorRatePercent))">
             {{ errorRatePercent == null ? '-' : `${errorRatePercent.toFixed(2)}%` }}
@@ -1410,9 +1397,9 @@ function handleToolbarRefresh() {
               <span class="text-[10px] font-bold uppercase text-gray-400">{{ t('admin.ops.upstreamErrors') }}</span>
               <HelpTooltip v-if="!props.fullscreen" :content="t('admin.ops.tooltips.upstreamErrors')" />
             </div>
-            <button v-if="!props.fullscreen" class="text-[10px] font-bold text-blue-500 hover:underline" type="button" @click="openErrorDetails('upstream')">
+            <ElButton text v-if="!props.fullscreen" class="text-[10px] font-bold text-blue-500 hover:underline" native-type="button" @click="openErrorDetails('upstream')">
               {{ t('admin.ops.requestDetails.details') }}
-            </button>
+            </ElButton>
           </div>
           <div class="mt-2 text-3xl font-black" :class="getThresholdColorClass(getUpstreamErrorRateThresholdLevel(upstreamErrorRatePercent))">
             {{ upstreamErrorRatePercent == null ? '-' : `${upstreamErrorRatePercent.toFixed(2)}%` }}
@@ -1525,9 +1512,9 @@ function handleToolbarRefresh() {
               <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">{{ t('admin.ops.jobs') }}</div>
               <HelpTooltip v-if="!props.fullscreen" :content="t('admin.ops.tooltips.jobs')" />
             </div>
-            <button v-if="!props.fullscreen" class="text-[10px] font-bold text-blue-500 hover:underline" type="button" @click="openJobsDetails">
+            <ElButton text v-if="!props.fullscreen" class="text-[10px] font-bold text-blue-500 hover:underline" native-type="button" @click="openJobsDetails">
               {{ t('admin.ops.requestDetails.details') }}
-            </button>
+            </ElButton>
           </div>
 
           <div class="mt-1 text-lg font-black" :class="jobsStatusClass">
@@ -1589,7 +1576,7 @@ function handleToolbarRefresh() {
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             {{ t('admin.ops.customTimeRange.startTime') }}
           </label>
-          <input
+          <ElementInput
             v-model="customStartTimeInput"
             type="datetime-local"
             class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-dark-600 dark:bg-dark-800 dark:text-white"
@@ -1599,27 +1586,27 @@ function handleToolbarRefresh() {
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             {{ t('admin.ops.customTimeRange.endTime') }}
           </label>
-          <input
+          <ElementInput
             v-model="customEndTimeInput"
             type="datetime-local"
             class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-dark-600 dark:bg-dark-800 dark:text-white"
           />
         </div>
         <div class="flex justify-end gap-3 pt-2">
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-dark-700 dark:text-gray-300 dark:hover:bg-dark-600"
             @click="handleCustomTimeRangeCancel"
           >
             {{ t('common.cancel') }}
-          </button>
-          <button
-            type="button"
+          </ElButton>
+          <ElButton type="primary"
+            native-type="button"
             class="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
             @click="handleCustomTimeRangeConfirm"
           >
             {{ t('common.confirm') }}
-          </button>
+          </ElButton>
         </div>
       </div>
     </BaseDialog>

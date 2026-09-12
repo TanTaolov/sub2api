@@ -6,10 +6,10 @@
         {{ t('payment.quickAmounts') }}
       </label>
       <div class="grid grid-cols-3 gap-2">
-        <button
+        <ElButton text
           v-for="amt in filteredAmounts"
           :key="amt"
-          type="button"
+          native-type="button"
           :class="[
             'rounded-lg border-2 px-4 py-3 text-center font-medium transition-colors',
             modelValue === amt
@@ -19,7 +19,7 @@
           @click="selectAmount(amt)"
         >
           {{ amt }}
-        </button>
+        </ElButton>
       </div>
     </div>
 
@@ -32,7 +32,7 @@
         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-dark-500">
           $
         </span>
-        <input
+        <ElementInput
           type="text"
           inputmode="decimal"
           :value="customText"

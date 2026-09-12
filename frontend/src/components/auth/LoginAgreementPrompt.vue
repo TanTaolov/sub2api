@@ -4,11 +4,11 @@
     class="px-0.5"
   >
     <div class="flex items-start gap-2">
-      <input
+      <ElementCheckbox
         id="login-agreement-consent"
-        type="checkbox"
+
         :checked="accepted"
-        class="mt-[2px] h-4 w-4 flex-shrink-0 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-600 dark:bg-dark-900"
+        class="mt-[2px] flex-shrink-0"
         @change="handleCheckboxChange"
       />
       <div class="min-w-0 flex-1">
@@ -47,24 +47,18 @@
           {{ t('legal.loginAgreementPrompt.noticeDescription') }}
         </p>
       </div>
-      <button
-        type="button"
+      <ElButton type="primary"
+        native-type="button"
         class="flex-shrink-0 rounded-md bg-primary-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-primary-700"
         @click="emit('open')"
       >
         {{ t('legal.loginAgreementPrompt.viewTerms') }}
-      </button>
+      </ElButton>
     </div>
   </div>
 
-  <Teleport to="body">
-    <Transition name="agreement-fade">
-      <div
-        v-if="dialogVisible"
-        class="fixed inset-0 z-[140] flex items-center justify-center overflow-y-auto bg-gray-950/60 p-4 backdrop-blur-sm"
-      >
-        <div class="w-full max-w-[600px] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/10 dark:bg-dark-900 dark:ring-white/10">
-          <div class="border-b border-gray-100 bg-white px-6 py-6 dark:border-dark-800 dark:bg-dark-900">
+  <ElDialog :model-value="Boolean(dialogVisible)" :title="t('legal.loginAgreementPrompt.dialogTitle')" width="600px" append-to-body align-center destroy-on-close :show-close="false" :close-on-click-modal="false" :close-on-press-escape="false" class="element-dialog element-dialog-custom" >
+<template v-if="dialogVisible"><div class="border-b border-gray-100 bg-white px-6 py-6 dark:border-dark-800 dark:bg-dark-900">
             <div class="flex items-start gap-4">
               <span class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-700 ring-1 ring-primary-100 dark:bg-primary-500/10 dark:text-primary-300 dark:ring-primary-500/20">
                 <Icon name="shield" size="md" />
@@ -90,9 +84,7 @@
                 </p>
               </div>
             </div>
-          </div>
-
-          <div class="max-h-[58vh] overflow-y-auto px-6 py-5">
+          </div><div class="max-h-[58vh] overflow-y-auto px-6 py-5">
             <div class="mb-3 flex items-center justify-between gap-3">
               <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('legal.loginAgreementPrompt.relatedDocuments') }}</p>
             </div>
@@ -116,30 +108,25 @@
                 </span>
               </RouterLink>
             </div>
-          </div>
-
-          <div class="border-t border-gray-100 bg-gray-50/80 px-6 py-4 dark:border-dark-800 dark:bg-dark-950/60">
+          </div><div class="border-t border-gray-100 bg-gray-50/80 px-6 py-4 dark:border-dark-800 dark:bg-dark-950/60">
             <div class="grid grid-cols-2 gap-3">
-              <button
-                type="button"
+              <ElButton text
+                native-type="button"
                 class="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-dark-700 dark:bg-dark-800 dark:text-dark-200 dark:hover:bg-dark-700"
                 @click="emit('reject')"
               >
                 {{ t('legal.loginAgreementPrompt.reject') }}
-              </button>
-              <button
-                type="button"
+              </ElButton>
+              <ElButton type="primary"
+                native-type="button"
                 class="rounded-xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-primary-600/20 transition hover:bg-primary-700"
                 @click="emit('accept')"
               >
                 {{ t('legal.loginAgreementPrompt.accept') }}
-              </button>
+              </ElButton>
             </div>
-          </div>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+          </div></template>
+</ElDialog>
 </template>
 
 <script setup lang="ts">

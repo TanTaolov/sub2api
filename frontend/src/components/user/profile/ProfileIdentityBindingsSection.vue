@@ -92,7 +92,7 @@
                 data-testid="profile-binding-email-form"
                 class="grid gap-2 sm:grid-cols-[minmax(0,1.4fr)_auto]"
               >
-                <input
+                <ElementInput
                   v-model.trim="emailBindingForm.email"
                   data-testid="profile-binding-email-input"
                   type="email"
@@ -100,10 +100,10 @@
                   :placeholder="t('profile.authBindings.emailPlaceholder')"
                   :disabled="isSendingEmailCode || isBindingEmail"
                 />
-                <button
+                <ElButton size="small"
                   data-testid="profile-binding-email-send-code"
-                  type="button"
-                  class="btn btn-secondary btn-sm"
+                  native-type="button"
+                  class=""
                   :disabled="isSendingEmailCode || isBindingEmail"
                   @click="sendEmailCode"
                 >
@@ -112,8 +112,8 @@
                       ? t('common.loading')
                       : t('profile.authBindings.sendCodeAction')
                   }}
-                </button>
-                <input
+                </ElButton>
+                <ElementInput
                   v-model.trim="emailBindingForm.verifyCode"
                   data-testid="profile-binding-email-code-input"
                   type="text"
@@ -123,7 +123,7 @@
                   :placeholder="t('profile.authBindings.codePlaceholder')"
                   :disabled="isBindingEmail"
                 />
-                <input
+                <ElementInput
                   v-model="emailBindingForm.password"
                   data-testid="profile-binding-email-password-input"
                   type="password"
@@ -131,10 +131,10 @@
                   :placeholder="emailPasswordPlaceholder"
                   :disabled="isBindingEmail"
                 />
-                <button
+                <ElButton type="primary" size="small"
                   data-testid="profile-binding-email-submit"
-                  type="button"
-                  class="btn btn-primary btn-sm sm:col-span-2"
+                  native-type="button"
+                  class="sm:col-span-2"
                   :disabled="isBindingEmail"
                   @click="bindEmail"
                 >
@@ -143,17 +143,17 @@
                       ? t('common.loading')
                       : emailSubmitActionLabel
                   }}
-                </button>
+                </ElButton>
               </div>
             </div>
           </div>
 
           <div class="flex shrink-0 flex-wrap items-center gap-3">
-            <button
+            <ElButton size="small"
               v-if="item.provider === 'email' && compact"
               data-testid="profile-binding-email-toggle"
-              type="button"
-              class="btn btn-secondary btn-sm"
+              native-type="button"
+              class=""
               @click="toggleEmailForm"
             >
               {{
@@ -161,21 +161,21 @@
                   ? t('profile.authBindings.hideEmailFormAction')
                   : t('profile.authBindings.manageEmailAction')
               }}
-            </button>
-            <button
+            </ElButton>
+            <ElButton type="primary" size="small"
               v-if="item.canBind"
               :data-testid="`profile-binding-${item.provider}-action`"
-              type="button"
-              class="btn btn-primary btn-sm"
+              native-type="button"
+              class=""
               @click="startBinding(item.provider)"
             >
               {{ t('profile.authBindings.bindAction', { providerName: item.label }) }}
-            </button>
-            <button
+            </ElButton>
+            <ElButton size="small"
               v-if="item.canUnbind"
               :data-testid="`profile-binding-${item.provider}-unbind`"
-              type="button"
-              class="btn btn-secondary btn-sm"
+              native-type="button"
+              class=""
               :disabled="unbindingProvider === item.provider"
               @click="handleUnbindForItem(item.provider, item.label)"
             >
@@ -184,7 +184,7 @@
                   ? t('common.loading')
                   : t('profile.authBindings.unbindAction')
               }}
-            </button>
+            </ElButton>
           </div>
         </div>
       </div>

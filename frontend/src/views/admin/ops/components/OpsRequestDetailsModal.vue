@@ -169,13 +169,13 @@ const kindBadgeClass = (kind: string) => {
           <div class="text-xs text-gray-500 dark:text-gray-400">
             {{ t('admin.ops.requestDetails.rangeLabel', { range: rangeLabel }) }}
           </div>
-          <button
-            type="button"
-            class="btn btn-secondary btn-sm"
+          <ElButton size="small"
+            native-type="button"
+            class=""
             @click="fetchData"
           >
             {{ t('common.refresh') }}
-          </button>
+          </ElButton>
         </div>
 
         <!-- Loading -->
@@ -220,100 +220,74 @@ const kindBadgeClass = (kind: string) => {
                     <span class="min-w-0 flex-1 truncate font-mono text-[11px] text-gray-700 dark:text-gray-200" :title="row.request_id">
                       {{ row.request_id }}
                     </span>
-                    <button
+                    <ElButton text
                       class="shrink-0 rounded-md bg-gray-100 px-2 py-1 text-[10px] font-bold text-gray-600 hover:bg-gray-200 dark:bg-dark-700 dark:text-gray-300 dark:hover:bg-dark-600"
                       @click="handleCopyRequestId(row.request_id)"
                     >
                       {{ t('admin.ops.requestDetails.copy') }}
-                    </button>
+                    </ElButton>
                   </div>
-                  <button
+                  <ElButton text
                     v-if="row.kind === 'error' && row.error_id"
                     class="w-full rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
                     @click="openErrorDetail(row.error_id)"
                   >
                     {{ t('admin.ops.requestDetails.viewError') }}
-                  </button>
+                  </ElButton>
                 </div>
               </div>
-              <table v-else class="min-w-full divide-y divide-gray-200 dark:divide-dark-700">
-                <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-dark-900">
-                <tr>
-                  <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    {{ t('admin.ops.requestDetails.table.time') }}
-                  </th>
-                  <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    {{ t('admin.ops.requestDetails.table.kind') }}
-                  </th>
-                  <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    {{ t('admin.ops.requestDetails.table.platform') }}
-                  </th>
-                  <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    {{ t('admin.ops.requestDetails.table.model') }}
-                  </th>
-                  <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    {{ latencyLabel }}
-                  </th>
-                  <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    {{ t('admin.ops.requestDetails.table.status') }}
-                  </th>
-                  <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    {{ t('admin.ops.requestDetails.table.requestId') }}
-                  </th>
-                  <th class="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    {{ t('admin.ops.requestDetails.table.actions') }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 bg-white dark:divide-dark-700 dark:bg-dark-800">
-                <tr v-for="(row, idx) in items" :key="idx" class="hover:bg-gray-50 dark:hover:bg-dark-700/50">
-                  <td class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300">
-                    {{ formatDateTime(row.created_at) }}
-                  </td>
-                  <td class="whitespace-nowrap px-4 py-3">
-                    <span class="rounded-full px-2 py-1 text-[10px] font-bold" :class="kindBadgeClass(row.kind)">
+              <ElTable v-else row-class-name="hover:bg-gray-50 dark:hover:bg-dark-700/50" :data="items" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.time') }}</div></template>
+    <template #default="{ row: row, $index: idx }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" >{{ formatDateTime(row.created_at) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.kind') }}</div></template>
+    <template #default="{ row: row, $index: idx }"><div class="whitespace-nowrap px-4 py-3" ><span class="rounded-full px-2 py-1 text-[10px] font-bold" :class="kindBadgeClass(row.kind)">
                       {{ row.kind === 'error' ? t('admin.ops.requestDetails.kind.error') : t('admin.ops.requestDetails.kind.success') }}
-                    </span>
-                  </td>
-                  <td class="whitespace-nowrap px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-200">
-                    {{ (row.platform || 'unknown').toUpperCase() }}
-                  </td>
-                  <td class="max-w-[240px] truncate px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.model || ''">
-                    {{ row.model || '-' }}
-                  </td>
-                  <td class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300">
-                    {{ formatLatency(row) }}
-                  </td>
-                  <td class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300">
-                    {{ row.status_code ?? '-' }}
-                  </td>
-                  <td class="px-4 py-3">
-                    <div v-if="row.request_id" class="flex items-center gap-2">
+                    </span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.platform') }}</div></template>
+    <template #default="{ row: row, $index: idx }"><div class="whitespace-nowrap px-4 py-3 text-xs font-medium text-gray-700 dark:text-gray-200" >{{ (row.platform || 'unknown').toUpperCase() }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.model') }}</div></template>
+    <template #default="{ row: row, $index: idx }"><div class="max-w-[240px] truncate px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.model || ''" >{{ row.model || '-' }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ latencyLabel }}</div></template>
+    <template #default="{ row: row, $index: idx }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" >{{ formatLatency(row) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.status') }}</div></template>
+    <template #default="{ row: row, $index: idx }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" >{{ row.status_code ?? '-' }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.requestId') }}</div></template>
+    <template #default="{ row: row, $index: idx }"><div class="px-4 py-3" ><div v-if="row.request_id" class="flex items-center gap-2">
                       <span class="max-w-[220px] truncate font-mono text-[11px] text-gray-700 dark:text-gray-200" :title="row.request_id">
                         {{ row.request_id }}
                       </span>
-                      <button
+                      <ElButton text
                         class="rounded-md bg-gray-100 px-2 py-1 text-[10px] font-bold text-gray-600 hover:bg-gray-200 dark:bg-dark-700 dark:text-gray-300 dark:hover:bg-dark-600"
                         @click="handleCopyRequestId(row.request_id)"
                       >
                         {{ t('admin.ops.requestDetails.copy') }}
-                      </button>
-                    </div>
-                    <span v-else class="text-xs text-gray-400">-</span>
-                  </td>
-                  <td class="whitespace-nowrap px-4 py-3 text-right">
-                    <button
+                      </ElButton>
+                    </div><span v-else class="text-xs text-gray-400">-</span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="right">
+    <template #header><div class="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.requestDetails.table.actions') }}</div></template>
+    <template #default="{ row: row, $index: idx }"><div class="whitespace-nowrap px-4 py-3 text-right" ><ElButton text
                       v-if="row.kind === 'error' && row.error_id"
                       class="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
                       @click="openErrorDetail(row.error_id)"
                     >
                       {{ t('admin.ops.requestDetails.viewError') }}
-                    </button>
-                    <span v-else class="text-xs text-gray-400">-</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    </ElButton><span v-else class="text-xs text-gray-400">-</span></div></template>
+  </ElTableColumn>
+</ElTable>
             </div>
 
             <Pagination

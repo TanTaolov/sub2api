@@ -1,6 +1,6 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
-    <div class="card flex min-h-0 flex-1 flex-col overflow-hidden">
+    <ElCard shadow="never" class="element-surface-card flex min-h-0 flex-1 flex-col overflow-hidden">
       <IpGeoBatchToolbar :ips="rows.map((r) => r.client_ip)" @failed="emit('ipGeoBatchFailed')" />
 
       <DataTable
@@ -103,7 +103,7 @@
 
         <template #empty><EmptyState :message="t('usage.errors.empty')" /></template>
       </DataTable>
-    </div>
+    </ElCard>
 
     <div class="flex-shrink-0">
       <Pagination

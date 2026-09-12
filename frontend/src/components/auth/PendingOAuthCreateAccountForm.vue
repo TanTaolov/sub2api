@@ -1,6 +1,6 @@
 <template>
-  <form class="space-y-3" @submit.prevent="handleSubmit">
-    <input
+  <ElForm class="space-y-3" @submit.prevent="handleSubmit">
+    <ElementInput
       v-model="email"
       :data-testid="`${testIdPrefix}-create-account-email`"
       type="email"
@@ -8,7 +8,7 @@
       :placeholder="t('auth.emailPlaceholder')"
       :disabled="isSubmitting || isSendingCode"
     />
-    <input
+    <ElementInput
       v-model="password"
       :data-testid="`${testIdPrefix}-create-account-password`"
       type="password"
@@ -35,7 +35,7 @@
       />
     </div>
     <div v-if="emailVerifyEnabled" class="flex gap-3">
-      <input
+      <ElementInput
         v-model="verifyCode"
         :data-testid="`${testIdPrefix}-create-account-verify-code`"
         type="text"
@@ -45,10 +45,10 @@
         placeholder="123456"
         :disabled="isSubmitting"
       />
-      <button
+      <ElButton
         :data-testid="`${testIdPrefix}-create-account-send-code`"
-        type="button"
-        class="btn btn-secondary shrink-0"
+        native-type="button"
+        class="shrink-0"
         :disabled="isSubmitting || isSendingCode || countdown > 0 || !email.trim() || (turnstileEnabled && !turnstileToken)"
         @click="handleSendCode"
       >
@@ -59,7 +59,7 @@
               ? t('auth.resendCountdown', { countdown })
               : t('auth.sendCode')
         }}
-      </button>
+      </ElButton>
     </div>
     <p v-if="emailVerifyEnabled && sendCodeSuccess" class="text-sm text-green-600 dark:text-green-400">
       {{ t('auth.codeSentSuccess') }}
@@ -67,7 +67,7 @@
     <p v-else-if="emailVerifyEnabled" class="text-xs text-gray-500 dark:text-dark-400">
       {{ t('auth.verificationCodeHint') }}
     </p>
-    <input
+    <ElementInput
       v-if="invitationCodeEnabled"
       v-model="invitationCode"
       :data-testid="`${testIdPrefix}-create-account-invitation-code`"
@@ -76,24 +76,24 @@
       :placeholder="t('auth.invitationCodePlaceholder')"
       :disabled="isSubmitting"
     />
-    <button
+    <ElButton type="primary"
       :data-testid="`${testIdPrefix}-create-account-submit`"
-      type="button"
-      class="btn btn-primary w-full"
+      native-type="button"
+      class="w-full"
       :disabled="isSubmitting || !email.trim() || password.length < 6 || (invitationCodeEnabled && !invitationCode.trim()) || (turnstileEnabled && !turnstileToken)"
       @click="handleSubmit"
     >
       {{ isSubmitting ? t('common.processing') : t('auth.createAccount') }}
-    </button>
-    <button
-      type="button"
-      class="btn btn-secondary w-full"
+    </ElButton>
+    <ElButton
+      native-type="button"
+      class="w-full"
       :disabled="isSubmitting"
       @click="emitSwitchToBind"
     >
       {{ t('auth.alreadyHaveAccount') }}
-    </button>
-  </form>
+    </ElButton>
+  </ElForm>
 </template>
 
 <script setup lang="ts">

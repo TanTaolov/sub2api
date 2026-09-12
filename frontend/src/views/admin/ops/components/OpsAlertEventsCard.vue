@@ -371,7 +371,7 @@ const empty = computed(() => events.value.length === 0 && !loading.value)
         <Select :model-value="severity" :options="severityOptions" class="w-[88px]" @change="severity = String($event || '')" />
         <Select :model-value="status" :options="statusOptions" class="w-[110px]" @change="status = String($event || '')" />
         <Select :model-value="emailSent" :options="emailSentOptions" class="w-[110px]" @change="emailSent = String($event || '')" />
-        <button
+        <ElButton text
           class="flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-dark-700 dark:text-gray-300 dark:hover:bg-dark-600"
           :disabled="loading"
           @click="loadFirstPage"
@@ -380,7 +380,7 @@ const empty = computed(() => events.value.length === 0 && !loading.value)
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
           {{ t('common.refresh') }}
-        </button>
+        </ElButton>
       </div>
     </div>
 
@@ -441,76 +441,47 @@ const empty = computed(() => events.value.length === 0 && !loading.value)
             <div class="text-[11px] text-gray-400 dark:text-gray-500">{{ formatDimensionsSummary(row) }}</div>
           </div>
         </div>
-        <table v-else class="min-w-full divide-y divide-gray-200 dark:divide-dark-700">
-          <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-dark-900">
-            <tr>
-              <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertEvents.table.time') }}
-              </th>
-              <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertEvents.table.severity') }}
-              </th>
-              <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertEvents.table.platform') }}
-              </th>
-              <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertEvents.table.ruleId') }}
-              </th>
-              <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertEvents.table.title') }}
-              </th>
-              <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertEvents.table.duration') }}
-              </th>
-              <th class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertEvents.table.dimensions') }}
-              </th>
-              <th class="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                {{ t('admin.ops.alertEvents.table.email') }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200 bg-white dark:divide-dark-700 dark:bg-dark-800">
-            <tr
-              v-for="row in events"
-              :key="row.id"
-              class="cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-700/50"
-              @click="openDetail(row)"
-              :title="row.title || ''"
-            >
-              <td class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300">
-                {{ formatDateTime(row.fired_at || row.created_at) }}
-              </td>
-              <td class="whitespace-nowrap px-4 py-3">
-                <div class="flex items-center gap-2">
+        <ElTable v-else row-key="id" @row-click="(row) => { openDetail(row) }" row-class-name="cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-700/50" :data="events" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.time') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.title || ''">{{ formatDateTime(row.fired_at || row.created_at) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.severity') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3" :title="row.title || ''"><div class="flex items-center gap-2">
                   <span class="rounded-full px-2 py-1 text-[10px] font-bold" :class="severityBadgeClass(String(row.severity || ''))">
                     {{ row.severity || '-' }}
                   </span>
                   <span class="inline-flex items-center rounded-full px-2 py-1 text-[10px] font-bold ring-1 ring-inset" :class="statusBadgeClass(row.status)">
                     {{ formatStatusLabel(row.status) }}
                   </span>
-                </div>
-              </td>
-              <td class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300">
-                {{ getDimensionString(row, 'platform') || '-' }}
-              </td>
-              <td class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300">
-                <span class="font-mono">#{{ row.rule_id }}</span>
-              </td>
-              <td class="min-w-[260px] px-4 py-3 text-xs text-gray-700 dark:text-gray-200">
-                <div class="font-semibold truncate max-w-[360px]">{{ row.title || '-' }}</div>
-                <div v-if="row.description" class="mt-0.5 line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">
+                </div></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.platform') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.title || ''">{{ getDimensionString(row, 'platform') || '-' }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.ruleId') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.title || ''"><span class="font-mono">#{{ row.rule_id }}</span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.title') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="min-w-[260px] px-4 py-3 text-xs text-gray-700 dark:text-gray-200" :title="row.title || ''"><div class="font-semibold truncate max-w-[360px]">{{ row.title || '-' }}</div><div v-if="row.description" class="mt-0.5 line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">
                   {{ row.description }}
-                </div>
-              </td>
-              <td class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300">
-                {{ formatDurationLabel(row) }}
-              </td>
-              <td class="whitespace-nowrap px-4 py-3 text-[11px] text-gray-500 dark:text-gray-400">
-                {{ formatDimensionsSummary(row) }}
-              </td>
-              <td class="whitespace-nowrap px-4 py-3 text-right text-xs">
-                <span
+                </div></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.duration') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-xs text-gray-600 dark:text-gray-300" :title="row.title || ''">{{ formatDurationLabel(row) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.dimensions') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-[11px] text-gray-500 dark:text-gray-400" :title="row.title || ''">{{ formatDimensionsSummary(row) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="right">
+    <template #header><div class="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.email') }}</div></template>
+    <template #default="{ row: row, $index: rowIndex }"><div class="whitespace-nowrap px-4 py-3 text-right text-xs" :title="row.title || ''"><span
                   class="inline-flex items-center justify-end gap-1.5"
                   :title="row.email_sent ? t('admin.ops.alertEvents.table.emailSent') : t('admin.ops.alertEvents.table.emailIgnored')"
                 >
@@ -529,11 +500,9 @@ const empty = computed(() => events.value.length === 0 && !loading.value)
                   <span class="text-[11px] font-bold text-gray-600 dark:text-gray-300">
                     {{ row.email_sent ? t('admin.ops.alertEvents.table.emailSent') : t('admin.ops.alertEvents.table.emailIgnored') }}
                   </span>
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </span></div></template>
+  </ElTableColumn>
+</ElTable>
         <div v-if="loadingMore" class="flex items-center justify-center gap-2 py-3 text-xs text-gray-500 dark:text-gray-400">
           <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -591,16 +560,16 @@ const empty = computed(() => events.value.length === 0 && !loading.value)
                   class="w-[110px]"
                   @change="silenceDuration = String($event || '1h')"
                 />
-                <button type="button" class="btn btn-secondary btn-sm" :disabled="detailActionLoading" @click="silenceAlert">
+                <ElButton size="small" native-type="button" class="" :disabled="detailActionLoading" @click="silenceAlert">
                   <Icon name="ban" size="sm" />
                   {{ t('common.apply') }}
-                </button>
+                </ElButton>
               </div>
 
-              <button type="button" class="btn btn-secondary btn-sm" :disabled="detailActionLoading" @click="manualResolve">
+              <ElButton size="small" native-type="button" class="" :disabled="detailActionLoading" @click="manualResolve">
                 <Icon name="checkCircle" size="sm" />
                 {{ t('admin.ops.alertEvents.detail.manualResolve') }}
-              </button>
+              </ElButton>
             </div>
           </div>
         </div>
@@ -661,31 +630,24 @@ const empty = computed(() => events.value.length === 0 && !loading.value)
             {{ t('admin.ops.alertEvents.detail.historyEmpty') }}
           </div>
           <div v-else class="overflow-hidden rounded-lg border border-gray-100 dark:border-dark-700">
-            <table class="min-w-full divide-y divide-gray-100 dark:divide-dark-700">
-              <thead class="bg-gray-50 dark:bg-dark-900">
-                <tr>
-                  <th class="px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.time') }}</th>
-                  <th class="px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.status') }}</th>
-                  <th class="px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.metric') }}</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-100 dark:divide-dark-700">
-                <tr v-for="it in history" :key="it.id" class="hover:bg-gray-50 dark:hover:bg-dark-700/50">
-                  <td class="px-3 py-2 text-xs text-gray-600 dark:text-gray-300">{{ formatDateTime(it.fired_at || it.created_at) }}</td>
-                  <td class="px-3 py-2 text-xs">
-                    <span class="inline-flex items-center rounded-full px-2 py-1 text-[10px] font-bold ring-1 ring-inset" :class="statusBadgeClass(it.status)">
+            <ElTable  row-key="id" row-class-name="hover:bg-gray-50 dark:hover:bg-dark-700/50" :data="history" table-layout="auto" class="element-data-table">
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.time') }}</div></template>
+    <template #default="{ row: it, $index: rowIndex }"><div class="px-3 py-2 text-xs text-gray-600 dark:text-gray-300" >{{ formatDateTime(it.fired_at || it.created_at) }}</div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.status') }}</div></template>
+    <template #default="{ row: it, $index: rowIndex }"><div class="px-3 py-2 text-xs" ><span class="inline-flex items-center rounded-full px-2 py-1 text-[10px] font-bold ring-1 ring-inset" :class="statusBadgeClass(it.status)">
                       {{ formatStatusLabel(it.status) }}
-                    </span>
-                  </td>
-                  <td class="px-3 py-2 text-xs text-gray-600 dark:text-gray-300">
-                    <span v-if="typeof it.metric_value === 'number' && typeof it.threshold_value === 'number'">
+                    </span></div></template>
+  </ElTableColumn>
+  <ElTableColumn :min-width="120" align="left">
+    <template #header><div class="px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('admin.ops.alertEvents.table.metric') }}</div></template>
+    <template #default="{ row: it, $index: rowIndex }"><div class="px-3 py-2 text-xs text-gray-600 dark:text-gray-300" ><span v-if="typeof it.metric_value === 'number' && typeof it.threshold_value === 'number'">
                       {{ it.metric_value.toFixed(2) }} / {{ it.threshold_value.toFixed(2) }}
-                    </span>
-                    <span v-else>-</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    </span><span v-else>-</span></div></template>
+  </ElTableColumn>
+</ElTable>
           </div>
         </div>
       </div>

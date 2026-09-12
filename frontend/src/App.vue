@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { RouterView, useRouter, useRoute } from 'vue-router'
 import { computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ElConfigProvider } from 'element-plus'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import en from 'element-plus/es/locale/lang/en'
+import { useI18n } from 'vue-i18n'
 import Toast from '@/components/common/Toast.vue'
 import NavigationProgress from '@/components/common/NavigationProgress.vue'
 import AdminComplianceDialog from '@/components/admin/AdminComplianceDialog.vue'
@@ -13,6 +17,8 @@ import { FeatureFlags, isFeatureFlagEnabled } from '@/utils/featureFlags'
 import { resolveSiteBillingMode } from '@/utils/siteBillingMode'
 
 const router = useRouter()
+const { locale } = useI18n()
+const elementLocale = computed(() => locale.value.startsWith('zh') ? zhCn : en)
 const route = useRoute()
 const appStore = useAppStore()
 const authStore = useAuthStore()
@@ -162,9 +168,11 @@ onMounted(async () => {
 </script>
 
 <template>
+  <ElConfigProvider :locale="elementLocale" :z-index="3000" :button="{ autoInsertSpace: false }">
   <NavigationProgress />
   <RouterView />
   <Toast />
   <AnnouncementPopup />
   <AdminComplianceDialog />
+  </ElConfigProvider>
 </template>

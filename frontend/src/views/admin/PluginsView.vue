@@ -31,25 +31,25 @@
             accept=".s2plugin,application/zip"
             @change="handleFileSelected"
           />
-          <button
-            type="button"
-            class="btn btn-primary"
+          <ElButton type="primary"
+            native-type="button"
+            class=""
             :disabled="uploading"
             @click="fileInput?.click()"
           >
             <Icon name="upload" size="sm" />
             {{ uploading ? t("common.processing") : t("admin.plugins.upload") }}
-          </button>
-          <button
-            type="button"
-            class="btn btn-secondary"
+          </ElButton>
+          <ElButton
+            native-type="button"
+            class=""
             :disabled="loading"
             :title="t('common.refresh')"
             @click="loadPlugins"
           >
             <Icon name="refresh" size="sm" />
             <span class="sr-only">{{ t("common.refresh") }}</span>
-          </button>
+          </ElButton>
         </div>
       </section>
 
@@ -121,14 +121,14 @@
                 {{ plugin.description }}
               </p>
             </div>
-            <button
-              type="button"
-              class="btn btn-secondary btn-sm"
+            <ElButton size="small"
+              native-type="button"
+              class=""
               @click="openConfiguration(plugin)"
             >
               <Icon name="cog" size="sm" />
               {{ t("admin.plugins.configure") }}
-            </button>
+            </ElButton>
           </div>
 
           <div class="grid grid-cols-1 gap-x-6 gap-y-4 p-5 md:grid-cols-2">
@@ -222,15 +222,12 @@
                   }}%</span
                 >
               </label>
-              <input
-                :value="rolloutValues[plugin.id] ?? currentRollout(plugin)"
-                type="range"
-                min="1"
-                max="100"
-                step="1"
+              <ElSlider
+                :model-value="rolloutValues[plugin.id] ?? currentRollout(plugin)"
+                :min="1" :max="100" :step="1"
                 class="mt-2 w-full accent-primary-600"
                 :disabled="hasEnabledBinding(plugin)"
-                @input="setRollout(plugin.id, $event)"
+                @update:model-value="setRollout(plugin.id, Number($event))"
               />
             </div>
           </div>
@@ -238,29 +235,29 @@
           <div
             class="flex flex-wrap justify-end gap-2 border-t border-gray-100 px-5 py-4 dark:border-dark-700"
           >
-            <button
-              type="button"
-              class="btn btn-secondary btn-sm"
+            <ElButton size="small"
+              native-type="button"
+              class=""
               :disabled="busyID === plugin.id"
               @click="testPlugin(plugin)"
             >
               <Icon name="beaker" size="sm" />
               {{ t("admin.plugins.test") }}
-            </button>
-            <button
+            </ElButton>
+            <ElButton size="small"
               v-if="hasEnabledBinding(plugin)"
-              type="button"
-              class="btn btn-secondary btn-sm"
+              native-type="button"
+              class=""
               :disabled="busyID === plugin.id"
               @click="disablePlugin(plugin)"
             >
               <Icon name="ban" size="sm" />
               {{ t("admin.plugins.disable") }}
-            </button>
-            <button
+            </ElButton>
+            <ElButton type="primary" size="small"
               v-else
-              type="button"
-              class="btn btn-primary btn-sm"
+              native-type="button"
+              class=""
               :disabled="
                 busyID === plugin.id ||
                 plugin.state === 'starting' ||
@@ -270,16 +267,16 @@
             >
               <Icon name="play" size="sm" />
               {{ t("admin.plugins.enable") }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-danger btn-sm"
+            </ElButton>
+            <ElButton type="danger" size="small"
+              native-type="button"
+              class=""
               :disabled="busyID === plugin.id || hasEnabledBinding(plugin)"
               @click="uninstallPlugin(plugin)"
             >
               <Icon name="trash" size="sm" />
               {{ t("admin.plugins.uninstall") }}
-            </button>
+            </ElButton>
           </div>
         </article>
       </div>
@@ -449,8 +446,7 @@ function hasEnabledBinding(plugin: PluginInstallation): boolean {
   return plugin.bindings.some((binding) => binding.enabled);
 }
 
-function setRollout(id: number, event: Event): void {
-  const value = Number((event.target as HTMLInputElement).value);
+function setRollout(id: number, value: number): void {
   rolloutValues.value[id] = Math.min(100, Math.max(1, value));
 }
 

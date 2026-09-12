@@ -29,9 +29,9 @@
     </div>
     <template #footer>
       <div class="flex justify-end">
-        <button @click="$emit('close')" class="btn btn-primary">
+        <ElButton type="primary" @click="$emit('close')" class="">
           {{ t('common.close') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

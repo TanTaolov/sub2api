@@ -67,7 +67,7 @@ const examples = computed<HeaderExample[]>(() => {
         </template>
       </HelpTooltip>
     </div>
-    <input
+    <ElementInput
       v-model="model"
       data-testid="upstream-request-id-header"
       type="text"

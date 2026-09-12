@@ -6,10 +6,10 @@
         <p class="text-sm text-gray-500 dark:text-dark-400">
           {{ t('admin.users.attributes.description') }}
         </p>
-        <button @click="openCreateModal" class="btn btn-primary btn-sm">
+        <ElButton type="primary" size="small" @click="openCreateModal" class="">
           <Icon name="plus" size="sm" class="mr-1.5" :stroke-width="2" />
           {{ t('admin.users.attributes.addAttribute') }}
-        </button>
+        </ElButton>
       </div>
 
       <!-- Loading State -->
@@ -68,20 +68,20 @@
 
           <!-- Actions -->
           <div class="flex items-center gap-1">
-            <button
+            <ElButton text
               @click="openEditModal(attr)"
               class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-primary-600 dark:hover:bg-dark-700 dark:hover:text-primary-400"
               :title="t('common.edit')"
             >
               <Icon name="edit" size="sm" />
-            </button>
-            <button
+            </ElButton>
+            <ElButton text
               @click="confirmDelete(attr)"
               class="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
               :title="t('common.delete')"
             >
               <Icon name="trash" size="sm" />
-            </button>
+            </ElButton>
           </div>
         </div>
       </div>
@@ -89,9 +89,9 @@
 
     <template #footer>
       <div class="flex justify-end">
-        <button @click="emit('close')" class="btn btn-secondary">
+        <ElButton @click="emit('close')" class="">
           {{ t('common.close') }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>
@@ -103,11 +103,11 @@
     width="normal"
     @close="closeEditModal"
   >
-    <form id="attribute-form" @submit.prevent="handleSave" class="space-y-4">
+    <ElForm id="attribute-form" @submit.prevent="handleSave" class="space-y-4">
       <!-- Key -->
       <div>
         <label class="input-label">{{ t('admin.users.attributes.key') }}</label>
-        <input
+        <ElementInput
           v-model="form.key"
           type="text"
           required
@@ -122,7 +122,7 @@
       <!-- Name -->
       <div>
         <label class="input-label">{{ t('admin.users.attributes.name') }}</label>
-        <input
+        <ElementInput
           v-model="form.name"
           type="text"
           required
@@ -144,38 +144,38 @@
       <div v-if="form.type === 'select' || form.type === 'multi_select'" class="space-y-2">
         <label class="input-label">{{ t('admin.users.attributes.options') }}</label>
         <div v-for="(option, index) in form.options" :key="getOptionKey(option)" class="flex items-center gap-2">
-          <input
+          <ElementInput
             v-model="option.value"
             type="text"
             class="input flex-1 font-mono text-sm"
             :placeholder="t('admin.users.attributes.optionValue')"
             required
           />
-          <input
+          <ElementInput
             v-model="option.label"
             type="text"
             class="input flex-1 text-sm"
             :placeholder="t('admin.users.attributes.optionLabel')"
             required
           />
-          <button
-            type="button"
+          <ElButton text
+            native-type="button"
             @click="removeOption(index)"
             class="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
           >
             <Icon name="x" size="sm" :stroke-width="2" />
-          </button>
+          </ElButton>
         </div>
-        <button type="button" @click="addOption" class="btn btn-secondary btn-sm">
+        <ElButton size="small" native-type="button" @click="addOption" class="">
           <Icon name="plus" size="sm" class="mr-1" :stroke-width="2" />
           {{ t('admin.users.attributes.addOption') }}
-        </button>
+        </ElButton>
       </div>
 
       <!-- Description -->
       <div>
         <label class="input-label">{{ t('admin.users.attributes.fieldDescription') }}</label>
-        <input
+        <ElementInput
           v-model="form.description"
           type="text"
           class="input"
@@ -186,7 +186,7 @@
       <!-- Placeholder -->
       <div>
         <label class="input-label">{{ t('admin.users.attributes.placeholder') }}</label>
-        <input
+        <ElementInput
           v-model="form.placeholder"
           type="text"
           class="input"
@@ -196,29 +196,23 @@
 
       <!-- Required & Enabled -->
       <div class="flex items-center gap-6">
-        <label class="flex items-center gap-2">
-          <input v-model="form.required" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary-600" />
-          <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.users.attributes.required') }}</span>
-        </label>
-        <label class="flex items-center gap-2">
-          <input v-model="form.enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary-600" />
-          <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.users.attributes.enabled') }}</span>
-        </label>
+        <ElementCheckbox v-model="form.required" :class="[&quot;flex items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.users.attributes.required') }}</span></ElementCheckbox>
+        <ElementCheckbox v-model="form.enabled" :class="[&quot;flex items-center gap-2&quot;,&quot;&quot;]"><span class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.users.attributes.enabled') }}</span></ElementCheckbox>
       </div>
-    </form>
+    </ElForm>
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <button @click="closeEditModal" type="button" class="btn btn-secondary">
+        <ElButton @click="closeEditModal" native-type="button" class="">
           {{ t('common.cancel') }}
-        </button>
-        <button type="submit" form="attribute-form" :disabled="saving" class="btn btn-primary">
+        </ElButton>
+        <ElButton type="primary" native-type="submit" form="attribute-form" :disabled="saving" class="">
           <svg v-if="saving" class="-ml-1 mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
           </svg>
           {{ saving ? t('common.saving') : (editingAttribute ? t('common.update') : t('common.create')) }}
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

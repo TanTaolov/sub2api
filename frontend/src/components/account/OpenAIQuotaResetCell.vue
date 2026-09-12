@@ -14,8 +14,8 @@
     <div class="flex flex-wrap items-center gap-1.5">
       <slot name="pre-actions" />
 
-      <button
-        type="button"
+      <ElButton text
+        native-type="button"
         class="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium text-blue-600 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
         :disabled="loading || resetting"
         :title="countButtonTitle"
@@ -36,10 +36,10 @@
           />
         </svg>
         {{ t('admin.accounts.openaiQuotaReset.count') }}<span v-if="data"> {{ availableResetCount }}</span>
-      </button>
+      </ElButton>
 
-      <button
-        type="button"
+      <ElButton text
+        native-type="button"
         class="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium text-orange-600 transition-colors hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-orange-400 dark:hover:bg-orange-900/30"
         :disabled="resetting || loading || !canReset"
         :title="resetButtonTitle"
@@ -60,7 +60,7 @@
           />
         </svg>
         {{ t('admin.accounts.openaiQuotaReset.reset') }}
-      </button>
+      </ElButton>
     </div>
 
     <div
@@ -97,9 +97,9 @@
         >
           {{ t('admin.accounts.openaiQuotaReset.expiresAt', { time: formatResetCreditExpiry(primaryResetCreditExpiry, 'short') }) }}
         </span>
-        <button
+        <ElButton text
           v-if="hiddenResetCreditCount > 0"
-          type="button"
+          native-type="button"
           data-testid="reset-credit-expiry-toggle"
           class="inline-flex items-center rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium leading-4 text-gray-600 transition-colors hover:bg-gray-200 dark:bg-dark-800 dark:text-gray-300 dark:hover:bg-dark-700"
           :aria-expanded="showResetCreditDetails"
@@ -108,7 +108,7 @@
           @click="toggleResetCreditDetails"
         >
           +{{ hiddenResetCreditCount }}
-        </button>
+        </ElButton>
       </div>
 
       <div

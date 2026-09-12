@@ -74,23 +74,23 @@
 
     <template #footer>
       <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <button
-          type="button"
-          class="btn btn-secondary"
+        <ElButton
+          native-type="button"
+          class=""
           :disabled="complianceStore.submitting"
           @click="logout"
         >
           {{ t('adminCompliance.logout') }}
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary"
+        </ElButton>
+        <ElButton type="primary"
+          native-type="button"
+          class=""
           :disabled="!canSubmit || complianceStore.submitting"
           @click="submit"
         >
           <span v-if="complianceStore.submitting">{{ t('common.submitting') }}</span>
           <span v-else>{{ t('adminCompliance.accept') }}</span>
-        </button>
+        </ElButton>
       </div>
     </template>
   </BaseDialog>

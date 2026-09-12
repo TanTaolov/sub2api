@@ -12,9 +12,9 @@
 
     <!-- 滚动区域：表格 -->
     <div class="layout-section-scrollable">
-      <div class="card table-scroll-container">
+      <ElCard shadow="never" class="element-surface-card table-scroll-container">
         <slot name="table" />
-      </div>
+      </ElCard>
     </div>
 
     <!-- 固定区域：分页器 -->
