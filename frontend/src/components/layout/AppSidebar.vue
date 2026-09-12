@@ -1,5 +1,6 @@
 <template>
-  <aside
+  <el-aside
+    :width="sidebarCollapsed ? '72px' : '256px'"
     class="sidebar"
     :class="[
       sidebarCollapsed ? 'w-[72px]' : 'w-64',
@@ -175,7 +176,7 @@
         <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ t('nav.collapse') }}</span>
       </button>
     </div>
-  </aside>
+  </el-aside>
 
   <!-- Mobile Overlay -->
   <transition name="fade">
@@ -955,9 +956,6 @@ watch(
 
 onMounted(() => {
   void refreshBatchImageAccess()
-  if (isAdmin.value) {
-    adminSettingsStore.fetch()
-  }
   // Restore sidebar scroll position after route change re-mounts the component
   if (appStore.sidebarScrollTop > 0 && sidebarNavRef.value) {
     void nextTick(() => {

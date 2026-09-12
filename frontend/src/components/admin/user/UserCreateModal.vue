@@ -1,126 +1,216 @@
 <template>
-  <BaseDialog
-    :show="show"
+  <el-dialog
+    :model-value="show"
     :title="t('admin.users.createUser')"
-    width="normal"
-    @close="$emit('close')"
+    width="min(92vw, 34rem)"
+    append-to-body
+    destroy-on-close
+    @update:model-value="handleDialogVisibilityChange"
   >
-    <form id="create-user-form" @submit.prevent="submit" class="space-y-5">
-      <div>
-        <label class="input-label">{{ t('admin.users.email') }}</label>
-        <input v-model="form.email" type="email" required class="input" :placeholder="t('admin.users.enterEmail')" />
-      </div>
-      <div>
-        <label class="input-label">{{ t('admin.users.password') }}</label>
-        <div class="flex gap-2">
-          <div class="relative flex-1">
-            <input v-model="form.password" type="text" required class="input pr-10" :placeholder="t('admin.users.enterPassword')" />
-          </div>
-          <button type="button" @click="generateRandomPassword" class="btn btn-secondary px-3">
-            <Icon name="refresh" size="md" />
-          </button>
-        </div>
-      </div>
-      <div>
-        <label class="input-label">{{ t('admin.users.username') }}</label>
-        <input v-model="form.username" type="text" class="input" :placeholder="t('admin.users.enterUsername')" />
-      </div>
-      <div>
-        <label class="input-label">{{ t('admin.users.form.roleLabel') }}</label>
-        <select v-model="form.role" class="input">
-          <option value="user">{{ t('admin.users.roles.user') }}</option>
-          <option value="admin">{{ t('admin.users.roles.admin') }}</option>
-        </select>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="input-label">{{ t('admin.users.columns.balance') }}</label>
-          <input v-model="form.balance" type="number" step="any" class="input" />
-        </div>
-        <div>
-          <label class="input-label">{{ t('admin.users.columns.concurrency') }}</label>
-          <input v-model.number="form.concurrency" type="number" class="input" />
-        </div>
-      </div>
-      <div>
-        <label class="input-label">{{ t('admin.users.form.rpmLimit') }}</label>
-        <input
-          v-model.number="form.rpm_limit"
-          type="number"
-          min="0"
-          step="1"
-          class="input"
-          :placeholder="t('admin.users.form.rpmLimitPlaceholder')"
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="formRules"
+      label-position="top"
+      @submit.prevent="submit"
+    >
+      <el-form-item :label="t('admin.users.email')" prop="email">
+        <el-input
+          v-model="form.email"
+          type="email"
+          autocomplete="email"
+          :placeholder="t('admin.users.enterEmail')"
         />
-        <p class="input-hint">{{ t('admin.users.form.rpmLimitHint') }}</p>
+      </el-form-item>
+
+      <el-form-item :label="t('admin.users.password')" prop="password">
+        <div class="flex w-full gap-2">
+          <el-input
+            v-model="form.password"
+            type="password"
+            show-password
+            class="flex-1"
+            autocomplete="new-password"
+            :placeholder="t('admin.users.enterPassword')"
+          />
+          <el-button :aria-label="t('common.refresh')" @click="generateRandomPassword">
+            <Icon name="refresh" size="sm" />
+          </el-button>
+        </div>
+      </el-form-item>
+
+      <el-form-item :label="t('admin.users.username')">
+        <el-input v-model="form.username" :placeholder="t('admin.users.enterUsername')" />
+      </el-form-item>
+
+      <el-form-item :label="t('admin.users.form.roleLabel')" prop="role">
+        <el-select v-model="form.role" class="w-full">
+          <el-option value="user" :label="t('admin.users.roles.user')" />
+          <el-option value="admin" :label="t('admin.users.roles.admin')" />
+        </el-select>
+      </el-form-item>
+
+      <div class="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+        <el-form-item :label="t('admin.users.columns.balance')">
+          <el-input-number v-model="form.balance" :precision="2" :step="1" class="!w-full" />
+        </el-form-item>
+        <el-form-item :label="t('admin.users.columns.concurrency')" prop="concurrency">
+          <el-input-number v-model="form.concurrency" :min="0" :step="1" class="!w-full" />
+        </el-form-item>
       </div>
-    </form>
+
+      <el-form-item :label="t('admin.users.form.rpmLimit')" prop="rpm_limit">
+        <el-input-number v-model="form.rpm_limit" :min="0" :step="1" class="!w-full" />
+        <div class="mt-1 text-xs text-gray-500 dark:text-dark-400">
+          {{ t('admin.users.form.rpmLimitHint') }}
+        </div>
+      </el-form-item>
+    </el-form>
+
     <template #footer>
       <div class="flex justify-end gap-3">
-        <button @click="$emit('close')" type="button" class="btn btn-secondary">{{ t('common.cancel') }}</button>
-        <button type="submit" form="create-user-form" :disabled="loading" class="btn btn-primary">
+        <el-button @click="emit('close')">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="loading" @click="submit">
           {{ loading ? t('admin.users.creating') : t('common.create') }}
-        </button>
+        </el-button>
       </div>
     </template>
-  </BaseDialog>
+  </el-dialog>
 
-  <!-- 创建管理员账号时后端要求 step-up 2FA，弹出 TOTP 验证后自动重试 -->
   <TotpStepUpDialog :controller="stepUp" />
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'; import { adminAPI } from '@/api/admin'
+import { computed, reactive, ref, watch } from 'vue'
+import type { FormInstance, FormRules } from 'element-plus'
+import { useI18n } from 'vue-i18n'
+import { adminAPI } from '@/api/admin'
 import { useAppStore } from '@/stores/app'
-import BaseDialog from '@/components/common/BaseDialog.vue'
 import Icon from '@/components/icons/Icon.vue'
 import { useStepUp, isStepUpBlocked, isStepUpCancelled, stepUpBlockReason } from '@/composables/useStepUp'
 import TotpStepUpDialog from '@/components/auth/TotpStepUpDialog.vue'
 
 const props = defineProps<{ show: boolean }>()
-const emit = defineEmits(['close', 'success']); const { t } = useI18n()
+const emit = defineEmits<{
+  close: []
+  success: []
+}>()
+const { t } = useI18n()
 const appStore = useAppStore()
-
-const form = reactive({ email: '', password: '', username: '', notes: '', role: 'user' as 'user' | 'admin', balance: '', concurrency: 1, rpm_limit: 0 })
-
-const stepUp = useStepUp()
+const formRef = ref<FormInstance>()
 const loading = ref(false)
+const stepUp = useStepUp()
 
-const submit = async () => {
+const form = reactive({
+  email: '',
+  password: '',
+  username: '',
+  notes: '',
+  role: 'user' as 'user' | 'admin',
+  balance: undefined as number | undefined,
+  concurrency: 1,
+  rpm_limit: 0
+})
+
+const formRules = computed<FormRules>(() => ({
+  email: [
+    { required: true, message: t('admin.users.emailRequired'), trigger: 'blur' },
+    { type: 'email', message: t('admin.users.enterEmail'), trigger: 'blur' }
+  ],
+  password: [{ required: true, message: t('admin.users.enterPassword'), trigger: 'blur' }],
+  concurrency: [{ required: true, type: 'number', min: 0, message: t('admin.users.concurrencyNonNegative'), trigger: 'change' }],
+  rpm_limit: [{ required: true, type: 'number', min: 0, message: t('admin.users.rpmLimitNonNegative'), trigger: 'change' }]
+}))
+
+function handleDialogVisibilityChange(visible: boolean) {
+  if (!visible) emit('close')
+}
+
+async function submit() {
   if (loading.value) return
+
+  let valid = false
+  try {
+    valid = await formRef.value?.validate() ?? false
+  } catch {
+    valid = false
+  }
+  if (!valid) return
+
+  if (!isNonNegativeInteger(form.concurrency)) {
+    appStore.showError(t('admin.users.concurrencyNonNegative'))
+    return
+  }
+  if (!isNonNegativeInteger(form.rpm_limit)) {
+    appStore.showError(t('admin.users.rpmLimitNonNegative'))
+    return
+  }
+  if (form.balance !== undefined && !Number.isFinite(form.balance)) {
+    appStore.showError(t('admin.users.amountRequired'))
+    return
+  }
+
   loading.value = true
   try {
-    const { balance: rawBalance, ...rest } = { ...form }
-    const balance = String(rawBalance).trim()
+    const { balance, ...rest } = { ...form }
     const payload: typeof rest & { balance?: number } = { ...rest }
-    if (balance !== '') {
-      payload.balance = Number(balance)
+    if (balance !== undefined) {
+      payload.balance = balance
     }
-    // 创建管理员属敏感操作：后端返回 STEP_UP_REQUIRED 时弹 TOTP 验证并重试
+
     await stepUp.run(() => adminAPI.users.create(payload))
     appStore.showSuccess(t('admin.users.userCreated'))
-    emit('success'); emit('close')
-  } catch (e: any) {
-    if (isStepUpCancelled(e)) {
-      // 用户主动取消二次验证：静默返回，表单保持打开。
-    } else if (isStepUpBlocked(e)) {
+    emit('success')
+    emit('close')
+  } catch (error: unknown) {
+    if (isStepUpCancelled(error)) {
+      return
+    }
+    if (isStepUpBlocked(error)) {
       appStore.showError(
-        stepUpBlockReason(e) === 'STEP_UP_ADMIN_API_KEY_FORBIDDEN'
+        stepUpBlockReason(error) === 'STEP_UP_ADMIN_API_KEY_FORBIDDEN'
           ? t('stepUp.adminApiKeyForbidden')
           : t('stepUp.notEnabled')
       )
-    } else {
-      appStore.showError(e?.message || t('admin.users.failedToCreate'))
+      return
     }
-  } finally { loading.value = false }
+
+    const message = error instanceof Error ? error.message : t('admin.users.failedToCreate')
+    appStore.showError(message || t('admin.users.failedToCreate'))
+  } finally {
+    loading.value = false
+  }
 }
 
-watch(() => props.show, (v) => { if(v) Object.assign(form, { email: '', password: '', username: '', notes: '', role: 'user', balance: '', concurrency: 1, rpm_limit: 0 }) })
+function isNonNegativeInteger(value: number | undefined): value is number {
+  return Number.isInteger(value) && value >= 0
+}
 
-const generateRandomPassword = () => {
+function generateRandomPassword() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%^&*'
-  let p = ''; for (let i = 0; i < 16; i++) p += chars.charAt(Math.floor(Math.random() * chars.length))
-  form.password = p
+  let password = ''
+  for (let index = 0; index < 16; index += 1) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  form.password = password
+  void formRef.value?.validateField('password')
 }
+
+watch(
+  () => props.show,
+  (visible) => {
+    if (!visible) return
+    Object.assign(form, {
+      email: '',
+      password: '',
+      username: '',
+      notes: '',
+      role: 'user',
+      balance: undefined,
+      concurrency: 1,
+      rpm_limit: 0
+    })
+    formRef.value?.clearValidate()
+  }
+)
 </script>

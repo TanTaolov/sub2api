@@ -1,25 +1,23 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-dark-950">
-    <!-- Background Decoration -->
+  <el-container direction="horizontal" class="min-h-screen bg-gray-50 dark:bg-dark-950">
     <div class="pointer-events-none fixed inset-0 bg-mesh-gradient"></div>
 
-    <!-- Sidebar -->
     <AppSidebar />
 
-    <!-- Main Content Area -->
-    <div
+    <el-container
+      direction="vertical"
       class="relative min-h-screen transition-all duration-300"
       :class="[sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-64']"
     >
-      <!-- Header -->
       <AppHeader />
 
-      <!-- Main Content -->
-      <main class="p-4 md:p-6 lg:p-8">
-        <slot />
-      </main>
-    </div>
-  </div>
+      <el-main class="!overflow-visible !p-0">
+        <main class="p-4 md:p-6 lg:p-8">
+          <slot />
+        </main>
+      </el-main>
+    </el-container>
+  </el-container>
 </template>
 
 <script setup lang="ts">

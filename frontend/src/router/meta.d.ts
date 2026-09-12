@@ -28,7 +28,8 @@ declare module 'vue-router' {
      * Optional breadcrumb items for navigation
      */
     breadcrumbs?: Array<{
-      label: string
+      label?: string
+      labelKey?: string
       to?: string
     }>
 

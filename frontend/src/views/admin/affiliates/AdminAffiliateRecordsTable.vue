@@ -3,24 +3,45 @@
     <TablePageLayout>
       <template #filters>
         <div class="flex flex-wrap items-center gap-3">
-          <div class="relative w-full md:w-80">
-            <Icon name="search" size="md" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input v-model="filters.search" type="text" class="input pl-10" :placeholder="t('admin.affiliates.records.searchPlaceholder')" @input="debounceLoad" />
-          </div>
-          <input v-model="filters.start_at" type="date" class="input w-full sm:w-44" :title="t('admin.affiliates.records.startAt')" @change="reloadFromFirstPage" />
-          <input v-model="filters.end_at" type="date" class="input w-full sm:w-44" :title="t('admin.affiliates.records.endAt')" @change="reloadFromFirstPage" />
-          <button class="btn btn-secondary px-2 md:px-3" :disabled="loading" :title="t('common.refresh')" @click="loadRecords">
-            <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
-          </button>
+          <el-input
+            v-model="filters.search"
+            clearable
+            class="w-full md:w-80"
+            :placeholder="t('admin.affiliates.records.searchPlaceholder')"
+            @input="debounceLoad"
+            @clear="reloadFromFirstPage"
+          >
+            <template #prefix>
+              <Icon name="search" size="sm" />
+            </template>
+          </el-input>
+          <el-date-picker
+            v-model="filters.start_at"
+            type="date"
+            value-format="YYYY-MM-DD"
+            class="w-full sm:w-44"
+            :placeholder="t('admin.affiliates.records.startAt')"
+            @change="reloadFromFirstPage"
+          />
+          <el-date-picker
+            v-model="filters.end_at"
+            type="date"
+            value-format="YYYY-MM-DD"
+            class="w-full sm:w-44"
+            :placeholder="t('admin.affiliates.records.endAt')"
+            @change="reloadFromFirstPage"
+          />
+          <el-button :loading="loading" :title="t('common.refresh')" @click="loadRecords">
+            <Icon name="refresh" size="sm" />
+          </el-button>
         </div>
       </template>
 
       <template #table>
-        <DataTable
+        <ElementDataTable
           :columns="columns"
           :data="records"
           :loading="loading"
-          :server-side-sort="true"
           default-sort-key="created_at"
           default-sort-order="desc"
           :sort-storage-key="sortStorageKey"
@@ -98,7 +119,7 @@
           <template #cell-created_at="{ row }">
             <span class="text-sm text-gray-700 dark:text-gray-300">{{ formatDateTime(row.created_at) }}</span>
           </template>
-        </DataTable>
+        </ElementDataTable>
       </template>
 
       <template #pagination>
@@ -142,11 +163,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h, onMounted, reactive, ref, type PropType } from 'vue'
+import { computed, defineComponent, h, onBeforeUnmount, onMounted, reactive, ref, type PropType } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import TablePageLayout from '@/components/layout/TablePageLayout.vue'
-import DataTable from '@/components/common/DataTable.vue'
+import ElementDataTable from '@/components/common/ElementDataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import Icon from '@/components/icons/Icon.vue'
@@ -169,12 +190,17 @@ const { t } = useI18n()
 const appStore = useAppStore()
 const loading = ref(false)
 const records = ref<AffiliateRecord[]>([])
-const filters = reactive({ search: '', start_at: '', end_at: '' })
+const filters = reactive({
+  search: '',
+  start_at: '' as string | null,
+  end_at: '' as string | null
+})
 const pagination = reactive({ page: 1, page_size: 20, total: 0 })
 const overviewDialog = ref(false)
 const overviewLoading = ref(false)
 const selectedOverview = ref<AffiliateUserOverview | null>(null)
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+let latestRecordsRequestId = 0
 
 const columns = computed<Column[]>(() => {
   if (props.type === 'invites') {
@@ -263,15 +289,21 @@ async function fetchRecords(params: ListAffiliateRecordsParams): Promise<Paginat
 }
 
 async function loadRecords() {
+  const requestId = ++latestRecordsRequestId
   loading.value = true
   try {
     const res = await fetchRecords(buildParams())
+    if (requestId !== latestRecordsRequestId) return
+
     records.value = res.items || []
     pagination.total = res.total || 0
   } catch (error) {
+    if (requestId !== latestRecordsRequestId) return
     appStore.showError(extractI18nErrorMessage(error, t, 'admin.affiliates.errors', t('common.error')))
   } finally {
-    loading.value = false
+    if (requestId === latestRecordsRequestId) {
+      loading.value = false
+    }
   }
 }
 
@@ -403,5 +435,13 @@ const OverviewStat = defineComponent({
 
 onMounted(() => {
   void loadRecords()
+})
+
+onBeforeUnmount(() => {
+  latestRecordsRequestId += 1
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+    debounceTimer = null
+  }
 })
 </script>
