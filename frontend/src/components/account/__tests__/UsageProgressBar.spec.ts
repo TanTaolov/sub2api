@@ -108,8 +108,9 @@ describe('UsageProgressBar', () => {
     })
 
     expect(wrapper.text()).toContain('100%')
-    expect(wrapper.get('.h-1\\.5 > div').attributes('style')).toContain('width: 100%')
-    expect(wrapper.get('.h-1\\.5 > div').classes()).toContain('bg-green-500')
+    const progressBar = wrapper.get('[data-testid="usage-window-progress"]')
+    expect(progressBar.get('div').attributes('style')).toContain('width: 100%')
+    expect(progressBar.get('div').classes()).toContain('bg-green-500')
   })
 
   it('剩余容量模式在低量和耗尽时缩短并变红', async () => {
@@ -123,14 +124,15 @@ describe('UsageProgressBar', () => {
     })
 
     expect(wrapper.text()).toContain('15%')
-    expect(wrapper.get('.h-1\\.5 > div').attributes('style')).toContain('width: 15%')
-    expect(wrapper.get('.h-1\\.5 > div').classes()).toContain('bg-red-500')
+    const progressBar = wrapper.get('[data-testid="usage-window-progress"]')
+    expect(progressBar.get('div').attributes('style')).toContain('width: 15%')
+    expect(progressBar.get('div').classes()).toContain('bg-red-500')
 
     await wrapper.setProps({ utilization: 0 })
 
     expect(wrapper.text()).toContain('0%')
-    expect(wrapper.get('.h-1\\.5 > div').attributes('style')).toContain('width: 0%')
-    expect(wrapper.get('.h-1\\.5 > div').classes()).toContain('bg-red-500')
+    expect(progressBar.get('div').attributes('style')).toContain('width: 0%')
+    expect(progressBar.get('div').classes()).toContain('bg-red-500')
   })
 
   it('默认利用率模式仍把超限显示为满格红色', () => {
@@ -143,8 +145,9 @@ describe('UsageProgressBar', () => {
     })
 
     expect(wrapper.text()).toContain('120%')
-    expect(wrapper.get('.h-1\\.5 > div').attributes('style')).toContain('width: 100%')
-    expect(wrapper.get('.h-1\\.5 > div').classes()).toContain('bg-red-500')
+    const progressBar = wrapper.get('[data-testid="usage-window-progress"]')
+    expect(progressBar.get('div').attributes('style')).toContain('width: 100%')
+    expect(progressBar.get('div').classes()).toContain('bg-red-500')
   })
 
   it('默认利用率模式按 75/90 阈值提前预警分级', () => {
@@ -154,16 +157,32 @@ describe('UsageProgressBar', () => {
       })
 
     // 条形配色：74 绿 / 75 与 89 黄 / 90 红
-    expect(mountAt(74).get('.h-1\\.5 > div').classes()).toContain('bg-green-500')
-    expect(mountAt(75).get('.h-1\\.5 > div').classes()).toContain('bg-amber-500')
-    expect(mountAt(89).get('.h-1\\.5 > div').classes()).toContain('bg-amber-500')
-    expect(mountAt(90).get('.h-1\\.5 > div').classes()).toContain('bg-red-500')
+    expect(
+      mountAt(74).get('[data-testid="usage-window-progress"] > div').classes()
+    ).toContain('bg-green-500')
+    expect(
+      mountAt(75).get('[data-testid="usage-window-progress"] > div').classes()
+    ).toContain('bg-amber-500')
+    expect(
+      mountAt(89).get('[data-testid="usage-window-progress"] > div').classes()
+    ).toContain('bg-amber-500')
+    expect(
+      mountAt(90).get('[data-testid="usage-window-progress"] > div').classes()
+    ).toContain('bg-red-500')
 
     // 百分比文本同步分级
-    expect(mountAt(74).get('.h-1\\.5 + span').classes()).toContain('text-gray-600')
-    expect(mountAt(75).get('.h-1\\.5 + span').classes()).toContain('text-amber-600')
-    expect(mountAt(89).get('.h-1\\.5 + span').classes()).toContain('text-amber-600')
-    expect(mountAt(90).get('.h-1\\.5 + span').classes()).toContain('text-red-600')
+    expect(
+      mountAt(74).get('[data-testid="usage-window-percent"]').classes()
+    ).toContain('text-gray-600')
+    expect(
+      mountAt(75).get('[data-testid="usage-window-percent"]').classes()
+    ).toContain('text-amber-600')
+    expect(
+      mountAt(89).get('[data-testid="usage-window-percent"]').classes()
+    ).toContain('text-amber-600')
+    expect(
+      mountAt(90).get('[data-testid="usage-window-percent"]').classes()
+    ).toContain('text-red-600')
   })
 
   it('labelWidth 默认 fixed：标签保持定宽居中，百分比列不变', () => {
@@ -171,13 +190,13 @@ describe('UsageProgressBar', () => {
       props: { label: '5h', utilization: 30, color: 'indigo' }
     })
 
-    const label = wrapper.get('.gap-1 > span')
-    expect(label.classes()).toContain('w-[32px]')
+    const label = wrapper.get('[data-testid="usage-window-label"]')
+    expect(label.classes()).toContain('w-12')
     expect(label.classes()).toContain('text-center')
-    expect(label.classes()).not.toContain('max-w-[72px]')
+    expect(label.classes()).not.toContain('max-w-24')
 
-    const percent = wrapper.get('.h-1\\.5 + span')
-    expect(percent.classes()).toContain('w-[32px]')
+    const percent = wrapper.get('[data-testid="usage-window-percent"]')
+    expect(percent.classes()).toContain('w-[42px]')
     expect(percent.classes()).toContain('text-right')
   })
 
@@ -191,16 +210,16 @@ describe('UsageProgressBar', () => {
       }
     })
 
-    const label = wrapper.get('.gap-1 > span')
+    const label = wrapper.get('[data-testid="usage-window-label"]')
     expect(label.text()).toBe('Pro/7 天')
-    expect(label.classes()).toContain('max-w-[72px]')
+    expect(label.classes()).toContain('max-w-24')
     expect(label.classes()).toContain('truncate')
     expect(label.classes()).toContain('text-left')
-    expect(label.classes()).not.toContain('w-[32px]')
+    expect(label.classes()).not.toContain('w-12')
     expect(label.classes()).not.toContain('text-center')
 
-    const percent = wrapper.get('.h-1\\.5 + span')
-    expect(percent.classes()).toContain('w-[32px]')
+    const percent = wrapper.get('[data-testid="usage-window-percent"]')
+    expect(percent.classes()).toContain('w-[42px]')
     expect(percent.classes()).toContain('text-right')
   })
 })

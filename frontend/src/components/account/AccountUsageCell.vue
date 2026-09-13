@@ -1,5 +1,9 @@
 <template>
-  <div ref="rootRef" v-if="showUsageWindows">
+  <div
+    v-if="showUsageWindows"
+    ref="rootRef"
+    class="min-w-0 max-w-full md:min-w-[220px]"
+  >
     <!-- Anthropic OAuth and Setup Token accounts: fetch real usage data -->
     <template
       v-if="
@@ -78,22 +82,23 @@
         />
 
         <!-- Passive sampling label + active query button -->
-        <div class="flex items-center gap-1.5 mt-0.5">
+        <div class="mt-0.5 flex items-center gap-1.5">
           <span
             v-if="usageInfo.source === 'passive'"
-            class="text-[9px] text-gray-400 dark:text-gray-500 italic"
+            class="text-[10px] font-medium leading-4 text-gray-500 dark:text-gray-400"
           >
             {{ t('admin.accounts.usageWindow.passiveSampled') }}
           </span>
           <button
             type="button"
-            class="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[9px] font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 transition-colors"
+            class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold leading-4 text-blue-600 transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
             :disabled="activeQueryLoading"
             @click="loadActiveUsage"
           >
             <svg
               class="h-2.5 w-2.5"
               :class="{ 'animate-spin': activeQueryLoading }"
+              aria-hidden="true"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -147,13 +152,14 @@
           <template #pre-actions>
             <button
               type="button"
-              class="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+              class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold leading-4 text-blue-600 transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
               :disabled="activeQueryLoading"
               @click="loadActiveUsage"
             >
               <svg
                 class="h-2.5 w-2.5"
                 :class="{ 'animate-spin': activeQueryLoading }"
+                aria-hidden="true"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -503,26 +509,27 @@
       <div class="space-y-1">
         <div
           v-if="showGeminiTodayStats && todayStats"
-          class="mb-0.5 flex items-center"
+          class="mb-1 flex min-w-0 flex-wrap items-center gap-1 text-[10px] font-medium leading-4 text-gray-600 dark:text-gray-300"
         >
-          <div class="flex items-center gap-1.5 text-[9px] text-gray-500 dark:text-gray-400">
-            <span class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-gray-800">
-              {{ formatKeyRequests }} req
-            </span>
-            <span class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-gray-800">
-              {{ formatKeyTokens }}
-            </span>
-            <span class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-gray-800" :title="t('usage.accountBilled')">
-              A ${{ formatKeyCost }}
-            </span>
-            <span
-              v-if="todayStats.user_cost != null"
-              class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-gray-800"
-              :title="t('usage.userBilled')"
-            >
-              U ${{ formatKeyUserCost }}
-            </span>
-          </div>
+          <span class="inline-flex items-center whitespace-nowrap rounded-md bg-gray-100 px-1.5 py-0.5 font-mono tabular-nums dark:bg-gray-800">
+            {{ formatKeyRequests }} req
+          </span>
+          <span class="inline-flex items-center whitespace-nowrap rounded-md bg-gray-100 px-1.5 py-0.5 font-mono tabular-nums dark:bg-gray-800">
+            {{ formatKeyTokens }}
+          </span>
+          <span
+            class="inline-flex items-center whitespace-nowrap rounded-md bg-gray-100 px-1.5 py-0.5 font-mono tabular-nums dark:bg-gray-800"
+            :title="t('usage.accountBilled')"
+          >
+            A ${{ formatKeyCost }}
+          </span>
+          <span
+            v-if="todayStats.user_cost != null"
+            class="inline-flex items-center whitespace-nowrap rounded-md bg-gray-100 px-1.5 py-0.5 font-mono tabular-nums dark:bg-gray-800"
+            :title="t('usage.userBilled')"
+          >
+            U ${{ formatKeyUserCost }}
+          </span>
         </div>
         <div
           v-else-if="showGeminiTodayStats && todayStatsLoading"

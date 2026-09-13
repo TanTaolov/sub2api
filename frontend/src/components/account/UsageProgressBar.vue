@@ -1,60 +1,84 @@
 <template>
-  <div>
+  <div class="min-w-0 max-w-full">
     <!-- Window stats row (above progress bar) -->
     <div
       v-if="windowStats && (windowStats.requests > 0 || windowStats.tokens > 0)"
-      class="mb-0.5 flex items-center"
+      class="mb-1 flex min-w-0 flex-wrap items-center gap-1 text-[10px] font-medium leading-4 text-gray-600 dark:text-gray-300"
     >
-      <div class="flex items-center gap-1.5 text-[9px] text-gray-500 dark:text-gray-400">
-        <span class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-gray-800">
-          {{ formatRequests }} req
-        </span>
-        <span class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-gray-800">
-          {{ formatTokens }}
-        </span>
-        <span class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-gray-800" :title="t('usage.accountBilled')">
-          A ${{ formatAccountCost }}
-        </span>
-        <span
-          v-if="windowStats?.user_cost != null"
-          class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-gray-800"
-          :title="t('usage.userBilled')"
-        >
-          U ${{ formatUserCost }}
-        </span>
-        <span
-          v-if="estimatedTotalCost != null"
-          data-test="estimated-total-cost"
-          class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-gray-800"
-          :title="t('admin.accounts.usageWindow.estimatedTotalCostTooltip')"
-        >
-          {{ t('admin.accounts.usageWindow.estimatedTotalCost', { cost: estimatedTotalCost.toFixed(2) }) }}
-        </span>
-      </div>
+      <span class="inline-flex items-center whitespace-nowrap rounded-md bg-gray-100 px-1.5 py-0.5 font-mono tabular-nums dark:bg-gray-800">
+        {{ formatRequests }} req
+      </span>
+      <span class="inline-flex items-center whitespace-nowrap rounded-md bg-gray-100 px-1.5 py-0.5 font-mono tabular-nums dark:bg-gray-800">
+        {{ formatTokens }}
+      </span>
+      <span
+        class="inline-flex items-center whitespace-nowrap rounded-md bg-gray-100 px-1.5 py-0.5 font-mono tabular-nums dark:bg-gray-800"
+        :title="t('usage.accountBilled')"
+      >
+        A ${{ formatAccountCost }}
+      </span>
+      <span
+        v-if="windowStats?.user_cost != null"
+        class="inline-flex items-center whitespace-nowrap rounded-md bg-gray-100 px-1.5 py-0.5 font-mono tabular-nums dark:bg-gray-800"
+        :title="t('usage.userBilled')"
+      >
+        U ${{ formatUserCost }}
+      </span>
+      <span
+        v-if="estimatedTotalCost != null"
+        data-test="estimated-total-cost"
+        class="inline-flex items-center whitespace-nowrap rounded-md bg-gray-100 px-1.5 py-0.5 font-mono tabular-nums dark:bg-gray-800"
+        :title="t('admin.accounts.usageWindow.estimatedTotalCostTooltip')"
+      >
+        {{ t('admin.accounts.usageWindow.estimatedTotalCost', { cost: estimatedTotalCost.toFixed(2) }) }}
+      </span>
     </div>
 
     <!-- Progress bar row -->
-    <div class="flex items-center gap-1">
+    <div class="flex min-w-0 items-center gap-1.5 leading-5">
       <!-- Label badge (label-width: fixed = 定宽居中, auto = 限宽截断左对齐) -->
-      <span :class="[labelSizeClass, labelClass]">
+      <span
+        :class="[labelSizeClass, labelClass]"
+        :title="label"
+        data-testid="usage-window-label"
+      >
         {{ label }}
       </span>
 
       <!-- Progress bar container -->
-      <div class="h-1.5 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+      <div
+        class="h-2 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200 ring-1 ring-inset ring-gray-300/50 dark:bg-gray-700 dark:ring-gray-600/60"
+        role="progressbar"
+        :aria-label="`${label}: ${displayPercent}`"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        :aria-valuenow="progressValue"
+        :aria-valuetext="displayPercent"
+        data-testid="usage-window-progress"
+      >
         <div
-          :class="['h-full transition-all duration-300', barClass]"
+          :class="['h-full transition-[width] duration-300 motion-reduce:transition-none', barClass]"
           :style="{ width: barWidth }"
+          aria-hidden="true"
         ></div>
       </div>
 
       <!-- Percentage -->
-      <span :class="['w-[32px] shrink-0 text-right text-[10px] font-medium', textClass]">
+      <span
+        :class="[
+          'w-[42px] shrink-0 text-right font-mono text-[11px] font-semibold leading-5 tabular-nums',
+          textClass
+        ]"
+        data-testid="usage-window-percent"
+      >
         {{ displayPercent }}
       </span>
 
       <!-- Reset time -->
-      <span v-if="shouldShowResetTime" class="shrink-0 text-[10px] text-gray-400">
+      <span
+        v-if="shouldShowResetTime"
+        class="shrink-0 whitespace-nowrap font-mono text-[11px] font-medium leading-5 text-gray-500 tabular-nums dark:text-gray-400"
+      >
         {{ formatResetTime }}
       </span>
     </div>
@@ -124,8 +148,8 @@ const labelClass = computed(() => {
 // 监控页「Pro/7 天」类组合标签。百分比列在两种模式下保持不变。
 const labelSizeClass = computed(() =>
   props.labelWidth === 'auto'
-    ? 'max-w-[72px] shrink-0 truncate rounded px-1 text-left text-[10px] font-medium'
-    : 'w-[32px] shrink-0 rounded px-1 text-center text-[10px] font-medium'
+    ? 'max-w-24 shrink-0 truncate whitespace-nowrap rounded-md px-1.5 text-left text-[11px] font-semibold leading-5'
+    : 'w-12 shrink-0 truncate whitespace-nowrap rounded-md px-1.5 text-center text-[11px] font-semibold leading-5'
 )
 
 // Progress bar color based on utilization
@@ -166,10 +190,9 @@ const textClass = computed(() => {
   }
 })
 
-// Bar width (capped at 100%)
-const barWidth = computed(() => {
-  return `${Math.min(Math.max(props.utilization, 0), 100)}%`
-})
+// Bar width and accessibility value are clamped to the visual 0-100 range.
+const progressValue = computed(() => Math.min(Math.max(props.utilization, 0), 100))
+const barWidth = computed(() => `${progressValue.value}%`)
 
 // Display percentage (cap at 999% for readability)
 const displayPercent = computed(() => {
