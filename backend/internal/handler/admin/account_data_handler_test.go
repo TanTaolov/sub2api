@@ -2,10 +2,13 @@ package admin
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/service"
 	"github.com/gin-gonic/gin"
@@ -316,4 +319,211 @@ func TestImportDataReusesProxyAndSkipsDefaultGroup(t *testing.T) {
 	require.Len(t, adminSvc.createdProxies, 0)
 	require.Len(t, adminSvc.createdAccounts, 1)
 	require.True(t, adminSvc.createdAccounts[0].SkipDefaultGroupBind)
+}
+
+func TestImportDataAutoBindProxy(t *testing.T) {
+	past := time.Now().Add(-time.Hour)
+	future := time.Now().Add(time.Hour)
+	availableProxies := []service.Proxy{
+		{ID: 11, Name: "z-last", Protocol: "http", Host: "127.0.0.1", Port: 8080, Status: service.StatusActive},
+		{ID: 12, Name: "b-selected", Protocol: "http", Host: "127.0.0.2", Port: 8080, Status: service.StatusActive, ExpiresAt: &future},
+		{ID: 13, Name: "a-expired", Protocol: "http", Host: "127.0.0.3", Port: 8080, Status: service.StatusActive, ExpiresAt: &past},
+		{ID: 14, Name: "a-inactive", Protocol: "http", Host: "127.0.0.4", Port: 8080, Status: "inactive"},
+	}
+	explicitProxyKey := buildProxyKey("http", "127.0.0.1", 8080, "", "")
+	emptyProxyKey := ""
+	validPool := []any{
+		map[string]any{"proxy_id": float64(41), "concurrency": float64(6)},
+		map[string]any{"proxy_id": float64(42), "concurrency": float64(9)},
+	}
+	invalidPool := []any{
+		map[string]any{"proxy_id": float64(0), "concurrency": float64(6)},
+		map[string]any{"proxy_id": float64(42), "concurrency": float64(0)},
+	}
+	mixedPool := []any{invalidPool[0], validPool[0]}
+
+	tests := []struct {
+		name         string
+		settingValue string
+		platform     string
+		proxyKey     *string
+		pool         any
+		proxies      []service.Proxy
+		createErr    error
+		wantProxyID  int64
+		wantAutoBind bool
+	}{
+		{
+			name:    "missing setting keeps import unchanged",
+			proxies: availableProxies,
+		},
+		{
+			name:         "disabled setting keeps import unchanged",
+			settingValue: "false",
+			proxies:      availableProxies,
+		},
+		{
+			name:         "bind first active unexpired proxy by name before creation",
+			settingValue: "true",
+			proxies:      availableProxies,
+			wantProxyID:  12,
+			wantAutoBind: true,
+		},
+		{
+			name:         "empty proxy key permits automatic binding",
+			settingValue: "true",
+			proxyKey:     &emptyProxyKey,
+			proxies:      availableProxies,
+			wantProxyID:  12,
+			wantAutoBind: true,
+		},
+		{
+			name:         "explicit proxy key preserves concurrency and extra",
+			settingValue: "true",
+			proxyKey:     &explicitProxyKey,
+			proxies:      availableProxies,
+			wantProxyID:  11,
+		},
+		{
+			name:         "valid JSON proxy pool preserves all entries and concurrency",
+			settingValue: "true",
+			pool:         validPool,
+			proxies:      availableProxies,
+		},
+		{
+			name:         "explicit key and pool both remain unchanged",
+			settingValue: "true",
+			proxyKey:     &explicitProxyKey,
+			pool:         validPool,
+			proxies:      availableProxies,
+			wantProxyID:  11,
+		},
+		{
+			name:         "one valid pool entry preserves the original extra",
+			settingValue: "true",
+			pool:         mixedPool,
+			proxies:      availableProxies,
+		},
+		{
+			name:         "invalid pool entries permit automatic binding",
+			settingValue: "true",
+			pool:         invalidPool,
+			proxies:      availableProxies,
+			wantProxyID:  12,
+			wantAutoBind: true,
+		},
+		{
+			name:         "empty pool permits automatic binding",
+			settingValue: "true",
+			pool:         []any{},
+			proxies:      availableProxies,
+			wantProxyID:  12,
+			wantAutoBind: true,
+		},
+		{
+			name:         "no system proxies keeps import unchanged",
+			settingValue: "true",
+		},
+		{
+			name:         "only expired and inactive proxies keeps import unchanged",
+			settingValue: "true",
+			proxies:      availableProxies[2:],
+		},
+		{
+			name:         "non OpenAI account keeps import unchanged",
+			settingValue: "true",
+			platform:     service.PlatformAnthropic,
+			proxies:      availableProxies,
+		},
+		{
+			name:         "failed creation does not count as automatic binding",
+			settingValue: "true",
+			proxies:      availableProxies,
+			createErr:    errors.New("account creation failed"),
+			wantProxyID:  12,
+			wantAutoBind: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			adminSvc := newStubAdminService()
+			adminSvc.proxies = test.proxies
+			adminSvc.createAccountErr = test.createErr
+			settingsRepo := &settingHandlerRepoStub{values: map[string]string{}}
+			if test.settingValue != "" {
+				settingsRepo.values[service.SettingKeyImportAutoBindProxy] = test.settingValue
+			}
+			handler := &AccountHandler{
+				adminService:   adminSvc,
+				settingService: service.NewSettingService(settingsRepo, nil),
+			}
+			platform := test.platform
+			if platform == "" {
+				platform = service.PlatformOpenAI
+			}
+			extra := map[string]any{
+				"note":   "preserve this value",
+				"custom": map[string]any{"enabled": true},
+			}
+			if test.pool != nil {
+				extra[service.AccountProxyPoolExtraKey] = test.pool
+			}
+			originalExtra, err := json.Marshal(extra)
+			require.NoError(t, err)
+			request := DataImportRequest{Data: DataPayload{
+				Proxies: []DataProxy{},
+				Accounts: []DataAccount{{
+					Name:        "imported-account",
+					Platform:    platform,
+					Type:        service.AccountTypeOAuth,
+					Credentials: map[string]any{"access_token": "test-token"},
+					Extra:       extra,
+					ProxyKey:    test.proxyKey,
+					Concurrency: 7,
+				}},
+			}}
+
+			result, err := handler.importData(context.Background(), request)
+			require.NoError(t, err)
+			require.Len(t, adminSvc.createdAccounts, 1)
+			input := adminSvc.createdAccounts[0]
+			if test.wantProxyID == 0 {
+				require.Nil(t, input.ProxyID)
+			} else {
+				require.NotNil(t, input.ProxyID)
+				require.Equal(t, test.wantProxyID, *input.ProxyID)
+			}
+			if test.wantAutoBind {
+				require.Equal(t, 30, input.Concurrency)
+				createdInput := service.Account{Extra: input.Extra}
+				require.Equal(t, []service.ProxyPoolEntry{{ProxyID: test.wantProxyID, Concurrency: 30}}, createdInput.ProxyPool())
+				require.Equal(t, extra["note"], input.Extra["note"])
+				require.Equal(t, extra["custom"], input.Extra["custom"])
+			} else {
+				require.Equal(t, 7, input.Concurrency)
+				require.Equal(t, extra, input.Extra)
+			}
+			unchangedExtra, err := json.Marshal(request.Data.Accounts[0].Extra)
+			require.NoError(t, err)
+			require.Equal(t, originalExtra, unchangedExtra, "import must not mutate the source Extra")
+			require.Zero(t, adminSvc.updateAccountCalls, "proxy configuration must be supplied only during creation")
+			if test.createErr != nil {
+				require.Equal(t, 1, result.AccountFailed)
+				require.Zero(t, result.AccountCreated)
+				require.Zero(t, result.AccountProxyBound)
+				require.Len(t, result.Errors, 1)
+				require.Equal(t, test.createErr.Error(), result.Errors[0].Message)
+			} else {
+				require.Equal(t, 1, result.AccountCreated)
+				require.Zero(t, result.AccountFailed)
+				require.Empty(t, result.Errors)
+				if test.wantAutoBind {
+					require.Equal(t, 1, result.AccountProxyBound)
+				} else {
+					require.Zero(t, result.AccountProxyBound)
+				}
+			}
+		})
+	}
 }

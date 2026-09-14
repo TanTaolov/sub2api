@@ -773,6 +773,11 @@ func (s *AccountTestService) testOpenAIAccountConnection(c *gin.Context, account
 		return s.testOpenAICompactConnection(c, account, testModelID)
 	}
 
+	// 校验映射后的模型，避免文本别名在糖果测试中转入生图路径。
+	if mode == AccountTestModeCandy && isOpenAIImageModel(testModelID) {
+		return s.sendErrorAndEnd(c, "Candy test requires a text model; image models are not supported")
+	}
+
 	// Route to image generation test if an image model is selected
 	if isOpenAIImageModel(testModelID) {
 		imagePrompt := strings.TrimSpace(prompt)

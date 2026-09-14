@@ -108,7 +108,6 @@ function mountModal(account: any) {
         BaseDialog: BaseDialogStub,
         Select: true,
         Icon: true,
-        ProxySelector: true,
         GroupSelector: true,
         ModelWhitelistSelector: true
       }

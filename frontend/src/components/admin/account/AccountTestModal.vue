@@ -429,6 +429,7 @@ const uploadAudioName = ref('')
 const imageFileInput = ref<HTMLInputElement | null>(null)
 const audioFileInput = ref<HTMLInputElement | null>(null)
 const isOpenAIAccount = computed(() => props.account?.platform === 'openai')
+const isCandyTest = computed(() => isOpenAIAccount.value && testMode.value === 'candy')
 const isGrokAccount = computed(() => props.account?.platform === 'grok')
 const openAITestModeOptions = computed(() => [
   { value: 'default', label: t('admin.accounts.openai.testModeDefault') },
@@ -452,11 +453,10 @@ const supportsGeminiImageTest = computed(() => {
   return props.account?.platform === 'gemini' || (props.account?.platform === 'antigravity' && props.account?.type === 'apikey')
 })
 
-const supportsOpenAIImageTest = computed(() => {
-  const modelID = selectedModelId.value.toLowerCase()
-  if (!modelID.startsWith('gpt-image-')) return false
-  return props.account?.platform === 'openai'
-})
+const isOpenAIImageModel = (modelID: string) => modelID.toLowerCase().startsWith('gpt-image-')
+const supportsOpenAIImageTest = computed(
+  () => isOpenAIAccount.value && isOpenAIImageModel(selectedModelId.value)
+)
 
 const isGrokImageModel = (id: string) => {
   const modelID = id.toLowerCase()
@@ -490,6 +490,9 @@ const showModelSelect = computed(() => {
 })
 
 const modelOptionsForMode = computed(() => {
+  if (isCandyTest.value) {
+    return availableModels.value.filter((model) => !isOpenAIImageModel(model.id))
+  }
   if (!isGrokAccount.value) return availableModels.value
   if (grokTestMode.value === 'image') {
     return availableModels.value.filter((m) => isGrokImageModel(m.id))
@@ -504,6 +507,7 @@ const modelOptionsForMode = computed(() => {
 })
 
 const supportsPromptInput = computed(() => {
+  if (isCandyTest.value) return false
   if (!isGrokAccount.value) {
     return supportsImageTest.value
   }
@@ -658,6 +662,7 @@ const promptInputHint = computed(() => {
 })
 
 const testModeSummary = computed(() => {
+  if (isCandyTest.value) return t('admin.accounts.openai.testModeCandySummary')
   if (isGrokAccount.value) {
     switch (grokTestMode.value) {
       case 'video':
@@ -682,6 +687,9 @@ const testModeSummary = computed(() => {
 
 const canStartTest = computed(() => {
   if (status.value === 'connecting') return false
+  if (isCandyTest.value) {
+    return modelOptionsForMode.value.some((model) => model.id === selectedModelId.value)
+  }
   if (isGrokAccount.value) {
     if (
       grokTestMode.value === 'search' ||
@@ -758,6 +766,11 @@ watch(
     }
   }
 )
+
+// 切换糖果模式或异步模型列表更新后，清理不再可选的图片模型。
+watch(modelOptionsForMode, () => {
+  if (isCandyTest.value) pickDefaultModelForMode()
+})
 
 watch(grokTestMode, () => {
   if (!isGrokAccount.value) return
@@ -977,9 +990,11 @@ const handleEvent = (event: {
                     : grokTestMode.value === 'realtime'
                       ? t('admin.accounts.grok.sendingRealtimeRequest')
                       : t('admin.accounts.sendingTestMessage')
-          : supportsImageTest.value
-            ? t('admin.accounts.sendingImageRequest')
-            : t('admin.accounts.sendingTestMessage'),
+          : isCandyTest.value
+            ? t('admin.accounts.openai.sendingCandyTestMessage')
+            : supportsImageTest.value
+              ? t('admin.accounts.sendingImageRequest')
+              : t('admin.accounts.sendingTestMessage'),
         'text-gray-400'
       )
       addLine('', 'text-gray-300')

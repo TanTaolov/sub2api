@@ -24,7 +24,8 @@ vi.mock('@/api/admin', () => ({
 
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({
-    t: (key: string) => key
+    t: (key: string, params?: { count?: number }) =>
+      key === 'admin.accounts.dataImportProxyBound' ? `${key}: ${params?.count}` : key
   })
 }))
 
@@ -173,6 +174,33 @@ describe('ImportDataModal', () => {
       skip_default_group_bind: true
     })
     expect(showSuccess).toHaveBeenCalledWith('admin.accounts.dataImportSuccess')
+  })
+
+  it.each([0, 2, undefined])('shows the automatic binding count while supporting older responses: %s', async (boundCount) => {
+    const { adminAPI } = await import('@/api/admin')
+    vi.mocked(adminAPI.accounts.importData).mockResolvedValue({
+      proxy_created: 0,
+      proxy_reused: 0,
+      proxy_failed: 0,
+      account_created: 2,
+      account_failed: 0,
+      ...(boundCount === undefined ? {} : { account_proxy_bound: boundCount })
+    })
+    const wrapper = mountModal()
+    const input = wrapper.get('input[type="file"]')
+    setInputFiles(input.element, [makeJsonFile('data.json', JSON.stringify({ proxies: [], accounts: [{ name: 'a' }] }))])
+    await input.trigger('change')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+
+    if (boundCount === undefined) {
+      expect(wrapper.find('[role="status"]').exists()).toBe(false)
+    } else {
+      expect(wrapper.get('[role="status"]').text()).toBe(`admin.accounts.dataImportProxyBound: ${boundCount}`)
+    }
+    expect(showSuccess).toHaveBeenCalledWith('admin.accounts.dataImportSuccess')
+    expect(wrapper.emitted('imported')).toHaveLength(1)
+    wrapper.unmount()
   })
 
   it('部分成功时关闭弹窗仍通知父组件刷新', async () => {

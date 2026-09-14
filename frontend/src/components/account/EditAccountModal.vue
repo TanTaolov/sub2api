@@ -3923,15 +3923,13 @@ const mixedChannelWarningMessageText = computed(() => {
 const form = reactive({
   name: '',
   notes: '',
-  proxy_id: null as number | null,
   concurrency: 1,
   load_factor: null as number | null,
   priority: 1,
   rate_multiplier: 1,
   status: 'active' as 'active' | 'inactive' | 'error',
   group_ids: [] as number[],
-  expires_at: null as number | null,
-  proxy_pool: [] as Array<{ proxy_id: number; concurrency: number }>
+  expires_at: null as number | null
 })
 
 interface ProxyPoolFormRow {
@@ -3951,6 +3949,14 @@ const createProxyPoolRow = (
 })
 
 const proxyPoolRows = ref<ProxyPoolFormRow[]>([])
+let initialProxyPoolEntries: Array<{ proxy_id: number; concurrency: number }> = []
+
+const buildProxyPoolEntries = () =>
+  proxyPoolRows.value.flatMap((row) =>
+    row.proxyId === null
+      ? []
+      : [{ proxy_id: row.proxyId, concurrency: getNormalizedProxyPoolConcurrency(row.concurrency) }]
+  )
 
 const selectedProxyPoolIds = computed(
   () => new Set(proxyPoolRows.value.flatMap((row) => (row.proxyId === null ? [] : [row.proxyId])))
@@ -4022,7 +4028,7 @@ const testProxyPoolRow = async (row: ProxyPoolFormRow) => {
       appStore.showError(result.message || t('admin.proxies.proxyTestFailed'))
     }
   } catch (error: any) {
-    appStore.showError(error?.response?.data?.detail || t('admin.proxies.failedToTest'))
+    appStore.showError(error?.message || t('admin.proxies.failedToTest'))
   } finally {
     testingProxyPoolRowKeys.delete(row.key)
   }
@@ -4133,14 +4139,18 @@ const syncFormFromAccount = (newAccount: Account | null) => {
   mixedChannelWarningAction.value = null
   form.name = newAccount.name
   form.notes = newAccount.notes || ''
-  form.proxy_id = newAccount.proxy_id
-  const pool = newAccount.extra?.proxy_pool ?? []
+  const pool = Array.isArray(newAccount.extra?.proxy_pool) ? newAccount.extra.proxy_pool : []
   const loadedProxyIds = new Set<number>()
   proxyPoolRows.value = pool.flatMap((entry) => {
-    if (entry.proxy_id <= 0 || loadedProxyIds.has(entry.proxy_id)) return []
+    if (!Number.isInteger(entry.proxy_id) || entry.proxy_id <= 0 || loadedProxyIds.has(entry.proxy_id)) return []
     loadedProxyIds.add(entry.proxy_id)
     return [createProxyPoolRow(entry.proxy_id, getNormalizedProxyPoolConcurrency(entry.concurrency))]
   })
+  // 旧单代理只回填到可见表单；未编辑代理时保留原存储格式与出口。
+  if (proxyPoolRows.value.length === 0 && newAccount.proxy_id && newAccount.proxy_id > 0) {
+    proxyPoolRows.value = [createProxyPoolRow(newAccount.proxy_id, getNormalizedProxyPoolConcurrency(newAccount.concurrency))]
+  }
+  initialProxyPoolEntries = buildProxyPoolEntries()
   form.concurrency = newAccount.concurrency
   form.load_factor = newAccount.load_factor ?? null
   form.priority = newAccount.priority
@@ -5158,25 +5168,18 @@ const handleSubmit = async () => {
 		}
 	}
 
-    const updatePayload: Record<string, unknown> = { ...form }
-    updatePayload.extra = {
-      ...(props.account.extra ?? {}),
-      proxy_pool: proxyPoolRows.value.flatMap((row) =>
-        row.proxyId === null
-          ? []
-          : [
-              {
-                proxy_id: row.proxyId,
-                concurrency: getNormalizedProxyPoolConcurrency(row.concurrency)
-              }
-            ]
-      )
-    }
+  const updatePayload: Record<string, unknown> = { ...form }
+  const accountExtra = { ...(props.account.extra ?? {}) }
+  const proxyPoolEntries = buildProxyPoolEntries()
+  if (!isSparkShadow.value && JSON.stringify(proxyPoolEntries) !== JSON.stringify(initialProxyPoolEntries)) {
+    accountExtra.proxy_pool = proxyPoolEntries
+    // 保留仍在池中的原代理；移除原代理时切换到首项，池清空时显式解绑。
+    updatePayload.proxy_id = proxyPoolEntries.some((entry) => entry.proxy_id === props.account?.proxy_id)
+      ? props.account.proxy_id
+      : (proxyPoolEntries[0]?.proxy_id ?? 0)
+  }
+  updatePayload.extra = accountExtra
   try {
-    // 后端期望 proxy_id: 0 表示清除代理，而不是 null
-    if (updatePayload.proxy_id === null) {
-      updatePayload.proxy_id = 0
-    }
     if (form.expires_at === null) {
       updatePayload.expires_at = 0
     }

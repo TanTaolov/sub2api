@@ -61,6 +61,9 @@
         <div class="text-sm text-gray-700 dark:text-dark-300">
           {{ t('admin.accounts.dataImportResultSummary', result) }}
         </div>
+        <div v-if="result.account_proxy_bound != null" class="text-sm text-gray-700 dark:text-dark-300" role="status">
+          {{ t('admin.accounts.dataImportProxyBound', { count: result.account_proxy_bound }) }}
+        </div>
 
         <div v-if="errorItems.length" class="mt-2">
           <div class="text-sm font-medium text-red-600 dark:text-red-400">

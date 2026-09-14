@@ -437,7 +437,8 @@ func (h *AccountHandler) importData(ctx context.Context, req DataImportRequest) 
 		}
 
 		var proxyID *int64
-		if item.ProxyKey != nil && *item.ProxyKey != "" {
+		hasProxyKey := item.ProxyKey != nil && *item.ProxyKey != ""
+		if hasProxyKey {
 			if id, ok := proxyKeyToID[*item.ProxyKey]; ok {
 				proxyID = &id
 			} else {
@@ -452,11 +453,12 @@ func (h *AccountHandler) importData(ctx context.Context, req DataImportRequest) 
 			}
 		}
 
-		// 开关开启且导入数据未指定代理时，为 OpenAI 账号自动绑定预选的系统代理。
+		// 仅在未指定 proxy_key 且没有有效代理池时自动绑定，保留导入数据的显式配置。
 		// 必须在建号前完成：CreateAccount 会在建号成功后立即异步发起 OpenAI 隐私设置，
 		// 若建号后再补 ProxyID，该请求会以服务器出口 IP 直连。
+		importedAccount := service.Account{Extra: item.Extra}
 		autoBound := false
-		if proxyID == nil && autoProxy != nil && strings.EqualFold(strings.TrimSpace(item.Platform), service.PlatformOpenAI) {
+		if !hasProxyKey && autoProxy != nil && strings.EqualFold(strings.TrimSpace(item.Platform), service.PlatformOpenAI) && len(importedAccount.ProxyPool()) == 0 {
 			id := autoProxy.ID
 			proxyID = &id
 			autoBound = true
@@ -503,20 +505,6 @@ func (h *AccountHandler) importData(ctx context.Context, req DataImportRequest) 
 			privacyAccounts = append(privacyAccounts, created)
 		}
 		if autoBound {
-			// 兜底：建号时的 Extra 归一化若未保留代理池配置，此处补写一次，
-			// 确保账号加载后能按代理池抽取到该代理（出网与转发都依赖它）。
-			if len(created.ProxyPool()) == 0 {
-				if _, updErr := h.adminService.UpdateAccount(ctx, created.ID, &service.UpdateAccountInput{
-					Extra: withProxyPoolEntry(created.Extra, *proxyID, importAutoBindProxyConcurrency),
-				}); updErr != nil {
-					slog.Warn("import_auto_bind_proxy_pool_write_failed", "account_id", created.ID, "error", updErr)
-					result.Errors = append(result.Errors, DataImportError{
-						Kind:    "account",
-						Name:    item.Name,
-						Message: "write proxy_pool failed: " + updErr.Error(),
-					})
-				}
-			}
 			result.AccountProxyBound++
 		}
 		h.scheduleGrokImportProbe(created)

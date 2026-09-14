@@ -60,7 +60,7 @@ function mountModal(value = account()) {
   return mount(EditAccountModal, {
     props: { show: true, account: value, proxies: [], groups: [] },
     global: { stubs: {
-      BaseDialog: BaseDialogStub, Select: true, Icon: true, ProxySelector: true,
+      BaseDialog: BaseDialogStub, Select: true, Icon: true,
       GroupSelector: true, ModelWhitelistSelector: true
     } }
   })

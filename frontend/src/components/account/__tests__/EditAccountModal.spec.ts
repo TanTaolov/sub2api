@@ -1,16 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 
-const { updateAccountMock, checkMixedChannelRiskMock, authIsSimpleMode } = vi.hoisted(() => ({
+const { updateAccountMock, checkMixedChannelRiskMock, testProxyMock, showErrorMock, authIsSimpleMode } = vi.hoisted(() => ({
   updateAccountMock: vi.fn(),
   checkMixedChannelRiskMock: vi.fn(),
+  testProxyMock: vi.fn(),
+  showErrorMock: vi.fn(),
   authIsSimpleMode: { value: true }
 }))
 
 vi.mock('@/stores/app', () => ({
   useAppStore: () => ({
-    showError: vi.fn(),
+    showError: showErrorMock,
     showSuccess: vi.fn(),
     showInfo: vi.fn()
   })
@@ -26,6 +28,7 @@ vi.mock('@/stores/auth', () => ({
 
 vi.mock('@/api/admin', () => ({
   adminAPI: {
+    proxies: { testProxy: testProxyMock },
     accounts: {
       update: updateAccountMock,
       checkMixedChannelRisk: checkMixedChannelRiskMock
@@ -315,7 +318,6 @@ function mountModal(account = buildAccount(), renderGroupSelector = false) {
         BaseDialog: BaseDialogStub,
         Select: SelectStub,
         Icon: true,
-        ProxySelector: true,
         GroupSelector: renderGroupSelector ? false : GroupSelectorStub,
         ModelWhitelistSelector: ModelWhitelistSelectorStub
       }
@@ -329,6 +331,169 @@ describe('EditAccountModal', () => {
   })
 
   afterEach(() => vi.useRealTimers())
+
+  it('shows a legacy proxy without migrating its storage on an unrelated edit', async () => {
+    const account = { ...buildAccount(), proxy_id: 11, concurrency: 8 }
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    const wrapper = mountModal(account)
+    const proxyConcurrency = wrapper.get<HTMLInputElement>('input[name^="proxy_pool_concurrency_"]')
+    expect(proxyConcurrency.element.value).toBe('8')
+    await wrapper.get('input[data-tour="edit-account-form-name"]').setValue('Renamed account')
+
+    await wrapper.get('form#edit-account-form').trigger('submit.prevent')
+    const payload = updateAccountMock.mock.calls[0][1]
+    expect(payload).not.toHaveProperty('proxy_id')
+    expect(payload).not.toHaveProperty('proxy_pool')
+    expect(payload.extra).not.toHaveProperty('proxy_pool')
+    expect(payload.concurrency).toBe(8)
+    wrapper.unmount()
+  })
+
+  it.each([false, true])('clears the legacy proxy when all visible entries are removed (pool: %s)', async (hasPool) => {
+    const account = {
+      ...buildAccount(),
+      proxy_id: 11,
+      extra: hasPool ? { proxy_pool: [{ proxy_id: 11, concurrency: 30 }] } : {}
+    }
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    const wrapper = mountModal(account)
+    await wrapper.get('button[aria-label="admin.accounts.removeProxy"]').trigger('click')
+    await wrapper.get('form#edit-account-form').trigger('submit.prevent')
+
+    expect(updateAccountMock.mock.calls[0][1]).toMatchObject({
+      proxy_id: 0,
+      extra: { proxy_pool: [] }
+    })
+    wrapper.unmount()
+  })
+
+  it('preserves the original pool and proxy binding on an unrelated edit', async () => {
+    const pool = [{ proxy_id: 11, concurrency: 8 }, { proxy_id: 22, concurrency: 12 }]
+    const account = { ...buildAccount(), proxy_id: 22, extra: { proxy_pool: pool, privacy_mode: 'training_disabled' } }
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    const wrapper = mountModal(account)
+    await wrapper.get('form#edit-account-form').trigger('submit.prevent')
+
+    const payload = updateAccountMock.mock.calls[0][1]
+    expect(payload).not.toHaveProperty('proxy_id')
+    expect(payload.extra.proxy_pool).toEqual(pool)
+    expect(payload.extra.privacy_mode).toBe('training_disabled')
+    expect(account.extra.proxy_pool).toEqual(pool)
+    wrapper.unmount()
+  })
+
+  it('switches the fallback proxy when the old proxy is removed from the pool', async () => {
+    const account = {
+      ...buildAccount(), proxy_id: 11,
+      extra: { proxy_pool: [{ proxy_id: 11, concurrency: 8 }, { proxy_id: 22, concurrency: 12 }] }
+    }
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    const wrapper = mountModal(account)
+    await wrapper.findAll('button[aria-label="admin.accounts.removeProxy"]')[0].trigger('click')
+    await wrapper.get('form#edit-account-form').trigger('submit.prevent')
+
+    expect(updateAccountMock.mock.calls[0][1]).toMatchObject({
+      proxy_id: 22,
+      extra: { proxy_pool: [{ proxy_id: 22, concurrency: 12 }] }
+    })
+    expect(account.extra.proxy_pool).toHaveLength(2)
+    wrapper.unmount()
+  })
+
+  it('saves a changed legacy proxy as the visible pool entry', async () => {
+    const account = { ...buildAccount(), proxy_id: 11, concurrency: 8 }
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    const wrapper = mountModal(account)
+    await wrapper.setProps({ proxies: [{ id: 11, name: 'Proxy A' }, { id: 22, name: 'Proxy B' }] as any })
+    const selector = wrapper.findAllComponents(SelectStub).find(component => component.props('modelValue') === 11)!
+    selector.vm.$emit('update:modelValue', 22)
+    await flushPromises()
+    await wrapper.get('form#edit-account-form').trigger('submit.prevent')
+
+    expect(updateAccountMock.mock.calls[0][1]).toMatchObject({
+      proxy_id: 22,
+      concurrency: 8,
+      extra: { proxy_pool: [{ proxy_id: 22, concurrency: 8 }] }
+    })
+    wrapper.unmount()
+  })
+
+  it('keeps the original proxy when only an entry concurrency changes', async () => {
+    const account = {
+      ...buildAccount(), proxy_id: 22,
+      extra: { proxy_pool: [{ proxy_id: 11, concurrency: 8 }, { proxy_id: 22, concurrency: 12 }] }
+    }
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    const wrapper = mountModal(account)
+    await wrapper.findAll('input[name^="proxy_pool_concurrency_"]')[0].setValue('9')
+    await wrapper.get('form#edit-account-form').trigger('submit.prevent')
+
+    expect(updateAccountMock.mock.calls[0][1]).toMatchObject({
+      proxy_id: 22,
+      extra: { proxy_pool: [{ proxy_id: 11, concurrency: 9 }, { proxy_id: 22, concurrency: 12 }] }
+    })
+    wrapper.unmount()
+  })
+
+  it('does not rewrite the proxy after an entry change is undone', async () => {
+    const account = { ...buildAccount(), proxy_id: 11, concurrency: 8 }
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    const wrapper = mountModal(account)
+    const input = wrapper.get('input[name^="proxy_pool_concurrency_"]')
+    await input.setValue('9')
+    await input.setValue('8')
+    await wrapper.get('form#edit-account-form').trigger('submit.prevent')
+
+    expect(updateAccountMock.mock.calls[0][1]).not.toHaveProperty('proxy_id')
+    expect(updateAccountMock.mock.calls[0][1].extra).not.toHaveProperty('proxy_pool')
+    wrapper.unmount()
+  })
+
+  it('keeps legacy proxy storage when only account concurrency changes', async () => {
+    const account = { ...buildAccount(), proxy_id: 11, concurrency: 8 }
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    const wrapper = mountModal(account)
+    const input = wrapper.findAll('input[type="number"]').find(item =>
+      item.element.parentElement?.querySelector('label')?.textContent === 'admin.accounts.concurrency'
+    )!
+    await input.setValue('16')
+    await wrapper.get('form#edit-account-form').trigger('submit.prevent')
+
+    expect(updateAccountMock.mock.calls[0][1].concurrency).toBe(16)
+    expect(updateAccountMock.mock.calls[0][1]).not.toHaveProperty('proxy_id')
+    expect(updateAccountMock.mock.calls[0][1].extra).not.toHaveProperty('proxy_pool')
+    wrapper.unmount()
+  })
+
+  it('does not rewrite an inherited shadow proxy configuration', async () => {
+    const account = {
+      ...buildOpenAISparkShadowAccount(), proxy_id: 11,
+      extra: { proxy_pool: [{ proxy_id: 11, concurrency: 8 }] }
+    }
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    const wrapper = mountModal(account)
+    expect(wrapper.find('button[aria-label="admin.accounts.removeProxy"]').exists()).toBe(false)
+    await wrapper.get('form#edit-account-form').trigger('submit.prevent')
+
+    expect(updateAccountMock.mock.calls[0][1]).not.toHaveProperty('proxy_id')
+    expect(updateAccountMock.mock.calls[0][1].extra.proxy_pool).toEqual(account.extra.proxy_pool)
+    wrapper.unmount()
+  })
+
+  it('shows a structured proxy test error and releases the testing state', async () => {
+    const account = { ...buildAccount(), proxy_id: 11 }
+    showErrorMock.mockClear()
+    testProxyMock.mockReset().mockRejectedValue({ status: 404, message: 'Proxy no longer exists' })
+    const wrapper = mountModal(account)
+    const button = wrapper.get('button[aria-label="admin.proxies.testConnection"]')
+    await button.trigger('click')
+    await flushPromises()
+
+    expect(testProxyMock).toHaveBeenCalledWith(11)
+    expect(showErrorMock).toHaveBeenCalledWith('Proxy no longer exists')
+    expect(button.attributes('disabled')).toBeUndefined()
+    wrapper.unmount()
+  })
 
   it('sets expiry presets from now instead of extending the saved expiry', async () => {
     vi.useFakeTimers({ toFake: ['Date'] })

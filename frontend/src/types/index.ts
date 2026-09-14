@@ -1623,6 +1623,7 @@ export interface AdminDataImportResult {
   proxy_failed: number
   account_created: number
   account_failed: number
+  account_proxy_bound?: number
   errors?: AdminDataImportError[]
 }
 

@@ -40,6 +40,7 @@ export default {
       dataImportIgnoredFiles: '已忽略 {count} 个非 JSON 文件',
       dataImportFailed: '数据导入失败',
       dataImportResult: '导入结果',
+      dataImportProxyBound: '本次自动绑定代理的账号：{count}',
       dataImportResultSummary: '代理创建 {proxy_created}，复用 {proxy_reused}，失败 {proxy_failed}；账号创建 {account_created}，失败 {account_failed}',
       dataImportErrors: '失败详情',
       dataImportSuccess: '导入完成：账号 {account_created}，失败 {account_failed}',
@@ -779,8 +780,10 @@ export default {
         testModeDefault: '常规请求',
         testModeCompact: 'Compact 探测',
         testModeCandy: '糖果测试',
+        testModeCandySummary: '提示词：固定糖果推理题',
+        sendingCandyTestMessage: '发送固定糖果推理题',
         testModeCandyHint:
-          '发送固定的抽屉原理推理题（三种口味、两种形状的糖果最少取几颗），用于比较账号背后模型的推理与输出质量；题面由服务端固定，不受提示词输入影响。',
+          '仅支持文本模型。发送固定的抽屉原理推理题（三种口味、两种形状的糖果最少取几颗），用于比较账号背后模型的推理与输出质量；题面由服务端固定，不受提示词输入影响。',
         modelRestrictionDisabledByPassthrough: '已开启自动透传：模型白名单/映射不会生效。',
       },
       grok: {

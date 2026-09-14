@@ -40,6 +40,7 @@ export default {
       dataImportIgnoredFiles: 'Ignored {count} non-JSON file(s)',
       dataImportFailed: 'Data import failed',
       dataImportResult: 'Import Result',
+      dataImportProxyBound: 'Accounts automatically assigned a proxy in this import: {count}',
       dataImportResultSummary: 'Proxies created {proxy_created}, reused {proxy_reused}, failed {proxy_failed}; Accounts created {account_created}, failed {account_failed}',
       dataImportErrors: 'Error Details',
       dataImportSuccess: 'Import completed: accounts {account_created}, failed {account_failed}',
@@ -701,8 +702,10 @@ export default {
         testModeDefault: 'Default request',
         testModeCompact: 'Compact probe',
         testModeCandy: 'Candy test',
+        testModeCandySummary: 'Prompt: fixed candy reasoning puzzle',
+        sendingCandyTestMessage: 'Sending the fixed candy reasoning puzzle',
         testModeCandyHint:
-          'Sends a fixed pigeonhole-principle reasoning puzzle (how many candies of three flavors and two shapes must be drawn), for comparing the reasoning and output quality of the model behind the account; the question is fixed server-side and ignores the prompt input.',
+          'Text models only. Sends a fixed pigeonhole-principle reasoning puzzle (how many candies of three flavors and two shapes must be drawn), for comparing the reasoning and output quality of the model behind the account; the question is fixed server-side and ignores the prompt input.',
         modelRestrictionDisabledByPassthrough: 'Automatic passthrough is enabled: model whitelist/mapping will not take effect.',
       },
       grok: {
