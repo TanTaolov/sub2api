@@ -700,6 +700,9 @@ export default {
         testMode: 'Test mode',
         testModeDefault: 'Default request',
         testModeCompact: 'Compact probe',
+        testModeCandy: 'Candy test',
+        testModeCandyHint:
+          'Sends a fixed pigeonhole-principle reasoning puzzle (how many candies of three flavors and two shapes must be drawn), for comparing the reasoning and output quality of the model behind the account; the question is fixed server-side and ignores the prompt input.',
         modelRestrictionDisabledByPassthrough: 'Automatic passthrough is enabled: model whitelist/mapping will not take effect.',
       },
       grok: {

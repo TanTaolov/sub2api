@@ -778,6 +778,9 @@ export default {
         testMode: '测试模式',
         testModeDefault: '常规请求',
         testModeCompact: 'Compact 探测',
+        testModeCandy: '糖果测试',
+        testModeCandyHint:
+          '发送固定的抽屉原理推理题（三种口味、两种形状的糖果最少取几颗），用于比较账号背后模型的推理与输出质量；题面由服务端固定，不受提示词输入影响。',
         modelRestrictionDisabledByPassthrough: '已开启自动透传：模型白名单/映射不会生效。',
       },
       grok: {
