@@ -78,13 +78,19 @@ type DataImportRequest struct {
 }
 
 type DataImportResult struct {
-	ProxyCreated   int               `json:"proxy_created"`
-	ProxyReused    int               `json:"proxy_reused"`
-	ProxyFailed    int               `json:"proxy_failed"`
-	AccountCreated int               `json:"account_created"`
-	AccountFailed  int               `json:"account_failed"`
-	Errors         []DataImportError `json:"errors,omitempty"`
+	ProxyCreated      int               `json:"proxy_created"`
+	ProxyReused       int               `json:"proxy_reused"`
+	ProxyFailed       int               `json:"proxy_failed"`
+	AccountCreated    int               `json:"account_created"`
+	AccountFailed     int               `json:"account_failed"`
+	AccountProxyBound int               `json:"account_proxy_bound"` // 自动绑定代理的账号数
+	Errors            []DataImportError `json:"errors,omitempty"`
 }
+
+// importAutoBindProxyConcurrency 导入自动绑定代理时使用的并发额度：
+// 同时写入账号并发与账号代理池条目并发，两者保持一致，避免池条目
+// 并发大于账号并发导致账号被调度器提前判定为满载。
+const importAutoBindProxyConcurrency = 30
 
 type DataImportError struct {
 	Kind     string `json:"kind"`
@@ -400,6 +406,21 @@ func (h *AccountHandler) importData(ctx context.Context, req DataImportRequest) 
 		}
 	}
 
+	// 开关开启时，为无代理的 OpenAI 账号预选一个系统代理（整批共用，避免逐账号查库）。
+	// 代理列表在此处重新拉取，以便包含本批次刚导入创建的代理。
+	autoBindProxy := h.importAutoBindProxyEnabled(ctx)
+	var autoProxy *service.Proxy
+	if autoBindProxy {
+		proxiesNow, listErr := h.listAllProxies(ctx)
+		if listErr != nil {
+			slog.Warn("import_auto_bind_proxy_list_failed", "error", listErr)
+		}
+		autoProxy = h.resolveImportAutoProxy(proxiesNow)
+		if autoProxy == nil {
+			slog.Info("import_auto_bind_proxy_no_available_proxy")
+		}
+	}
+
 	// 收集需要异步设置隐私的 Antigravity OAuth 账号
 	var privacyAccounts []*service.Account
 
@@ -431,7 +452,24 @@ func (h *AccountHandler) importData(ctx context.Context, req DataImportRequest) 
 			}
 		}
 
+		// 开关开启且导入数据未指定代理时，为 OpenAI 账号自动绑定预选的系统代理。
+		// 必须在建号前完成：CreateAccount 会在建号成功后立即异步发起 OpenAI 隐私设置，
+		// 若建号后再补 ProxyID，该请求会以服务器出口 IP 直连。
+		autoBound := false
+		if proxyID == nil && autoProxy != nil && strings.EqualFold(strings.TrimSpace(item.Platform), service.PlatformOpenAI) {
+			id := autoProxy.ID
+			proxyID = &id
+			autoBound = true
+		}
+
 		enrichCredentialsFromIDToken(&item)
+
+		accountConcurrency := item.Concurrency
+		accountExtra := item.Extra
+		if autoBound {
+			accountConcurrency = importAutoBindProxyConcurrency
+			accountExtra = withProxyPoolEntry(accountExtra, *proxyID, importAutoBindProxyConcurrency)
+		}
 
 		accountInput := &service.CreateAccountInput{
 			Name:                 item.Name,
@@ -439,9 +477,9 @@ func (h *AccountHandler) importData(ctx context.Context, req DataImportRequest) 
 			Platform:             item.Platform,
 			Type:                 item.Type,
 			Credentials:          item.Credentials,
-			Extra:                item.Extra,
+			Extra:                accountExtra,
 			ProxyID:              proxyID,
-			Concurrency:          item.Concurrency,
+			Concurrency:          accountConcurrency,
 			Priority:             item.Priority,
 			RateMultiplier:       item.RateMultiplier,
 			GroupIDs:             nil,
@@ -463,6 +501,23 @@ func (h *AccountHandler) importData(ctx context.Context, req DataImportRequest) 
 		// 收集 Antigravity OAuth 账号，稍后异步设置隐私
 		if created.Platform == service.PlatformAntigravity && created.Type == service.AccountTypeOAuth {
 			privacyAccounts = append(privacyAccounts, created)
+		}
+		if autoBound {
+			// 兜底：建号时的 Extra 归一化若未保留代理池配置，此处补写一次，
+			// 确保账号加载后能按代理池抽取到该代理（出网与转发都依赖它）。
+			if len(created.ProxyPool()) == 0 {
+				if _, updErr := h.adminService.UpdateAccount(ctx, created.ID, &service.UpdateAccountInput{
+					Extra: withProxyPoolEntry(created.Extra, *proxyID, importAutoBindProxyConcurrency),
+				}); updErr != nil {
+					slog.Warn("import_auto_bind_proxy_pool_write_failed", "account_id", created.ID, "error", updErr)
+					result.Errors = append(result.Errors, DataImportError{
+						Kind:    "account",
+						Name:    item.Name,
+						Message: "write proxy_pool failed: " + updErr.Error(),
+					})
+				}
+			}
+			result.AccountProxyBound++
 		}
 		h.scheduleGrokImportProbe(created)
 		result.AccountCreated++
@@ -486,6 +541,45 @@ func (h *AccountHandler) importData(ctx context.Context, req DataImportRequest) 
 	}
 
 	return result, nil
+}
+
+// importAutoBindProxyEnabled 检查「导入自动绑定代理」开关是否开启（默认关闭）。
+func (h *AccountHandler) importAutoBindProxyEnabled(ctx context.Context) bool {
+	if h == nil || h.settingService == nil {
+		return false
+	}
+	return h.settingService.IsImportAutoBindProxy(ctx)
+}
+
+// resolveImportAutoProxy 从系统代理库挑选一个可用代理：状态为 active 且未过期，
+// 按 name 升序取第一个以保证同一份数据重复导入时结果一致。无可用代理返回 nil，
+// 由调用方按「不自动绑定」处理，不阻断导入。
+func (h *AccountHandler) resolveImportAutoProxy(proxies []service.Proxy) *service.Proxy {
+	now := time.Now()
+	var selected *service.Proxy
+	for i := range proxies {
+		p := proxies[i]
+		if !strings.EqualFold(strings.TrimSpace(p.Status), service.StatusActive) {
+			continue
+		}
+		if p.ExpiresAt != nil && !p.ExpiresAt.After(now) {
+			continue
+		}
+		if selected == nil || strings.TrimSpace(p.Name) < strings.TrimSpace(selected.Name) {
+			selected = &proxies[i]
+		}
+	}
+	return selected
+}
+
+// withProxyPoolEntry 返回写入了代理池配置的 Extra 副本，不修改入参。
+func withProxyPoolEntry(extra map[string]any, proxyID int64, concurrency int) map[string]any {
+	out := make(map[string]any, len(extra)+1)
+	for key, value := range extra {
+		out[key] = value
+	}
+	out[service.AccountProxyPoolExtraKey] = []service.ProxyPoolEntry{{ProxyID: proxyID, Concurrency: concurrency}}
+	return out
 }
 
 func (h *AccountHandler) listAllProxies(ctx context.Context) ([]service.Proxy, error) {

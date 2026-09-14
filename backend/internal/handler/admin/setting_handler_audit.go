@@ -68,6 +68,9 @@ func diffSettings(before *service.SystemSettings, after *service.SystemSettings,
 	if before.StepUpEnabled != after.StepUpEnabled {
 		changed = append(changed, "step_up_enabled")
 	}
+	if before.ImportAutoBindProxy != after.ImportAutoBindProxy {
+		changed = append(changed, "import_auto_bind_proxy")
+	}
 	if before.LoginAgreementEnabled != after.LoginAgreementEnabled {
 		changed = append(changed, "login_agreement_enabled")
 	}

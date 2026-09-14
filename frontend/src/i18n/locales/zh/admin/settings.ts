@@ -427,6 +427,10 @@ export default {
         monthly:     '月限额 (USD, 30天滚动)',
         placeholder: '不限',
       },
+      importAutoBindProxy: {
+        title: '导入自动绑定代理',
+        description: '开启后，导入数据时未绑定代理的 OpenAI 账号会自动选用系统代理库中的可用代理（按名称升序取第一个），账号并发与代理并发均设为 30。',
+      },
       claudeCode: {
         title: 'Claude Code 设置',
         description: '控制 Claude Code 客户端访问要求',

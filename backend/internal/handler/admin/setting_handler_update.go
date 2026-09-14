@@ -35,6 +35,7 @@ type UpdateSettingsRequest struct {
 	PasskeyEnabled                      *bool                        `json:"passkey_enabled"`          // Passkey 登录（省略=保持现值）
 	SessionBindingEnabled               *bool                        `json:"session_binding_enabled"`  // 会话 IP/UA 绑定（省略=保持现值）
 	StepUpEnabled                       *bool                        `json:"step_up_enabled"`          // 敏感操作 step-up 2FA（省略=保持现值）
+	ImportAutoBindProxy                 *bool                        `json:"import_auto_bind_proxy"`   // 数据导入自动绑定代理（省略=保持现值）
 	AuditLogRetentionDays               int                          `json:"audit_log_retention_days"` // 审计日志保留天数
 	LoginAgreementEnabled               bool                         `json:"login_agreement_enabled"`
 	LoginAgreementMode                  string                       `json:"login_agreement_mode"`
@@ -517,6 +518,10 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 	stepUpEnabled := previousSettings.StepUpEnabled
 	if req.StepUpEnabled != nil {
 		stepUpEnabled = *req.StepUpEnabled
+	}
+	importAutoBindProxy := previousSettings.ImportAutoBindProxy
+	if req.ImportAutoBindProxy != nil {
+		importAutoBindProxy = *req.ImportAutoBindProxy
 	}
 	passkeyEnabled := previousSettings.PasskeyEnabled
 	if req.PasskeyEnabled != nil {
@@ -1515,6 +1520,7 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		PasskeyEnabled:                      passkeyEnabled,
 		SessionBindingEnabled:               sessionBindingEnabled,
 		StepUpEnabled:                       stepUpEnabled,
+		ImportAutoBindProxy:                 importAutoBindProxy,
 		AuditLogRetentionDays:               req.AuditLogRetentionDays,
 		LoginAgreementEnabled:               req.LoginAgreementEnabled,
 		LoginAgreementMode:                  loginAgreementMode,
@@ -2160,6 +2166,7 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		PasskeyRPOrigins:                                       passkeyRPOrigins,
 		SessionBindingEnabled:                                  updatedSettings.SessionBindingEnabled,
 		StepUpEnabled:                                          updatedSettings.StepUpEnabled,
+		ImportAutoBindProxy:                                    updatedSettings.ImportAutoBindProxy,
 		AuditLogRetentionDays:                                  updatedSettings.AuditLogRetentionDays,
 		LoginAgreementEnabled:                                  updatedSettings.LoginAgreementEnabled,
 		LoginAgreementMode:                                     updatedSettings.LoginAgreementMode,

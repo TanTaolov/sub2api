@@ -1644,11 +1644,7 @@
       </div>
 
       <div v-if="!isSparkShadow">
-        <div class="mb-1 flex items-center gap-2">
-          <label class="input-label mb-0">{{ t('admin.accounts.proxy') }}</label>
-        </div>
-        <ProxySelector v-model="form.proxy_id" :proxies="proxies" />
-        <div class="mt-3 rounded-md border border-gray-200 p-3 dark:border-dark-600 sm:p-4">
+        <div class="rounded-md border border-gray-200 p-3 dark:border-dark-600 sm:p-4">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div class="min-w-0">
               <div class="text-sm font-medium text-gray-800 dark:text-gray-200">
@@ -1673,9 +1669,9 @@
             <div
               v-for="row in proxyPoolRows"
               :key="row.key"
-              class="grid grid-cols-[minmax(0,1fr)_2.5rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_7rem_2.5rem]"
+              class="grid grid-cols-[minmax(0,1fr)_2.5rem_2.5rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_7rem_2.5rem_2.5rem]"
             >
-              <div class="col-span-2 min-w-0 sm:col-span-1">
+              <div class="col-span-3 min-w-0 sm:col-span-1">
                 <Select
                   v-model="row.proxyId"
                   :options="getProxyPoolOptions(row)"
@@ -1696,6 +1692,23 @@
                 :aria-label="t('admin.accounts.proxyConcurrency')"
                 @blur="normalizeProxyPoolConcurrency(row)"
               />
+              <button
+                type="button"
+                class="flex h-10 w-10 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-emerald-50 hover:text-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400 dark:focus-visible:ring-offset-dark-800"
+                :aria-label="t('admin.proxies.testConnection')"
+                :title="t('admin.proxies.testConnection')"
+                :disabled="row.proxyId === null || testingProxyPoolRowKeys.has(row.key)"
+                @click="testProxyPoolRow(row)"
+              >
+                <Icon
+                  v-if="testingProxyPoolRowKeys.has(row.key)"
+                  name="refresh"
+                  size="sm"
+                  class="animate-spin"
+                  aria-hidden="true"
+                />
+                <Icon v-else name="play" size="sm" aria-hidden="true" />
+              </button>
               <button
                 type="button"
                 class="flex h-10 w-10 items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 dark:hover:bg-red-900/20 dark:hover:text-red-400 dark:focus-visible:ring-offset-dark-800"
@@ -3114,7 +3127,6 @@ import HelpTooltip from '@/components/common/HelpTooltip.vue'
 import UpstreamRequestIdHeaderField from '@/components/account/UpstreamRequestIdHeaderField.vue'
 import Toggle from '@/components/common/Toggle.vue'
 import Icon from '@/components/icons/Icon.vue'
-import ProxySelector from '@/components/common/ProxySelector.vue'
 import GroupSelector from '@/components/common/GroupSelector.vue'
 import ModelWhitelistSelector from '@/components/account/ModelWhitelistSelector.vue'
 import QuotaLimitCard from '@/components/account/QuotaLimitCard.vue'
@@ -3989,6 +4001,31 @@ const addProxyPoolRow = () => {
 
 const removeProxyPoolRow = (key: number) => {
   proxyPoolRows.value = proxyPoolRows.value.filter((row) => row.key !== key)
+}
+
+// 代理池行内测试：按行 key 记录测试中状态，结果仅通过通知提示，不写回表单
+const testingProxyPoolRowKeys = reactive(new Set<number>())
+
+const testProxyPoolRow = async (row: ProxyPoolFormRow) => {
+  if (row.proxyId === null || testingProxyPoolRowKeys.has(row.key)) return
+
+  testingProxyPoolRowKeys.add(row.key)
+  try {
+    const result = await adminAPI.proxies.testProxy(row.proxyId)
+    if (result.success) {
+      appStore.showSuccess(
+        result.latency_ms
+          ? t('admin.proxies.proxyWorkingWithLatency', { latency: result.latency_ms })
+          : t('admin.proxies.proxyWorking')
+      )
+    } else {
+      appStore.showError(result.message || t('admin.proxies.proxyTestFailed'))
+    }
+  } catch (error: any) {
+    appStore.showError(error?.response?.data?.detail || t('admin.proxies.failedToTest'))
+  } finally {
+    testingProxyPoolRowKeys.delete(row.key)
+  }
 }
 
 const totalProxyPoolConcurrency = computed(() =>

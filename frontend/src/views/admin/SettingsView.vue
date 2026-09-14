@@ -4440,6 +4440,30 @@
 
         <!-- Tab: Gateway — Claude Code, Scheduling -->
         <div v-show="activeTab === 'gateway'" class="space-y-6">
+          <!-- 导入自动绑定代理 -->
+          <div class="card">
+            <div
+              class="border-b border-gray-100 px-6 py-4 dark:border-dark-700"
+            >
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                {{ t("admin.settings.importAutoBindProxy.title") }}
+              </h2>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {{ t("admin.settings.importAutoBindProxy.description") }}
+              </p>
+            </div>
+            <div class="p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="font-medium text-gray-900 dark:text-white">{{
+                    t("admin.settings.importAutoBindProxy.title")
+                  }}</label>
+                </div>
+                <Toggle v-model="form.import_auto_bind_proxy" />
+              </div>
+            </div>
+          </div>
+
           <!-- Claude Code Settings -->
           <div class="card">
             <div
@@ -9604,6 +9628,7 @@ const form = reactive<SettingsForm>({
   passkey_rp_origins: [],
   session_binding_enabled: false,
   step_up_enabled: false,
+  import_auto_bind_proxy: false,
   audit_log_retention_days: 180,
   login_agreement_enabled: false,
   login_agreement_mode: "modal",
@@ -11256,6 +11281,7 @@ async function saveSettings() {
       passkey_enabled: form.passkey_enabled,
       session_binding_enabled: form.session_binding_enabled,
       step_up_enabled: form.step_up_enabled,
+      import_auto_bind_proxy: form.import_auto_bind_proxy,
       // 清空数字框时 v-model.number 会得到空串，后端 int 字段解析空串会 400 拒绝整次保存；
       // 空/非法值回退默认 180（与后端 parseAuditLogRetentionDays("") 语义一致，0 仍表示永久保留）。
       audit_log_retention_days: Number.isFinite(form.audit_log_retention_days)

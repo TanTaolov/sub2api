@@ -432,6 +432,10 @@ export default {
         monthly:     'Monthly (USD, 30d rolling)',
         placeholder: 'Unlimited',
       },
+      importAutoBindProxy: {
+        title: 'Auto-bind Proxy on Import',
+        description: 'When enabled, imported OpenAI accounts without a proxy will automatically use an available proxy from the system proxy list (first by name). Account and proxy concurrency are both set to 30.',
+      },
       claudeCode: {
         title: 'Claude Code Settings',
         description: 'Control Claude Code client access requirements',

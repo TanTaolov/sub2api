@@ -24,6 +24,7 @@ type SystemSettings struct {
 	PasskeyEnabled                      bool // Passkey 登录
 	SessionBindingEnabled               bool // 会话 IP/UA 绑定（变更即失效）
 	StepUpEnabled                       bool // 敏感操作 step-up 2FA 门控
+	ImportAutoBindProxy                 bool // 数据导入时为无代理的 OpenAI 账号自动绑定系统代理
 	AuditLogRetentionDays               int  // 审计日志保留天数（<=0 永久保留）
 	LoginAgreementEnabled               bool
 	LoginAgreementMode                  string

@@ -44,6 +44,7 @@ type SystemSettings struct {
 	PasskeyRPOrigins                    []string                 `json:"passkey_rp_origins"`
 	SessionBindingEnabled               bool                     `json:"session_binding_enabled"`  // 会话 IP/UA 绑定
 	StepUpEnabled                       bool                     `json:"step_up_enabled"`          // 敏感操作 step-up 2FA
+	ImportAutoBindProxy                 bool                     `json:"import_auto_bind_proxy"`   // 数据导入自动绑定代理
 	AuditLogRetentionDays               int                      `json:"audit_log_retention_days"` // 审计日志保留天数
 	LoginAgreementEnabled               bool                     `json:"login_agreement_enabled"`
 	LoginAgreementMode                  string                   `json:"login_agreement_mode"`

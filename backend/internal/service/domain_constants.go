@@ -291,6 +291,9 @@ const (
 	// 敏感操作 step-up 2FA 设置
 	SettingKeyStepUpEnabled = "step_up_enabled" // 敏感操作（导出/备份/S3配置/提升管理员等）要求 step-up 2FA，默认关闭
 
+	// 账号导入设置
+	SettingKeyImportAutoBindProxy = "import_auto_bind_proxy" // 数据导入时为无代理的 OpenAI 账号自动绑定系统代理（默认关闭）
+
 	// 面板 API 限流设置（JSON：PanelRateLimitSettings）
 	SettingKeyPanelRateLimitSettings = "panel_rate_limit_settings"
 

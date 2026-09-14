@@ -415,6 +415,7 @@ export interface SystemSettings {
   passkey_rp_origins: string[];
   session_binding_enabled: boolean; // 会话 IP/UA 绑定
   step_up_enabled: boolean; // 敏感操作 step-up 2FA
+  import_auto_bind_proxy: boolean; // 导入数据自动绑定代理
   audit_log_retention_days: number; // 审计日志保留天数
   login_agreement_enabled: boolean;
   login_agreement_mode: "modal" | "checkbox" | string;
@@ -761,6 +762,7 @@ export interface UpdateSettingsRequest {
   passkey_enabled?: boolean;
   session_binding_enabled?: boolean; // 会话 IP/UA 绑定
   step_up_enabled?: boolean; // 敏感操作 step-up 2FA
+  import_auto_bind_proxy?: boolean; // 导入数据自动绑定代理
   audit_log_retention_days?: number; // 审计日志保留天数
   login_agreement_enabled?: boolean;
   login_agreement_mode?: "modal" | "checkbox" | string;

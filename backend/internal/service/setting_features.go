@@ -259,6 +259,17 @@ func (s *SettingService) IsStepUpEnabled(ctx context.Context) bool {
 	return value == "true"
 }
 
+// IsImportAutoBindProxy 检查数据导入自动绑定代理开关是否启用（默认关闭）。
+// 开启后导入数据时，未绑定代理的 OpenAI 账号会自动选取系统代理库中的可用代理，
+// 并写入账号代理池与账号并发（见 DefaultImportProxyPoolConcurrency）。
+func (s *SettingService) IsImportAutoBindProxy(ctx context.Context) bool {
+	value, err := s.settingRepo.GetValue(ctx, SettingKeyImportAutoBindProxy)
+	if err != nil {
+		return false // 默认关闭
+	}
+	return value == "true"
+}
+
 // defaultAuditLogRetentionDays 审计日志默认保留天数。
 const defaultAuditLogRetentionDays = 180
 
