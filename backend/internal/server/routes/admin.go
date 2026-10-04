@@ -799,6 +799,8 @@ func registerScheduledTestRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 	admin.GET("/account-ops/config", h.Admin.AccountOps.GetConfig)
 	admin.PUT("/account-ops/config", h.Admin.AccountOps.SaveConfig)
 	admin.GET("/account-ops/alerts", h.Admin.AccountOps.List)
+	// 智能运维 → Prism 状态：网关侧适配器配置与模型范围（只读，不返回桥接密钥）
+	admin.GET("/account-ops/prism/status", h.Admin.AccountOps.PrismStatus)
 	// 智能运维 → 凭证守护：账号令牌巡检 / 自动重登 / 错误态自愈
 	admin.GET("/account-ops/token-guard/status", h.Admin.AccountTokenGuard.Status)
 	admin.PUT("/account-ops/token-guard/config", h.Admin.AccountTokenGuard.SaveConfig)
