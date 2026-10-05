@@ -13869,7 +13869,8 @@ watch(
 
 <style scoped>
 h2[id^="settings-section-"] {
-  scroll-margin-top: 6rem;
+  /* 顶栏 64px + 吸顶 Tab 条(4.75rem 起约 54px 高)总高约 130px，8.5rem 保证锚点定位后标题不被吸顶层遮挡 */
+  scroll-margin-top: 8.5rem;
 }
 h2[id^="settings-section-"]:target {
   outline: 2px solid var(--color-primary-500, #6366f1);
