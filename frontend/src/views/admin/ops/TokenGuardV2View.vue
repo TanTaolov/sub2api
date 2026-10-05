@@ -41,11 +41,19 @@
         </div>
       </CredentialEncryptionSetup>
 
-      <section v-if="status.worker" class="mb-5 rounded-xl border border-gray-200 p-4 dark:border-gray-700" data-testid="reauth-runtime-status" role="status">
-        <strong>{{ t('tokenGuardV2.runtimeTitle') }}</strong>
-        <p>{{ t(`tokenGuardV2.runtimeStates.${runtimeState}`) }}</p>
-        <p v-if="runtimeReason">{{ t(`tokenGuardV2.runtimeReasons.${runtimeReason}`) }}</p>
-        <small>{{ t(status.worker.mode === 'external' ? 'tokenGuardV2.runtimeExternal' : 'tokenGuardV2.runtimeManaged') }}</small>
+      <section
+        v-if="status.worker"
+        class="runtime-strip"
+        :class="`state-${runtimeState}`"
+        data-testid="reauth-runtime-status"
+        role="status"
+      >
+        <div class="runtime-body">
+          <p class="runtime-label"><span class="runtime-signal" aria-hidden="true"></span><strong>{{ t('tokenGuardV2.runtimeTitle') }}</strong></p>
+          <p class="runtime-state">{{ t(`tokenGuardV2.runtimeStates.${runtimeState}`) }}</p>
+          <p v-if="runtimeReason" class="runtime-reason"><Icon name="exclamationCircle" size="xs" class="runtime-reason-icon" aria-hidden="true" />{{ t(`tokenGuardV2.runtimeReasons.${runtimeReason}`) }}</p>
+        </div>
+        <small class="runtime-note">{{ t(status.worker.mode === 'external' ? 'tokenGuardV2.runtimeExternal' : 'tokenGuardV2.runtimeManaged') }}</small>
       </section>
 
       <section class="summary-grid">
@@ -563,6 +571,40 @@ onBeforeUnmount(() => { if (timer) clearInterval(timer) })
 .eyebrow { @apply mb-1 text-[11px] font-semibold tracking-widest text-primary-600; }
 .page-heading h2 { @apply text-2xl font-semibold tracking-tight; }
 .subtitle { @apply mt-2 max-w-3xl text-sm leading-6 text-gray-500 dark:text-gray-400; }
+/* 状态灯条：状态灯与状态句承载主视觉，原因句为次级说明，模式说明是右侧静默注脚。 */
+.runtime-strip { @apply mb-5 flex items-start gap-4 rounded-2xl border border-gray-200/80 bg-gray-50/70 p-4 dark:border-dark-700 dark:bg-dark-900/60; }
+.runtime-body { @apply min-w-0 flex-1; }
+.runtime-label { @apply flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400; }
+.runtime-label strong { @apply font-semibold; }
+.runtime-signal { @apply h-2.5 w-2.5 shrink-0 rounded-full bg-gray-300 dark:bg-dark-500; }
+.runtime-state { @apply mt-1.5 text-sm font-medium text-gray-700 dark:text-gray-200; }
+.runtime-reason { @apply mt-1 flex items-start gap-1.5 text-[11px] leading-4 text-gray-600 dark:text-gray-400; }
+.runtime-reason-icon { @apply mt-0.5 shrink-0; }
+.runtime-note { @apply ml-auto max-w-xs shrink-0 text-right text-[11px] leading-4 text-gray-500 dark:text-gray-400; }
+.runtime-strip.state-running { @apply border-emerald-200/70 bg-emerald-50/60 dark:border-emerald-900/60 dark:bg-emerald-950/25; }
+.runtime-strip.state-running .runtime-signal { @apply bg-emerald-500 dark:bg-emerald-400; }
+.runtime-strip.state-running .runtime-state { @apply text-emerald-700 dark:text-emerald-300; }
+.runtime-strip.state-preparing { @apply border-sky-200/70 bg-sky-50/60 dark:border-sky-900/60 dark:bg-sky-950/25; }
+.runtime-strip.state-preparing .runtime-signal { @apply bg-sky-500 dark:bg-sky-400; }
+.runtime-strip.state-preparing .runtime-state { @apply text-sky-700 dark:text-sky-300; }
+.runtime-strip.state-unavailable { @apply border-amber-200/70 bg-amber-50/60 dark:border-amber-900/60 dark:bg-amber-950/25; }
+.runtime-strip.state-unavailable .runtime-signal { @apply bg-amber-500 dark:bg-amber-400; }
+.runtime-strip.state-unavailable .runtime-state { @apply text-amber-700 dark:text-amber-300; }
+.runtime-strip.state-unavailable .runtime-reason { @apply text-amber-800 dark:text-amber-300/90; }
+.runtime-strip.state-stopped .runtime-state { @apply text-gray-500 dark:text-gray-400; }
+/* 只有「运行中 / 准备中」的状态灯才呼吸：它表示服务正在工作，而不是装饰。 */
+.runtime-strip.state-running .runtime-signal,
+.runtime-strip.state-preparing .runtime-signal { position:relative; }
+.runtime-strip.state-running .runtime-signal::after,
+.runtime-strip.state-preparing .runtime-signal::after { content:''; position:absolute; top:0; right:0; bottom:0; left:0; border-radius:9999px; background:inherit; animation:runtime-signal-pulse 2.4s ease-out infinite; }
+@keyframes runtime-signal-pulse { 0% { opacity:.6; transform:scale(1); } 75%,100% { opacity:0; transform:scale(2.4); } }
+@media (max-width:720px) {
+  .runtime-strip { flex-wrap:wrap; }
+  .runtime-note { margin-top:4px; margin-left:0; width:100%; max-width:none; text-align:left; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .runtime-strip .runtime-signal::after { animation:none; opacity:0; }
+}
 .summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:20px; @apply mb-5; }
 .summary-card,.table-card,.rules-card { @apply overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-dark-700 dark:bg-dark-900; }
 .summary-card { @apply p-5; }

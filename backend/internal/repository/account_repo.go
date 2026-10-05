@@ -1127,6 +1127,10 @@ func (r *accountRepository) Delete(ctx context.Context, id int64) error {
 	if _, err := txClient.ExecContext(ctx, "DELETE FROM scheduled_test_plans WHERE account_id = $1", id); err != nil {
 		return err
 	}
+	// 账号是软删除，外键级联不会触发：显式清除凭证运营的巡检登记与加密登录资料。
+	if err := deleteCredentialOperationsRecords(ctx, txClient, id); err != nil {
+		return err
+	}
 	if _, err := txClient.Account.Delete().Where(dbaccount.IDEQ(id)).Exec(ctx); err != nil {
 		return err
 	}

@@ -268,6 +268,35 @@ func (s *AccountRepoSuite) TestDelete() {
 	s.Require().Error(err, "expected error after delete")
 }
 
+// 账号是软删除，数据库外键级联不会触发：删除账号必须同时清除凭证运营的巡检登记、
+// 加密登录资料与重登任务，否则已删除账号会一直留在巡检列表里。
+func (s *AccountRepoSuite) TestDelete_RemovesCredentialOperationsRecords() {
+	account := mustCreateAccount(s.T(), s.client, &service.Account{
+		Name: "to-delete-credential-ops", Platform: service.PlatformOpenAI, Type: service.AccountTypeOAuth,
+		Credentials: map[string]any{"access_token": "token"},
+	})
+	_, err := s.repo.sql.ExecContext(s.ctx, `INSERT INTO account_token_guard_v2_accounts (account_id, enabled, auto_relogin_enabled) VALUES ($1, TRUE, TRUE)`, account.ID)
+	s.Require().NoError(err)
+	_, err = s.repo.sql.ExecContext(s.ctx, `INSERT INTO openai_oauth_reauth_configs (account_id, login_email, credential_mode) VALUES ($1, $2, 'password_totp')`, account.ID, "ops@example.com")
+	s.Require().NoError(err)
+	_, err = s.repo.sql.ExecContext(s.ctx, `INSERT INTO openai_oauth_reauth_tasks (account_id, status, stage, expected_credentials_hash) VALUES ($1, 'queued', 'queued', 'hash')`, account.ID)
+	s.Require().NoError(err)
+
+	s.Require().NoError(s.repo.Delete(s.ctx, account.ID), "Delete")
+
+	for _, table := range []string{"account_token_guard_v2_accounts", "openai_oauth_reauth_configs", "openai_oauth_reauth_tasks"} {
+		var remaining int
+		s.Require().NoError(scanSingleRow(
+			s.ctx,
+			s.repo.sql,
+			"SELECT COUNT(*) FROM "+table+" WHERE account_id = $1",
+			[]any{account.ID},
+			&remaining,
+		))
+		s.Require().Equal(0, remaining, table+" should not keep rows for a deleted account")
+	}
+}
+
 func (s *AccountRepoSuite) TestDelete_RemovesSchedulerAccountSnapshot() {
 	account := mustCreateAccount(s.T(), s.client, &service.Account{Name: "to-delete-cache"})
 	cacheRecorder := &schedulerCacheRecorder{
