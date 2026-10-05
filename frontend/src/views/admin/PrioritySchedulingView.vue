@@ -1,8 +1,8 @@
 <template>
   <AppLayout>
     <div class="min-w-0 space-y-5">
-      <header><h1 class="text-2xl font-semibold">{{ t('priorityScheduling.title') }}</h1><p class="mt-2 text-sm text-gray-500">{{ t('priorityScheduling.description') }}</p></header>
       <SmartOpsNav />
+      <p class="max-w-3xl text-sm leading-6 text-gray-500 dark:text-gray-400">{{ t('priorityScheduling.description') }}</p>
       <p class="rounded-xl bg-primary-50 p-4 text-sm leading-6 text-primary-800 dark:bg-primary-950/30 dark:text-primary-200">{{ t('priorityScheduling.scopeNote') }}</p>
       <div v-if="error" role="alert" class="text-red-600">{{ error }} <button v-if="!draft" class="underline" @click="load">{{ t('priorityScheduling.retry') }}</button></div>
       <p v-if="notice" role="status" class="text-emerald-600">{{ notice }}</p>

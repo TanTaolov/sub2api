@@ -1,8 +1,8 @@
 <template>
   <AppLayout>
     <div class="space-y-5">
-      <header><h1 class="text-2xl font-semibold">{{ t('autoConfig.title') }}</h1><p class="mt-2 text-sm text-gray-500">{{ t('autoConfig.description') }}</p></header>
       <SmartOpsNav />
+      <p class="max-w-3xl text-sm leading-6 text-gray-500 dark:text-gray-400">{{ t('autoConfig.description') }}</p>
       <p v-if="error" role="alert" class="rounded-xl bg-red-50 p-4 text-red-700 dark:bg-red-950/30 dark:text-red-300">{{ error }}</p>
       <p v-if="notice" role="status" class="text-emerald-600">{{ notice }}</p>
       <p v-if="loading">{{ t('common.loading') }}</p>
