@@ -127,6 +127,32 @@ describe('BulkEditAccountModal', () => {
     wrapper.unmount()
   })
 
+  it('submits random static assignment without clearing proxy_id', async () => {
+    const wrapper = mountModal()
+    await wrapper.get('#bulk-edit-proxy-enabled').setValue(true)
+    wrapper.findComponent({ name: 'ProxySelector' }).vm.$emit('update:modelValue', null)
+    wrapper.findComponent({ name: 'ProxySelector' }).vm.$emit('update:randomMode', true)
+    await nextTick()
+    await wrapper.get('#bulk-edit-account-form').trigger('submit.prevent')
+    await flushPromises()
+    expect(adminAPI.accounts.bulkUpdate).toHaveBeenCalledWith([1, 2], { random_proxy: true })
+    wrapper.unmount()
+  })
+
+  it('switches from random back to a fixed static proxy', async () => {
+    const wrapper = mountModal()
+    await wrapper.get('#bulk-edit-proxy-enabled').setValue(true)
+    const selector = wrapper.findComponent({ name: 'ProxySelector' })
+    selector.vm.$emit('update:randomMode', true)
+    selector.vm.$emit('update:modelValue', 7)
+    selector.vm.$emit('update:randomMode', false)
+    await nextTick()
+    await wrapper.get('#bulk-edit-account-form').trigger('submit.prevent')
+    await flushPromises()
+    expect(adminAPI.accounts.bulkUpdate).toHaveBeenCalledWith([1, 2], { proxy_id: 7 })
+    wrapper.unmount()
+  })
+
   beforeEach(() => {
     authIsSimpleMode.value = true
     vi.mocked(adminAPI.accounts.bulkUpdate).mockReset()
@@ -268,6 +294,9 @@ describe('BulkEditAccountModal', () => {
       await enableBPS(wrapper)
       expect(wrapper.find('[data-testid="bulk-excel-bps-proxy-source-ip-pool"]').exists()).toBe(false)
       await wrapper.get('[data-testid="excel-bps-mihomo"]').setValue(true)
+      const sourceChoices = wrapper.get('[role="radiogroup"][aria-label="admin.accounts.openai.excelBPSProxySource"]')
+      expect(sourceChoices.findAll('input[type="radio"]')[0].attributes('value')).toBe('ip_pool')
+      expect(sourceChoices.text()).toContain('admin.accounts.randomIPPool')
       await wrapper.get('[data-testid="bulk-excel-bps-proxy-source-ip-pool"]').setValue(true)
       await submit(wrapper)
       expect(adminAPI.accounts.bulkUpdate).toHaveBeenCalledWith([1, 2], {

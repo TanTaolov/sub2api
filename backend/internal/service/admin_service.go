@@ -478,6 +478,7 @@ type BulkUpdateAccountsInput struct {
 	Filters             *BulkUpdateAccountFilters
 	Name                string
 	ProxyID             *int64
+	RandomProxy         bool // Pick and persist an eligible static proxy independently per account.
 	Concurrency         *int
 	Priority            *int
 	RateMultiplier      *float64 // 账号计费倍率（>=0，允许 0）

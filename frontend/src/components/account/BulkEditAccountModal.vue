@@ -135,21 +135,21 @@
                 :aria-label="t('admin.accounts.openai.excelBPSProxySource')">
                 <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('admin.accounts.openai.excelBPSProxySource') }}</span>
                 <label class="flex items-center gap-1.5 text-sm">
+                  <input v-model="excelBPSProxySource" type="radio" value="ip_pool"
+                    data-testid="bulk-excel-bps-proxy-source-ip-pool"
+                    class="h-4 w-4 border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-500" />
+                  {{ t('admin.accounts.randomIPPool') }}
+                </label>
+                <label class="flex items-center gap-1.5 text-sm">
                   <input v-model="excelBPSProxySource" type="radio" value="mihomo"
                     data-testid="bulk-excel-bps-proxy-source-mihomo"
                     class="h-4 w-4 border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-500" />
                   {{ t('admin.accounts.openai.excelBPSProxySourceMihomo') }}
                 </label>
-                <label class="flex items-center gap-1.5 text-sm">
-                  <input v-model="excelBPSProxySource" type="radio" value="ip_pool"
-                    data-testid="bulk-excel-bps-proxy-source-ip-pool"
-                    class="h-4 w-4 border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-500" />
-                  {{ t('admin.accounts.openai.excelBPSProxySourceIPPool') }}
-                </label>
               </div>
               <p v-if="excelBPSMihomo && excelBPSProxySource === 'ip_pool'"
                 class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {{ t('admin.accounts.openai.excelBPSProxySourceIPPoolDesc') }}
+                {{ t('admin.accounts.openai.excelBPSProxySourceIPPoolDesc') }} {{ t('admin.accounts.randomIPPoolHint') }}
               </p>
             </div>
             <div>
@@ -827,6 +827,8 @@
         <div id="bulk-edit-proxy-body" :class="!enableProxy && 'pointer-events-none opacity-50'">
           <ProxySelector
             v-model="proxyId"
+            v-model:random-mode="randomProxyMode"
+            :defer-random="true"
             :proxies="proxies"
             aria-labelledby="bulk-edit-proxy-label"
           />
@@ -1793,6 +1795,7 @@ const interceptWarmupRequests = ref(false)
 const headerOverrideEnabled = ref(false)
 const headerOverrideRows = ref<HeaderOverrideRow[]>([])
 const proxyId = ref<number | null>(null)
+const randomProxyMode = ref(false)
 const concurrency = ref(1)
 const loadFactor = ref<number | null>(null)
 const priority = ref(1)
@@ -2083,8 +2086,9 @@ const buildUpdatePayload = (): Record<string, unknown> | null => {
   }
 
   if (enableProxy.value) {
-    // 后端期望 proxy_id: 0 表示清除代理，而不是 null
-    updates.proxy_id = proxyId.value === null ? 0 : proxyId.value
+    // Bulk random allocation is resolved to a different real ID per account by the server.
+    if (randomProxyMode.value) updates.random_proxy = true
+    else updates.proxy_id = proxyId.value === null ? 0 : proxyId.value
   }
 
   if (enableConcurrency.value) {
@@ -2516,6 +2520,8 @@ const submitBulkUpdate = async (baseUpdates: Record<string, unknown>) => {
       pendingUpdatesForConfirm.value = baseUpdates
       mixedChannelWarningMessage.value = error.message
       showMixedChannelWarning.value = true
+    } else if (error.reason === 'RANDOM_PROXY_EMPTY') {
+      appStore.showError(t('admin.accounts.randomProxyEmpty'))
     } else if (error.reason === 'UPSTREAM_BILLING_RATE_SYNC_BULK_CONFLICT') {
       appStore.showError(t('admin.accounts.bulkEdit.rateSyncConflict', {
         count: error.metadata?.count ?? 1
@@ -2613,6 +2619,7 @@ watch(
       headerOverrideEnabled.value = false
       headerOverrideRows.value = []
       proxyId.value = null
+      randomProxyMode.value = false
       concurrency.value = 1
       loadFactor.value = null
       priority.value = 1

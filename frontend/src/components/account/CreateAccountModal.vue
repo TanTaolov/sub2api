@@ -2947,7 +2947,7 @@
           <label class="input-label mb-0">{{ t('admin.accounts.proxy') }}</label>
           <ProxyAdBanner />
         </div>
-        <ProxySelector v-model="form.proxy_id" :proxies="proxies" />
+        <ProxySelector v-model="form.proxy_id" v-model:random-mode="randomProxyMode" :proxies="proxies" />
       </div>
 
       <UpstreamRequestIdHeaderField
@@ -4748,6 +4748,8 @@ const form = reactive({
   expires_at: null as number | null
 })
 
+const randomProxyMode = ref(false)
+
 // Helper to check if current type needs OAuth flow
 const isOAuthFlow = computed(() => {
   // Antigravity upstream 类型不需要 OAuth 流程
@@ -5329,6 +5331,7 @@ const resetForm = () => {
   form.type = 'oauth'
   form.credentials = {}
   form.proxy_id = null
+  randomProxyMode.value = false
   form.concurrency = 10
   form.load_factor = null
   form.priority = 1

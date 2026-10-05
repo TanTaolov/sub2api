@@ -54,3 +54,57 @@ describe('proxy connection tests', () => {
     expect(testProxy).toHaveBeenCalledTimes(4)
   })
 })
+
+describe('random static proxy selection', () => {
+  const proxy = (id: number, status: Proxy['status'], expires_at: string | null = null) => ({
+    id, name: `Proxy ${id}`, host: 'localhost', port: 8080, protocol: 'http', status, expires_at
+  } as Proxy)
+
+  it('keeps the virtual option first and emits a real eligible ID', async () => {
+    const wrapper = mount(ProxySelector, {
+      props: { modelValue: null, proxies: [
+        proxy(1, 'inactive'), proxy(2, 'active', '2020-01-01T00:00:00Z'), proxy(3, 'active')
+      ] },
+      global: { stubs: { Icon: true } }
+    })
+    await wrapper.get('.select-trigger').trigger('click')
+    expect(wrapper.get('.select-options').element.firstElementChild?.getAttribute('data-testid')).toBe('random-proxy-option')
+    await wrapper.get('input.select-search-input').setValue('not a proxy')
+    expect(wrapper.get('[data-testid="random-proxy-option"]').exists()).toBe(true)
+    await wrapper.get('[data-testid="random-proxy-option"]').trigger('click')
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([3])
+    expect(wrapper.emitted('update:randomMode')?.[0]).toEqual([true])
+    await wrapper.setProps({ modelValue: 3, randomMode: true })
+    expect(wrapper.get('.select-trigger').text()).toContain('Proxy 3')
+    await wrapper.get('.select-trigger').trigger('click')
+    expect(wrapper.get('[data-testid="random-proxy-option"]').classes()).toContain('select-option-selected')
+    expect(wrapper.findAll('.select-option-selected')).toHaveLength(1)
+  })
+
+  it('never turns an empty eligible pool into no proxy', async () => {
+    const wrapper = mount(ProxySelector, {
+      props: { modelValue: null, proxies: [proxy(1, 'expired')] },
+      global: { stubs: { Icon: true } }
+    })
+    await wrapper.get('.select-trigger').trigger('click')
+    await wrapper.get('[data-testid="random-proxy-option"]').trigger('click')
+    expect(wrapper.get('[role="alert"]').text()).toBe('admin.accounts.randomProxyEmpty')
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+  })
+
+  it('defers bulk allocation without emitting a fake proxy ID', async () => {
+    const wrapper = mount(ProxySelector, {
+      props: { modelValue: 4, randomMode: false, deferRandom: true, proxies: [] },
+      global: { stubs: { Icon: true } }
+    })
+    await wrapper.get('.select-trigger').trigger('click')
+    await wrapper.get('[data-testid="random-proxy-option"]').trigger('click')
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([null])
+    expect(wrapper.emitted('update:randomMode')?.[0]).toEqual([true])
+    await wrapper.setProps({ modelValue: null, randomMode: true })
+    await wrapper.get('.select-trigger').trigger('click')
+    expect(wrapper.findAll('.select-option-selected')).toHaveLength(1)
+    await wrapper.findAll('.select-option')[1].trigger('click')
+    expect(wrapper.emitted('update:randomMode')?.[1]).toEqual([false])
+  })
+})

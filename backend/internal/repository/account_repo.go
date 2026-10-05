@@ -15,6 +15,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"slices"
 	"strconv"
 	"strings"
@@ -3275,6 +3276,16 @@ func (r *accountRepository) BulkUpdate(ctx context.Context, ids []int64, updates
 	if len(ids) == 0 {
 		return 0, nil
 	}
+	if len(updates.ProxyAssignments) > 0 {
+		if updates.ProxyID != nil {
+			return 0, errors.New("proxy assignments and proxy_id are mutually exclusive")
+		}
+		for _, id := range ids {
+			if _, ok := updates.ProxyAssignments[id]; !ok {
+				return 0, fmt.Errorf("missing proxy assignment for account %d", id)
+			}
+		}
+	}
 	updates.Extra = stripCodexFingerprintSeedFromExtraUpdate(updates.Extra)
 
 	setClauses := make([]string, 0, 8)
@@ -3285,6 +3296,17 @@ func (r *accountRepository) BulkUpdate(ctx context.Context, ids []int64, updates
 	if updates.Name != nil {
 		setClauses = append(setClauses, "name = $"+itoa(idx))
 		args = append(args, *updates.Name)
+		idx++
+	}
+	if len(updates.ProxyAssignments) > 0 {
+		payload, err := json.Marshal(updates.ProxyAssignments)
+		if err != nil {
+			return 0, err
+		}
+		proxyExpression := "($" + itoa(idx) + "::jsonb ->> id::text)::bigint"
+		setClauses = append(setClauses, "proxy_id = "+proxyExpression)
+		ollamaProxyIdentityChanged = "proxy_id IS DISTINCT FROM " + proxyExpression
+		args = append(args, payload)
 		idx++
 	}
 	if updates.ProxyID != nil {
@@ -3568,6 +3590,15 @@ func (r *accountRepository) BulkUpdate(ctx context.Context, ids []int64, updates
 		}
 		if rows != expectedRows {
 			return 0, service.ErrUpstreamBillingProbeAccountInvalid
+		}
+	}
+	if len(updates.ProxyAssignments) > 0 {
+		uniqueIDs := make(map[int64]struct{}, len(ids))
+		for _, id := range ids {
+			uniqueIDs[id] = struct{}{}
+		}
+		if rows != int64(len(uniqueIDs)) {
+			return 0, service.ErrAccountNotFound // production transaction rolls back
 		}
 	}
 	if rows > 0 {
@@ -4375,7 +4406,11 @@ func (r *accountRepository) RevertProxyFallback(ctx context.Context, accountID i
 // ⚠️ 新增影子维度时：须更新此函数（或新增维度专用列举），并检查所有调用点（级联删除/一母一影校验/type 守卫），否则会静默漏掉新维度。
 // 软删除行由 SoftDeleteMixin 拦截器自动排除，无需手写 deleted_at IS NULL。
 func (r *accountRepository) ListShadowsByParent(ctx context.Context, parentID int64) ([]*service.Account, error) {
-	rows, err := r.client.Account.Query().
+	client := r.client
+	if tx := dbent.TxFromContext(ctx); tx != nil {
+		client = tx.Client()
+	}
+	rows, err := client.Account.Query().
 		Where(dbaccount.ParentAccountIDEQ(parentID), dbaccount.QuotaDimensionEQ(dbaccount.QuotaDimensionSpark)).
 		All(ctx)
 	if err != nil {

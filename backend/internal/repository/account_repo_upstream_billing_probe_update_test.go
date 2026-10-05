@@ -298,6 +298,50 @@ func TestBulkUpdateNilProbeRemovesKeyInsteadOfWritingJSONNull(t *testing.T) {
 	require.Contains(t, normalizeSQLWhitespace(exec.execQueries[0]), "- 'upstream_billing_probe'")
 }
 
+func TestBulkUpdateRandomProxyAssignmentsUseOneParameterizedUpdate(t *testing.T) {
+	exec := &recordingSQLExecutor{result: rowsAffectedResult(2)}
+	repo := newAccountRepositoryWithSQL(nil, exec, nil)
+
+	rows, err := repo.BulkUpdate(context.Background(), []int64{27, 28}, service.AccountBulkUpdate{
+		ProxyAssignments: map[int64]int64{27: 7, 28: 8},
+		Extra:            map[string]any{service.UpstreamBillingProbeExtraKey: nil},
+	})
+
+	require.NoError(t, err)
+	require.Equal(t, int64(2), rows)
+	require.NotEmpty(t, exec.execQueries)
+	query := normalizeSQLWhitespace(exec.execQueries[0])
+	require.Contains(t, query, "proxy_id = ($1::jsonb ->> id::text)::bigint")
+	require.Contains(t, query, "proxy_id IS DISTINCT FROM ($1::jsonb ->> id::text)::bigint")
+	require.Contains(t, query, "- 'upstream_billing_probe'")
+	payload, ok := exec.execArgs[0][0].([]byte)
+	require.True(t, ok)
+	require.JSONEq(t, `{"27":7,"28":8}`, string(payload))
+}
+
+func TestBulkUpdateRandomProxyMissingAccountRollsBack(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = db.Close() })
+	client := dbent.NewClient(dbent.Driver(entsql.OpenDB(dialect.Postgres, db)))
+	t.Cleanup(func() { _ = client.Close() })
+
+	mock.ExpectBegin()
+	mock.ExpectExec(`(?s)UPDATE accounts SET proxy_id = .*`).
+		WithArgs(sqlmock.AnyArg(), `{27,28}`).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectRollback()
+	repo := newAccountRepositoryWithSQL(client, db, nil)
+
+	rows, err := repo.BulkUpdate(context.Background(), []int64{27, 28}, service.AccountBulkUpdate{
+		ProxyAssignments: map[int64]int64{27: 7, 28: 8},
+	})
+
+	require.ErrorIs(t, err, service.ErrAccountNotFound)
+	require.Zero(t, rows)
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
 func TestBulkUpdateDisablingProbeRemovesSnapshot(t *testing.T) {
 	exec := &recordingSQLExecutor{result: rowsAffectedResult(1)}
 	repo := newAccountRepositoryWithSQL(nil, exec, nil)

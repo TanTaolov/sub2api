@@ -173,6 +173,7 @@ type AdminAccountRepository interface {
 type AccountBulkUpdate struct {
 	Name                *string
 	ProxyID             *int64
+	ProxyAssignments    map[int64]int64 // Per-account real proxy IDs for one atomic bulk update.
 	Concurrency         *int
 	Priority            *int
 	RateMultiplier      *float64

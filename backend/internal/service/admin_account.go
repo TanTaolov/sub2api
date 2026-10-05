@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"maps"
+	"math/rand/v2"
 	"net/http"
 	"reflect"
 	"slices"
@@ -15,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	dbent "github.com/Wei-Shaw/sub2api/ent"
 	"github.com/Wei-Shaw/sub2api/internal/config"
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
@@ -1039,6 +1041,9 @@ func (s *adminServiceImpl) UpdateAccountExtra(ctx context.Context, id int64, upd
 // BulkUpdateAccounts updates multiple accounts in one request.
 // It merges credentials/extra keys instead of overwriting the whole object.
 func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUpdateAccountsInput) (*BulkUpdateAccountsResult, error) {
+	if input.RandomProxy && input.ProxyID != nil {
+		return nil, infraerrors.BadRequest("RANDOM_PROXY_CONFLICT", "random_proxy and proxy_id cannot be set together")
+	}
 	if err := ValidateAccountCostMultiplierExtra(input.Extra); err != nil {
 		return nil, err
 	}
@@ -1107,7 +1112,7 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 
 	// 预取所有目标账号，供凭据守卫/代理守卫/混合渠道检查共用，避免多次 DB 查询。
 	var cachedTargets []*Account
-	if len(input.Credentials) > 0 || input.ProxyID != nil || needMixedChannelCheck || openAISettings.any() || input.ProbeEnabled != nil || input.RateMultiplier != nil {
+	if len(input.Credentials) > 0 || input.ProxyID != nil || input.RandomProxy || needMixedChannelCheck || openAISettings.any() || input.ProbeEnabled != nil || input.RateMultiplier != nil {
 		loaded, err := s.accountRepo.GetByIDs(ctx, input.AccountIDs)
 		if err != nil {
 			return nil, err
@@ -1118,6 +1123,13 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 	for _, account := range cachedTargets {
 		if account != nil {
 			targetsByID[account.ID] = account
+		}
+	}
+	if input.RandomProxy {
+		for _, id := range input.AccountIDs {
+			if targetsByID[id] == nil {
+				return nil, ErrAccountNotFound
+			}
 		}
 	}
 	if openAISettings.any() {
@@ -1175,12 +1187,37 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 	// 影子账号 proxy 恒继承母账号(与单账号 UpdateAccount 守卫对齐——外审第4轮 P1):批量携带 proxy
 	// 时目标不得含影子,否则影子会获得独立 proxy、破坏继承不变量(网关按所选影子自身 proxy 出站,
 	// 要等母账号下次改 proxy 才覆盖→漂移)。含影子即整体拒绝,提示从选择中剔除影子。
-	if input.ProxyID != nil {
+	if input.ProxyID != nil || input.RandomProxy {
 		for _, acc := range cachedTargets {
 			if acc != nil && acc.IsCredentialShadow() {
 				return nil, infraerrors.Newf(http.StatusBadRequest, "SPARK_SHADOW_PROXY_INHERITED",
 					"spark shadow account %d proxy is inherited from its parent and cannot be set in bulk; manage it on the parent account", acc.ID)
 			}
+		}
+	}
+
+	// Resolve virtual random selection before any write. Never persist a sentinel ID.
+	randomProxyIDs := make(map[int64]int64)
+	if input.RandomProxy {
+		if s.proxyRepo == nil {
+			return nil, errors.New("proxy repository unavailable")
+		}
+		proxies, err := s.proxyRepo.ListActive(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("list active proxies for random assignment: %w", err)
+		}
+		now := time.Now()
+		eligible := make([]int64, 0, len(proxies))
+		for i := range proxies {
+			if proxies[i].IsActive() && !proxies[i].IsExpired(now) {
+				eligible = append(eligible, proxies[i].ID)
+			}
+		}
+		if len(eligible) == 0 {
+			return nil, infraerrors.BadRequest("RANDOM_PROXY_EMPTY", "no active unexpired proxies available")
+		}
+		for _, id := range input.AccountIDs {
+			randomProxyIDs[id] = eligible[rand.IntN(len(eligible))]
 		}
 	}
 
@@ -1267,7 +1304,7 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 			repoUpdates.Extra[UpstreamBillingRateSyncEnabledExtraKey] = false
 		}
 	}
-	if updatesUpstreamBillingProbeIdentity(input.Credentials) || input.ProxyID != nil {
+	if updatesUpstreamBillingProbeIdentity(input.Credentials) || input.ProxyID != nil || input.RandomProxy {
 		if repoUpdates.Extra == nil {
 			repoUpdates.Extra = make(map[string]any)
 		}
@@ -1280,6 +1317,9 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 	}
 	if input.ProxyID != nil {
 		repoUpdates.ProxyID = input.ProxyID
+	}
+	if input.RandomProxy {
+		repoUpdates.ProxyAssignments = randomProxyIDs
 	}
 	if input.Concurrency != nil {
 		repoUpdates.Concurrency = input.Concurrency
@@ -1312,24 +1352,43 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 		repoUpdates.Schedulable = input.Schedulable
 	}
 
-	// Run bulk update for column/jsonb fields first.
-	if _, err := s.accountRepo.BulkUpdate(ctx, input.AccountIDs, repoUpdates); err != nil {
+	// Random bulk assignment must update parents and inherited spark shadows
+	// atomically. Reuse a caller transaction; production services own an Ent
+	// client, while lightweight unit repository stubs can run without one.
+	updateCtx := ctx
+	var proxyTx *dbent.Tx
+	if input.RandomProxy && s.entClient != nil && dbent.TxFromContext(ctx) == nil {
+		proxyTx, err = s.entClient.Tx(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("begin random proxy assignment: %w", err)
+		}
+		defer func() { _ = proxyTx.Rollback() }()
+		updateCtx = dbent.NewTxContext(ctx, proxyTx)
+	}
+	// Both fixed and per-account random assignments use one repository bulk write.
+	if _, err := s.accountRepo.BulkUpdate(updateCtx, input.AccountIDs, repoUpdates); err != nil {
 		return nil, err
 	}
 
-	// 将 proxy 变更传播到每个目标账号的 spark 影子账号
-	if repoUpdates.ProxyID != nil {
-		var effectiveProxyID *int64
-		if *repoUpdates.ProxyID != 0 {
-			effectiveProxyID = repoUpdates.ProxyID
-		}
+	// Propagate the effective real proxy ID to each target's spark shadows.
+	if repoUpdates.ProxyID != nil || len(repoUpdates.ProxyAssignments) > 0 {
 		for _, accountID := range input.AccountIDs {
-			if err := s.propagateProxyToShadows(ctx, accountID, effectiveProxyID); err != nil {
+			var effectiveProxyID *int64
+			if id, ok := repoUpdates.ProxyAssignments[accountID]; ok {
+				effectiveProxyID = &id
+			} else if repoUpdates.ProxyID != nil && *repoUpdates.ProxyID != 0 {
+				effectiveProxyID = repoUpdates.ProxyID
+			}
+			if err := s.propagateProxyToShadows(updateCtx, accountID, effectiveProxyID); err != nil {
 				return nil, err
 			}
 		}
 	}
-
+	if proxyTx != nil {
+		if err := proxyTx.Commit(); err != nil {
+			return nil, fmt.Errorf("commit random proxy assignment: %w", err)
+		}
+	}
 	// Handle group bindings per account (requires individual operations).
 	for _, accountID := range input.AccountIDs {
 		entry := BulkUpdateAccountResult{AccountID: accountID}

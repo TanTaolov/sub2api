@@ -1696,7 +1696,7 @@
           <label class="input-label mb-0">{{ t('admin.accounts.proxy') }}</label>
           <ProxyAdBanner />
         </div>
-        <ProxySelector v-model="form.proxy_id" :proxies="proxies" />
+        <ProxySelector v-model="form.proxy_id" v-model:random-mode="randomProxyMode" :proxies="proxies" />
       </div>
 
       <UpstreamRequestIdHeaderField
@@ -1939,18 +1939,18 @@
             :aria-label="t('admin.accounts.openai.excelBPSProxySource')">
             <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('admin.accounts.openai.excelBPSProxySource') }}</span>
             <label class="flex items-center gap-1.5 text-sm">
+              <input v-model="excelBPSProxySource" type="radio" value="ip_pool" data-testid="excel-bps-proxy-source-ip-pool"
+                class="h-4 w-4 border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-500" />
+              {{ t('admin.accounts.randomIPPool') }}
+            </label>
+            <label class="flex items-center gap-1.5 text-sm">
               <input v-model="excelBPSProxySource" type="radio" value="mihomo" data-testid="excel-bps-proxy-source-mihomo"
                 class="h-4 w-4 border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-500" />
               {{ t('admin.accounts.openai.excelBPSProxySourceMihomo') }}
             </label>
-            <label class="flex items-center gap-1.5 text-sm">
-              <input v-model="excelBPSProxySource" type="radio" value="ip_pool" data-testid="excel-bps-proxy-source-ip-pool"
-                class="h-4 w-4 border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-dark-500" />
-              {{ t('admin.accounts.openai.excelBPSProxySourceIPPool') }}
-            </label>
           </div>
           <p v-if="excelBPSMihomo && excelBPSProxySource === 'ip_pool'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {{ t('admin.accounts.openai.excelBPSProxySourceIPPoolDesc') }}
+            {{ t('admin.accounts.openai.excelBPSProxySourceIPPoolDesc') }} {{ t('admin.accounts.randomIPPoolHint') }}
           </p>
         </div>
         <div v-if="excelBPSEnabled" class="mt-3">
@@ -4326,6 +4326,8 @@ const form = reactive({
   expires_at: null as number | null
 })
 
+const randomProxyMode = ref(false)
+
 const handleUpstreamBillingRateSyncChange = (enabled: boolean) => {
   upstreamBillingRateSyncEnabled.value = enabled
   if (enabled) {
@@ -4429,6 +4431,7 @@ const syncFormFromAccount = (newAccount: Account | null) => {
   form.name = newAccount.name
   form.notes = newAccount.notes || ''
   form.proxy_id = newAccount.proxy_id
+  randomProxyMode.value = false
   form.concurrency = newAccount.concurrency
   form.load_factor = newAccount.load_factor ?? null
   form.priority = newAccount.priority

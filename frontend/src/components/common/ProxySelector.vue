@@ -66,13 +66,29 @@
 
         <!-- Options list -->
         <div class="select-options">
+          <!-- Virtual choice: never added to the proxy list or sent as a proxy ID. -->
+          <button
+            type="button"
+            data-testid="random-proxy-option"
+            @click="selectRandomProxy"
+            :class="['select-option', 'w-full text-left', randomMode && 'select-option-selected']"
+          >
+            <span class="min-w-0 flex-1">
+              <span class="block font-medium">{{ t('admin.accounts.randomProxy') }}</span>
+              <span class="block text-xs text-gray-500 dark:text-gray-400">
+                {{ t(deferRandom ? 'admin.accounts.randomProxyBulkHint' : 'admin.accounts.randomProxyHint') }}
+              </span>
+            </span>
+            <Icon v-if="randomMode" name="check" size="sm" class="text-primary-500" />
+          </button>
+          <p v-if="randomError" role="alert" class="px-4 py-1 text-xs text-red-600">{{ randomError }}</p>
           <!-- No Proxy option -->
           <div
             @click="selectOption(null)"
-            :class="['select-option', modelValue === null && 'select-option-selected']"
+            :class="['select-option', !randomMode && modelValue === null && 'select-option-selected']"
           >
             <span class="select-option-label">{{ t('admin.accounts.noProxy') }}</span>
-            <Icon v-if="modelValue === null" name="check" size="sm" class="text-primary-500" />
+            <Icon v-if="!randomMode && modelValue === null" name="check" size="sm" class="text-primary-500" />
           </div>
 
           <!-- Proxy options -->
@@ -80,7 +96,7 @@
             v-for="proxy in filteredProxies"
             :key="proxy.id"
             @click="selectOption(proxy.id)"
-            :class="['select-option', modelValue === proxy.id && 'select-option-selected']"
+            :class="['select-option', !randomMode && modelValue === proxy.id && 'select-option-selected']"
           >
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2">
@@ -150,7 +166,7 @@
             </button>
 
             <Icon
-              v-if="modelValue === proxy.id"
+              v-if="!randomMode && modelValue === proxy.id"
               name="check"
               size="sm"
               class="flex-shrink-0 text-primary-500"
@@ -190,20 +206,26 @@ interface Props {
   modelValue: number | null
   proxies: Proxy[]
   disabled?: boolean
+  randomMode?: boolean
+  deferRandom?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  disabled: false
+  disabled: false,
+  randomMode: false,
+  deferRandom: false
 })
 
 const emit = defineEmits<{
   'update:modelValue': [value: number | null]
+  'update:randomMode': [value: boolean]
 }>()
 
 const isOpen = ref(false)
 const searchQuery = ref('')
 const containerRef = ref<HTMLElement | null>(null)
 const searchInputRef = ref<HTMLInputElement | null>(null)
+const randomError = ref('')
 
 // Test state
 const testResults = reactive<Record<number, ProxyTestResult>>({})
@@ -216,13 +238,16 @@ const selectedProxy = computed(() => {
 })
 
 const selectedLabel = computed(() => {
+  if (props.randomMode) {
+    const name = selectedProxy.value?.name
+    return name ? `${t('admin.accounts.randomProxy')} · ${name}` : t('admin.accounts.randomProxy')
+  }
   if (!selectedProxy.value) {
     return t('admin.accounts.noProxy')
   }
   const proxy = selectedProxy.value
   return `${proxy.name} (${proxy.protocol}://${proxy.host}:${proxy.port})`
 })
-
 const filteredProxies = computed(() => {
   if (!searchQuery.value) {
     return props.proxies
@@ -247,6 +272,28 @@ const toggle = () => {
 
 const selectOption = (value: number | null) => {
   emit('update:modelValue', value)
+  emit('update:randomMode', false)
+  randomError.value = ''
+  isOpen.value = false
+  searchQuery.value = ''
+}
+
+const selectRandomProxy = () => {
+  if (props.deferRandom) {
+    emit('update:modelValue', null)
+  } else {
+    const now = Date.now()
+    const eligible = props.proxies.filter((proxy) =>
+      proxy.status === 'active' && (!proxy.expires_at || new Date(proxy.expires_at).getTime() > now)
+    )
+    if (!eligible.length) {
+      randomError.value = t('admin.accounts.randomProxyEmpty')
+      return
+    }
+    emit('update:modelValue', eligible[Math.floor(Math.random() * eligible.length)].id)
+  }
+  emit('update:randomMode', true)
+  randomError.value = ''
   isOpen.value = false
   searchQuery.value = ''
 }
