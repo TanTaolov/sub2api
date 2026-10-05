@@ -5,9 +5,17 @@ import { settingsLocation, type SettingsTab } from '@/utils/settingsSearch'
 export function focusSettingsLocation(tab: unknown, hash: string) {
   const location = settingsLocation(tab, hash)
   if (!location.linked) return
-  const target = document.getElementById(location.anchor ?? `settings-tab-${location.tab}`)
-  target?.focus({ preventScroll: true })
-  target?.scrollIntoView({ block: 'start' })
+  if (location.anchor) {
+    const target = document.getElementById(location.anchor)
+    target?.focus({ preventScroll: true })
+    target?.scrollIntoView({ block: 'start' })
+    return
+  }
+  // 纯 Tab 切换（无锚点）时不能对吸顶的 Tab 条调用 scrollIntoView：
+  // sticky 元素已固定时浏览器会把页面滚到该元素的文档位置，
+  // 导致吸顶导航脱离视口顶部。直接滚回页面顶部即可让导航回位。
+  document.getElementById(`settings-tab-${location.tab}`)?.focus({ preventScroll: true })
+  window.scrollTo({ top: 0 })
 }
 
 export function useSettingsNavigation(loading: Ref<boolean>, loadFailed: Ref<boolean>) {
