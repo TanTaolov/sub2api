@@ -9,8 +9,8 @@ import (
 
 // AccountRandomProxyExtraKey 标记账号启用"每条请求随机代理"。
 // 开启后账号仍绑定一个真实 proxy_id 作为兜底(后台刷新/OAuth/配额等按 ProxyID
-// 回查代理的路径继续使用它)；网关请求路径在每次取账号时从已启用且未过期的
-// 静态代理中随机挑选一个替换 account.Proxy。
+// 回查代理的路径继续使用它)；网关请求和智慧测试路径在每次取账号时从已启用且
+// 未过期的静态代理中随机挑选一个替换 account.Proxy。
 const AccountRandomProxyExtraKey = "proxy_random_per_request"
 
 const (

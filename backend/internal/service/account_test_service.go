@@ -145,6 +145,7 @@ type AccountTestService struct {
 	astraGatewayTestMu        sync.Mutex
 	astraGatewayLastTest      *AstraGatewayTestResult
 	accountRepo               AccountRepository
+	schedulerSnapshot         *SchedulerSnapshotService
 	geminiTokenProvider       *GeminiTokenProvider
 	claudeTokenProvider       *ClaudeTokenProvider
 	grokTokenProvider         *GrokTokenProvider
@@ -378,6 +379,8 @@ func (s *AccountTestService) TestAccountConnection(c *gin.Context, accountID int
 		return s.sendErrorAndEnd(c, "Account not found")
 	}
 	if options, ok := pelicanTestOptionsFromContext(ctx); ok {
+		// 智慧测试与网关共用随机代理池，每次测试独立选取，绑定代理仍作为兜底。
+		account = s.schedulerSnapshot.ApplyRandomProxy(ctx, account)
 		if options.testChannel == "bps" {
 			model := strings.TrimSpace(modelID)
 			if model == "" {

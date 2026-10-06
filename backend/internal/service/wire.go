@@ -287,6 +287,7 @@ func ProvideAccountTestService(
 	openAIGatewayService *OpenAIGatewayService,
 	settingService *SettingService,
 	pluginManager *PluginManager,
+	schedulerSnapshot *SchedulerSnapshotService,
 ) *AccountTestService {
 	service := NewAccountTestService(
 		accountRepo,
@@ -299,6 +300,7 @@ func ProvideAccountTestService(
 		tlsFPProfileService,
 	)
 	service.agentIdentityWS = openAIGatewayService
+	service.schedulerSnapshot = schedulerSnapshot
 	service.SetOpenAIGatewayService(openAIGatewayService)
 	service.SetSettingService(settingService)
 	service.SetPluginManager(pluginManager)

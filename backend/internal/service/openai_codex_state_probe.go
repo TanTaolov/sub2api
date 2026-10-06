@@ -540,6 +540,8 @@ func (s *AccountTestService) probeOpenAICodexState(ctx context.Context, accountI
 		return nil, ErrOpenAICodexStateProbeBusy
 	}
 	defer release()
+	// 一次探针只选取一次随机代理，打票和续接两发必须保持同一出站代理。
+	account = s.schedulerSnapshot.ApplyRandomProxy(ctx, account)
 	return s.openaiGatewayService.probeOpenAICodexState(ctx, account, model, ignoreBPS), nil
 }
 
