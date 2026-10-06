@@ -4750,6 +4750,14 @@ const form = reactive({
 
 const randomProxyMode = ref(false)
 
+// 随机代理：每条请求随机选择出站代理，proxy_id 作为兜底绑定代理
+const withRandomProxyFlag = <T extends CreateAccountRequest>(payload: T): T => {
+  if (!randomProxyMode.value || authStore.isObserver) return payload
+  return { ...payload, random_proxy: true }
+}
+const createAccountWithProxyMode = (payload: CreateAccountRequest) =>
+  adminAPI.accounts.create(withRandomProxyFlag(payload))
+
 // Helper to check if current type needs OAuth flow
 const isOAuthFlow = computed(() => {
   // Antigravity upstream 类型不需要 OAuth 流程
@@ -5268,7 +5276,7 @@ const ensureAntigravityMixedChannelConfirmed = async (onConfirm: () => Promise<v
 const submitCreateAccount = async (payload: CreateAccountRequest) => {
   submitting.value = true
   try {
-    const account = await adminAPI.accounts.create(withAntigravityConfirmFlag(payload))
+    const account = await adminAPI.accounts.create(withAntigravityConfirmFlag(withRandomProxyFlag(payload)))
     const modelMapping = payload.credentials.model_mapping
     const hasConcreteMappedTarget = payload.type === 'apikey' &&
       typeof modelMapping === 'object' &&
@@ -6106,7 +6114,7 @@ const handleGrokValidateRT = async (refreshTokenInput: string) => {
           return
         }
 
-        await adminAPI.accounts.create({
+        await createAccountWithProxyMode({
           name: accountName,
           notes: form.notes,
           platform: 'grok',
@@ -6283,7 +6291,7 @@ const handleGrokAuthorizePassword = async (emailPasswordInput: string) => {
           return
         }
 
-        await adminAPI.accounts.create({
+        await createAccountWithProxyMode({
           name: accountName,
           notes: form.notes,
           platform: 'grok',
@@ -6399,7 +6407,7 @@ const handleOpenAIExchange = async (authCode: string) => {
     }
 
     if (shouldCreateOpenAI) {
-      const account = await adminAPI.accounts.create({
+      const account = await createAccountWithProxyMode({
         name: form.name,
         notes: form.notes,
         platform: 'openai',
@@ -6733,7 +6741,7 @@ const handleOpenAIBatchRT = async (refreshTokenInput: string, clientId?: string)
         const accountName = refreshTokens.length > 1 ? `${baseName} #${i + 1}` : baseName
 
         if (shouldCreateOpenAI) {
-          const account = await adminAPI.accounts.create({
+          const account = await createAccountWithProxyMode({
             name: accountName,
             notes: form.notes,
             platform: 'openai',
@@ -6851,7 +6859,7 @@ const handleAntigravityValidateRT = async (refreshTokenInput: string) => {
           expires_at: form.expires_at,
           auto_pause_on_expired: autoPauseOnExpired.value
         })
-        await adminAPI.accounts.create(createPayload)
+        await createAccountWithProxyMode(createPayload)
         successCount++
       } catch (error: any) {
         failedCount++
@@ -7208,7 +7216,7 @@ const handleCookieAuth = async (sessionKey: string) => {
           credentials.temp_unschedulable_rules = tempUnschedPayload
         }
 
-        await adminAPI.accounts.create({
+        await createAccountWithProxyMode({
           name: accountName,
           notes: form.notes,
           platform: form.platform,

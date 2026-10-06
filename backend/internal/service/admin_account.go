@@ -568,6 +568,13 @@ func (s *adminServiceImpl) CreateAccount(ctx context.Context, input *CreateAccou
 	if err != nil {
 		return nil, err
 	}
+	// 随机代理开关只能经 random_proxy 字段设置(需保证存在兜底绑定代理)。
+	if account.Extra != nil {
+		delete(account.Extra, AccountRandomProxyExtraKey)
+	}
+	if err := s.applyAccountRandomProxyMode(ctx, account, input.RandomProxy); err != nil {
+		return nil, err
+	}
 	if err := s.validateExcelBPS403GroupSettings(ctx, account); err != nil {
 		return nil, err
 	}
@@ -735,6 +742,8 @@ func (s *adminServiceImpl) UpdateAccount(ctx context.Context, id int64, input *U
 		delete(normalizedExtra, OllamaCloudUsageSnapshotExtraKey)
 		delete(normalizedExtra, OpenCodeGoUsageAutoRefreshExtraKey)
 		delete(normalizedExtra, OpenCodeGoUsageSnapshotExtraKey)
+		// 随机代理开关只能经 random_proxy 字段修改(需保证存在兜底绑定代理)。
+		delete(normalizedExtra, AccountRandomProxyExtraKey)
 		// 保留配额用量和专用服务受管字段，防止普通账号编辑意外覆盖。
 		for _, key := range []string{
 			"quota_used",
@@ -752,6 +761,7 @@ func (s *adminServiceImpl) UpdateAccount(ctx context.Context, id int64, input *U
 			OpenAIAutoResetCreditStateExtraKey,
 			OpenCodeGoUsageAutoRefreshExtraKey,
 			OpenCodeGoUsageSnapshotExtraKey,
+			AccountRandomProxyExtraKey,
 		} {
 			if v, ok := account.Extra[key]; ok {
 				normalizedExtra[key] = v
@@ -812,6 +822,7 @@ func (s *adminServiceImpl) UpdateAccount(ctx context.Context, id int64, input *U
 	}
 	// 影子代理恒继承母账号(由 propagateProxyToShadows 同步),不接受独立编辑——外审 B/P1;
 	// 否则要等母账号下次改 proxy 才被覆盖,期间影子会出现"有时继承、有时独立"的漂移。
+	proxyBindingChanged := false
 	if input.ProxyID != nil && !account.IsCredentialShadow() {
 		// 0 表示清除代理（前端发送 0 而不是 null 来表达清除意图）
 		if *input.ProxyID == 0 {
@@ -820,6 +831,20 @@ func (s *adminServiceImpl) UpdateAccount(ctx context.Context, id int64, input *U
 			account.ProxyID = input.ProxyID
 		}
 		account.Proxy = nil // 清除关联对象，防止 GORM Save 时根据 Proxy.ID 覆盖 ProxyID
+		proxyBindingChanged = true
+	}
+	// 显式指定代理/无代理而未声明随机时，视为关闭随机代理。
+	randomProxy := input.RandomProxy
+	if randomProxy == nil && input.ProxyID != nil {
+		disabled := false
+		randomProxy = &disabled
+	}
+	previousProxyID := account.ProxyID
+	if err := s.applyAccountRandomProxyMode(ctx, account, randomProxy); err != nil {
+		return nil, err
+	}
+	if !int64PtrEqual(previousProxyID, account.ProxyID) {
+		proxyBindingChanged = true
 	}
 	if !reflect.DeepEqual(previousProbeIdentity, upstreamBillingProbeIdentity(account)) && account.Extra != nil {
 		delete(account.Extra, UpstreamBillingProbeExtraKey)
@@ -962,7 +987,7 @@ func (s *adminServiceImpl) UpdateAccount(ctx context.Context, id int64, input *U
 
 	// 将 proxy 变更传播到 spark 影子账号（同步；Update 内部已触发调度快照）。
 	// 影子自身 proxy 不可独立编辑(见上),故对影子的更新不触发传播。
-	if input.ProxyID != nil && !account.IsCredentialShadow() {
+	if proxyBindingChanged && !account.IsCredentialShadow() {
 		if err := s.propagateProxyToShadows(ctx, id, account.ProxyID); err != nil {
 			return nil, err
 		}
@@ -1023,6 +1048,7 @@ func (s *adminServiceImpl) UpdateAccountExtra(ctx context.Context, id int64, upd
 	delete(updates, OllamaCloudUsageSnapshotExtraKey)
 	delete(updates, OpenCodeGoUsageAutoRefreshExtraKey)
 	delete(updates, OpenCodeGoUsageSnapshotExtraKey)
+	delete(updates, AccountRandomProxyExtraKey)
 	if _, exists := updates[openAILongContextBillingEnabledKey]; exists {
 		account, err := s.accountRepo.GetByID(ctx, id)
 		if err != nil {
@@ -1059,6 +1085,7 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 	delete(input.Extra, OllamaCloudUsageSnapshotExtraKey)
 	delete(input.Extra, OpenCodeGoUsageAutoRefreshExtraKey)
 	delete(input.Extra, OpenCodeGoUsageSnapshotExtraKey)
+	delete(input.Extra, AccountRandomProxyExtraKey)
 
 	if len(input.AccountIDs) == 0 && input.Filters != nil {
 		accountIDs, err := s.resolveBulkUpdateTargetIDs(ctx, input.Filters)
@@ -1320,6 +1347,13 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 	}
 	if input.RandomProxy {
 		repoUpdates.ProxyAssignments = randomProxyIDs
+	}
+	// 随机：开启每条请求随机代理(上面分配的代理作为兜底)；指定代理/无代理：关闭随机。
+	if input.ProxyID != nil || input.RandomProxy {
+		if repoUpdates.Extra == nil {
+			repoUpdates.Extra = make(map[string]any)
+		}
+		repoUpdates.Extra[AccountRandomProxyExtraKey] = input.RandomProxy
 	}
 	if input.Concurrency != nil {
 		repoUpdates.Concurrency = input.Concurrency
@@ -1703,6 +1737,67 @@ func (s *adminServiceImpl) CreateShadow(ctx context.Context, parentID int64, opt
 // Calling this for a non-parent account is a harmless no-op.
 func (s *adminServiceImpl) propagateProxyToShadows(ctx context.Context, parentID int64, proxyID *int64) error {
 	return propagateAccountProxyToShadows(ctx, s.accountRepo, parentID, proxyID)
+}
+
+// applyAccountRandomProxyMode 落地"每条请求随机代理"开关(enabled 为 nil 表示不改)。
+// 开启时账号必须绑定一个真实代理作为兜底：未绑定时从已启用且未过期的代理中随机挑一个。
+// 影子账号代理恒继承母账号，不能单独开启。
+func (s *adminServiceImpl) applyAccountRandomProxyMode(ctx context.Context, account *Account, enabled *bool) error {
+	if account == nil || enabled == nil {
+		return nil
+	}
+	if !*enabled {
+		if account.Extra != nil {
+			delete(account.Extra, AccountRandomProxyExtraKey)
+		}
+		return nil
+	}
+	if account.IsCredentialShadow() {
+		return infraerrors.Newf(http.StatusBadRequest, "SPARK_SHADOW_PROXY_INHERITED",
+			"spark shadow account %d proxy is inherited from its parent; manage random proxy on the parent account", account.ID)
+	}
+	if account.ProxyID == nil || *account.ProxyID <= 0 {
+		proxyID, err := s.pickRandomEligibleProxyID(ctx)
+		if err != nil {
+			return err
+		}
+		account.ProxyID = &proxyID
+		account.Proxy = nil
+	}
+	if account.Extra == nil {
+		account.Extra = make(map[string]any)
+	}
+	account.Extra[AccountRandomProxyExtraKey] = true
+	return nil
+}
+
+// pickRandomEligibleProxyID 从已启用且未过期的静态代理中随机挑选一个 ID。
+func (s *adminServiceImpl) pickRandomEligibleProxyID(ctx context.Context) (int64, error) {
+	if s.proxyRepo == nil {
+		return 0, errors.New("proxy repository unavailable")
+	}
+	proxies, err := s.proxyRepo.ListActive(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("list active proxies for random proxy: %w", err)
+	}
+	now := time.Now()
+	eligible := make([]int64, 0, len(proxies))
+	for i := range proxies {
+		if proxies[i].IsActive() && !proxies[i].IsExpired(now) {
+			eligible = append(eligible, proxies[i].ID)
+		}
+	}
+	if len(eligible) == 0 {
+		return 0, infraerrors.BadRequest("RANDOM_PROXY_EMPTY", "no active unexpired proxies available")
+	}
+	return eligible[rand.IntN(len(eligible))], nil
+}
+
+func int64PtrEqual(a, b *int64) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return *a == *b
 }
 
 // propagateAccountProxyToShadows 把母账号的 proxy 同步到其所有 spark 影子(影子 proxy 恒继承母账号)。

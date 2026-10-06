@@ -4431,7 +4431,8 @@ const syncFormFromAccount = (newAccount: Account | null) => {
   form.name = newAccount.name
   form.notes = newAccount.notes || ''
   form.proxy_id = newAccount.proxy_id
-  randomProxyMode.value = false
+  // 每条请求随机代理：proxy_id 为兜底绑定代理
+  randomProxyMode.value = (newAccount.extra as Record<string, unknown> | undefined)?.proxy_random_per_request === true
   form.concurrency = newAccount.concurrency
   form.load_factor = newAccount.load_factor ?? null
   form.priority = newAccount.priority
@@ -5543,6 +5544,9 @@ const handleSubmit = async () => {
   try {
     if (authStore.isObserver) {
       delete updatePayload.proxy_id
+    } else if (!isSparkShadow.value) {
+      // 随机代理：每条请求随机选择出站代理，proxy_id 作为兜底绑定代理
+      updatePayload.random_proxy = randomProxyMode.value
     }
     // 后端期望 proxy_id: 0 表示清除代理，而不是 null
     if (updatePayload.proxy_id === null) {

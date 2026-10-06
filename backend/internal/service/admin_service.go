@@ -423,6 +423,7 @@ type CreateAccountInput struct {
 	Credentials         map[string]any
 	Extra               map[string]any
 	ProxyID             *int64
+	RandomProxy         *bool // 每条请求随机代理；ProxyID 作为兜底绑定代理
 	Concurrency         int
 	Priority            int
 	RateMultiplier      *float64 // 账号计费倍率（>=0，允许 0）
@@ -455,6 +456,7 @@ type UpdateAccountInput struct {
 	Credentials         map[string]any
 	Extra               map[string]any
 	ProxyID             *int64
+	RandomProxy         *bool    // nil 不改；true 每条请求随机代理(ProxyID 为兜底绑定代理)；false 关闭
 	Concurrency         *int     // 使用指针区分"未提供"和"设置为0"
 	Priority            *int     // 使用指针区分"未提供"和"设置为0"
 	RateMultiplier      *float64 // 账号计费倍率（>=0，允许 0）
@@ -478,7 +480,7 @@ type BulkUpdateAccountsInput struct {
 	Filters             *BulkUpdateAccountFilters
 	Name                string
 	ProxyID             *int64
-	RandomProxy         bool // Pick and persist an eligible static proxy independently per account.
+	RandomProxy         bool // 启用每条请求随机代理，并为每个账号各自绑定一个兜底代理。
 	Concurrency         *int
 	Priority            *int
 	RateMultiplier      *float64 // 账号计费倍率（>=0，允许 0）

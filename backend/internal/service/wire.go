@@ -542,9 +542,11 @@ func ProvideSchedulerSnapshotService(
 	outboxRepo SchedulerOutboxRepository,
 	accountRepo AccountRepository,
 	groupRepo GroupRepository,
+	proxyRepo ProxyRepository,
 	cfg *config.Config,
 ) *SchedulerSnapshotService {
 	svc := NewSchedulerSnapshotService(cache, outboxRepo, accountRepo, groupRepo, cfg)
+	svc.SetRandomProxySource(proxyRepo)
 	svc.Start()
 	return svc
 }

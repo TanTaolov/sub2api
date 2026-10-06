@@ -1607,6 +1607,8 @@ export interface CreateAccountRequest {
   credentials: Record<string, unknown>
   extra?: Record<string, unknown>
   proxy_id?: number | null
+  // Pick a random proxy for every request; proxy_id is the fallback binding.
+  random_proxy?: boolean
   concurrency?: number
   load_factor?: number | null
   priority?: number
@@ -1636,6 +1638,8 @@ export interface UpdateAccountRequest {
   credentials?: Record<string, unknown>
   extra?: Record<string, unknown>
   proxy_id?: number | null
+  // Pick a random proxy for every request; proxy_id is the fallback binding.
+  random_proxy?: boolean
   concurrency?: number
   load_factor?: number | null
   priority?: number

@@ -240,7 +240,9 @@ const selectedProxy = computed(() => {
 const selectedLabel = computed(() => {
   if (props.randomMode) {
     const name = selectedProxy.value?.name
-    return name ? `${t('admin.accounts.randomProxy')} · ${name}` : t('admin.accounts.randomProxy')
+    return name
+      ? `${t('admin.accounts.randomProxy')} · ${t('admin.accounts.randomProxyFallback', { name })}`
+      : t('admin.accounts.randomProxy')
   }
   if (!selectedProxy.value) {
     return t('admin.accounts.noProxy')

@@ -143,6 +143,26 @@ type SchedulerSnapshotService struct {
 	fullRebuildRequested uint64
 	fullRebuildCompleted uint64
 	fullRebuildLastErr   error
+
+	// randomProxies 为启用"每条请求随机代理"的账号在取账号时挑选出站代理。
+	randomProxies *accountRandomProxyPool
+}
+
+// SetRandomProxySource 注入随机代理的候选来源；未注入时随机代理账号回退到绑定代理。
+func (s *SchedulerSnapshotService) SetRandomProxySource(repo ProxyRepository) {
+	if s == nil {
+		return
+	}
+	s.randomProxies = newAccountRandomProxyPool(repo)
+}
+
+// ApplyRandomProxy 为启用随机代理的账号替换本次请求的出站代理(nil 安全)。
+// account 必须是本次请求独占的对象。
+func (s *SchedulerSnapshotService) ApplyRandomProxy(ctx context.Context, account *Account) *Account {
+	if s == nil {
+		return account
+	}
+	return s.randomProxies.apply(ctx, account)
 }
 
 func NewSchedulerSnapshotService(
@@ -286,7 +306,7 @@ func (s *SchedulerSnapshotService) GetAccount(ctx context.Context, accountID int
 		if err != nil {
 			logger.LegacyPrintf("service.scheduler_snapshot", "[Scheduler] account cache read failed: id=%d err=%v", accountID, err)
 		} else if account != nil {
-			return account, nil
+			return s.ApplyRandomProxy(ctx, account), nil
 		}
 	}
 
@@ -295,7 +315,11 @@ func (s *SchedulerSnapshotService) GetAccount(ctx context.Context, accountID int
 	}
 	fallbackCtx, cancel := s.withFallbackTimeout(ctx)
 	defer cancel()
-	return s.accountRepo.GetByID(fallbackCtx, accountID)
+	account, err := s.accountRepo.GetByID(fallbackCtx, accountID)
+	if err != nil || account == nil {
+		return account, err
+	}
+	return s.ApplyRandomProxy(ctx, account), nil
 }
 
 // GetGroupByID 获取分组信息（供调度器使用）

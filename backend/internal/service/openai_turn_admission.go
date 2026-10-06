@@ -202,7 +202,10 @@ func openAITurnRouteFingerprint(a *Account) [32]byte {
 		}
 	}
 	proxyURL := ""
-	if a.Proxy != nil {
+	if a.IsRandomProxyPerRequest() {
+		// 随机代理账号每条请求的出站代理本就不同，不能视为绑定变化。
+		proxyURL = "random:" + AccountRandomProxyExtraKey
+	} else if a.Proxy != nil {
 		proxyURL = a.Proxy.URL()
 	}
 	routeCredentials := make(map[string]any)
@@ -321,6 +324,16 @@ func (s *OpenAIGatewayService) latestOpenAITurnAccountForGroup(
 	if raw, ok := s.openaiAccountRuntimeBlockUntil.Load(latest.ID); ok {
 		if until, valid := raw.(time.Time); valid && time.Now().Before(until) {
 			return nil, denyOpenAITurn("account_runtime_blocked")
+		}
+	}
+	// 权威回读得到的是绑定代理；随机代理账号沿用本次请求选号时已随机出的代理，
+	// 保证同一条请求内出站一致。latest 来自本地缓存克隆或数据库新读，可直接替换。
+	if authoritativeRead && latest != selected && latest.IsRandomProxyPerRequest() {
+		if selected.IsRandomProxyPerRequest() && selected.Proxy != nil && latest.ProxyID != nil {
+			proxy := *selected.Proxy
+			latest.Proxy = &proxy
+		} else {
+			latest = s.schedulerSnapshot.ApplyRandomProxy(ctx, latest)
 		}
 	}
 	return latest, nil
