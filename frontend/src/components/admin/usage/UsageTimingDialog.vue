@@ -49,7 +49,7 @@
           </div>
         </section>
         <section v-for="attempt in trace.attempts" :key="attempt.number" class="rounded-xl border border-gray-200 p-4 dark:border-dark-600">
-          <h4 class="font-semibold">{{ attemptTitle(attempt) }} · {{ t('requestTiming.account') }} #{{ attempt.account_id }} · {{ attempt.proxy_id > 0 ? `${t('requestTiming.proxy')} #${attempt.proxy_id}` : t('requestTiming.direct') }}</h4>
+          <h4 class="font-semibold">{{ attemptTitle(attempt) }} · {{ accountLabel(attempt.account_id) }} · {{ proxyLabel(attempt.proxy_id) }}</h4>
           <div class="mt-3 grid gap-x-8 gap-y-3 text-sm md:grid-cols-2">
             <div v-for="row in attemptRows(attempt)" :key="row.name" class="flex justify-between gap-4"><span class="text-gray-500">{{ row.name }}</span><span class="text-right font-medium tabular-nums" :class="TIMING_TEXT[row.health]">{{ row.value }}<span v-if="row.health !== 'neutral'" class="mt-0.5 block text-[10px] font-normal">{{ healthLabel(row.health) }}</span></span></div>
           </div>
@@ -75,6 +75,10 @@ const props = defineProps<{ record: AdminUsageLog | null }>()
 defineEmits<{ close: [] }>()
 const { t } = useI18n()
 const traces = ref<RequestTiming[]>([]), selected = ref(0), loading = ref(false), error = ref(false), retention = ref(30)
+const accountNames = ref<Record<string, string>>({}), proxyNames = ref<Record<string, string>>({})
+// 优先显示账号 / 代理名称；名称缺失（旧后端或查询失败）时回退为 ID。
+const accountLabel = (id: number) => `${t('requestTiming.account')} ${accountNames.value[String(id)] || `#${id}`}`
+const proxyLabel = (id: number) => id > 0 ? `${t('requestTiming.proxy')} ${proxyNames.value[String(id)] || `#${id}`}` : t('requestTiming.direct')
 let controller: AbortController | undefined
 const trace = computed(() => traces.value[selected.value])
 const label = (name: string) => t(`requestTiming.fields.${name}`)
@@ -160,10 +164,10 @@ function attemptRows(a: TimingAttempt): DetailRow[] {
 }
 async function load() {
   controller?.abort(); const current = new AbortController(); controller = current
-  traces.value = []; selected.value = 0; error.value = false
+  traces.value = []; accountNames.value = {}; proxyNames.value = {}; selected.value = 0; error.value = false
   if (!props.record) { loading.value = false; return }
   loading.value = true
-  try { const data = await (observerMode ? observerUsageAPI.getTiming : getUsageTiming)(props.record.id, current.signal); if (controller === current) { traces.value = data.traces; retention.value = data.retention_days } }
+  try { const data = await (observerMode ? observerUsageAPI.getTiming : getUsageTiming)(props.record.id, current.signal); if (controller === current) { traces.value = data.traces; accountNames.value = data.account_names ?? {}; proxyNames.value = data.proxy_names ?? {}; retention.value = data.retention_days } }
   catch { if (!current.signal.aborted && controller === current) error.value = true }
   finally { if (controller === current) loading.value = false }
 }

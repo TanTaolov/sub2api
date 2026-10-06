@@ -109,5 +109,11 @@ func (h *UsageHandler) ObserverTiming(c *gin.Context) {
 		response.ErrorFrom(c, err)
 		return
 	}
-	response.Success(c, gin.H{"traces": traces, "retention_days": 30})
+	accountNames, proxyNames := h.usageService.TimingNames(c.Request.Context(), traces)
+	response.Success(c, gin.H{
+		"traces":         traces,
+		"retention_days": 30,
+		"account_names":  accountNames,
+		"proxy_names":    proxyNames,
+	})
 }

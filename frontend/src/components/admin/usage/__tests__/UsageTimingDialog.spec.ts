@@ -62,6 +62,25 @@ describe('Usage timing details', () => {
     expect(wrapper.emitted('close')).toHaveLength(1)
     wrapper.unmount()
   })
+  it('shows account and proxy names and falls back to the ID when the name is unavailable', async () => {
+    const attempt = (number: number, proxyID: number, accountID = 463) => ({ kind: 'egress', number, account_id: accountID, proxy_id: proxyID, start_ms: 0, end_ms: 10, status: 200, reused: true, body_eof: true, request_bytes: 1, response_bytes: 1, events: {} })
+    mocks.get.mockResolvedValue({ retention_days: 30, account_names: { 463: 'Claude-主号' }, proxy_names: { 18: '美国-01' }, traces: [{
+      trace_id: 'trace', started_at: '2026-09-23', total_ms: 10, status: 200, body_bytes: 1, body_complete: true, body_read_ms: 1,
+      downstream_bytes: 1, downstream_write_ms: 1, downstream_error: false, client_disconnect: false, canceled: false,
+      events: {}, spans: [], attempts: [attempt(1, 18), attempt(2, 9, 7), attempt(3, 0)]
+    }] })
+    const wrapper = mount(UsageTimingDialog, { props: { record: row(1) }, ...options })
+    await flushPromises()
+    const titles = wrapper.findAll('h4').map(n => n.text())
+    expect(titles.some(text => text.includes('requestTiming.account Claude-主号'))).toBe(true)
+    expect(titles.some(text => text.includes('requestTiming.account #7'))).toBe(true)
+    expect(titles.some(text => text.includes('#463'))).toBe(false)
+    expect(titles.some(text => text.includes('requestTiming.proxy 美国-01'))).toBe(true)
+    expect(titles.some(text => text.includes('requestTiming.proxy #9'))).toBe(true)
+    expect(titles.some(text => text.includes('requestTiming.direct'))).toBe(true)
+    expect(titles.some(text => text.includes('#18'))).toBe(false)
+    wrapper.unmount()
+  })
 
 })
 

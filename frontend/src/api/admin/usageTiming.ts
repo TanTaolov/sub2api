@@ -11,7 +11,9 @@ export interface RequestTiming {
   downstream_bytes: number; downstream_write_ms: number; downstream_error: boolean; ttft_mode?: string; terminal?: string
   events: Record<string, number>; spans: TimingSpan[]; attempts: TimingAttempt[]
 }
-export async function getUsageTiming(id: number, signal?: AbortSignal): Promise<{ traces: RequestTiming[]; retention_days: number }> {
+// account_names / proxy_names 的键为账号 / 代理 ID（JSON 对象键为字符串），缺失时前端回退显示 ID。
+export interface UsageTimingResponse { traces: RequestTiming[]; retention_days: number; account_names?: Record<string, string>; proxy_names?: Record<string, string> }
+export async function getUsageTiming(id: number, signal?: AbortSignal): Promise<UsageTimingResponse> {
   const { data } = await apiClient.get(`/admin/usage/${id}/timing`, { signal })
   return data
 }
