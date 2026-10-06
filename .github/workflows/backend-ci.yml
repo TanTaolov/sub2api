@@ -15,6 +15,7 @@ jobs:
       - name: Check deployment scripts
         run: |
           /bin/bash -n deploy/install.sh deploy/install-mihomo-codex.sh deploy/migrate-mihomo-managed.sh
+          /bin/bash -n deploy/install-prism-adapter.sh
           /bin/bash -n deploy/apple-container.sh
           /bin/bash deploy/tests/apple-container-test.sh
           /bin/sh deploy/tests/docker-compose-security-test.sh

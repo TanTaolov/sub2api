@@ -88,6 +88,8 @@ PRISM_ADAPTER_MAX_SESSIONS=1
 PRISM_ADAPTER_SESSION_TTL_SECONDS=300
 ```
 
+以上步骤可由 `sudo bash deploy/install-prism-adapter.sh` 完成：在暂存目录建 venv、安装固定 wheel 与 Playwright 预构建 Chromium、配置 sandbox helper，首次生成桥接密钥和环境文件，然后替换目录、启动并检查 `/health`，失败时回滚到上一份安装。重复执行即升级，状态目录不会被复制或清空。主服务默认不重启，需要时设置 `PRISM_RESTART_GATEWAY=yes`；其余可调变量见脚本开头。
+
 安装 `sub2api-prism-adapter.service`，将 `sub2api-prism.conf` 放入主服务的 drop-in 目录，然后 reload/restart。主服务重启需要部署授权和二进制回滚备份。运行目录、状态目录权限与现有服务用户应对应；不要把 env 文件提交到 Git。
 
 `/health` 只证明 HTTP 进程可用，不证明 OAuth 登录、浏览器 sandbox 或模型可调用。服务模板限制 CPU 为一个核心、内存为 900 MiB、禁止 swap；实际资源需求仍需观测。
