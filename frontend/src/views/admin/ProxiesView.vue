@@ -279,6 +279,21 @@
             </span>
           </template>
 
+          <template #cell-enabled="{ row }">
+            <span
+              class="inline-flex items-center"
+              :class="proxyStatusToggleDisabled(row) ? 'opacity-50' : ''"
+            >
+              <Toggle
+                :model-value="row.status === 'active'"
+                :disabled="proxyStatusToggleDisabled(row)"
+                :title="proxyStatusToggleTitle(row)"
+                :aria-label="proxyStatusToggleTitle(row)"
+                @update:model-value="handleToggleProxyStatus(row, $event)"
+              />
+            </span>
+          </template>
+
           <template #cell-actions="{ row }">
             <div class="flex items-center gap-1">
               <button
@@ -929,6 +944,7 @@ import ProxyQualityReportDialog from '@/components/admin/proxy/ProxyQualityRepor
 import Select from '@/components/common/Select.vue'
 import ProxyAdBanner from '@/components/common/ProxyAdBanner.vue'
 import Icon from '@/components/icons/Icon.vue'
+import Toggle from '@/components/common/Toggle.vue'
 import PlatformTypeBadge from '@/components/common/PlatformTypeBadge.vue'
 import { useClipboard } from '@/composables/useClipboard'
 import { useSwipeSelect } from '@/composables/useSwipeSelect'
@@ -974,6 +990,7 @@ const columns = computed<Column[]>(() => [
   { key: 'expiry', label: t('admin.proxies.columns.expiry'), sortable: true },
   { key: 'created_at', label: t('admin.proxies.columns.createdAt'), sortable: true },
   { key: 'status', label: t('admin.proxies.columns.status'), sortable: true },
+  { key: 'enabled', label: t('admin.proxies.columns.enabled'), sortable: false },
   { key: 'actions', label: t('admin.proxies.columns.actions'), sortable: false }
 ])
 
@@ -1040,6 +1057,7 @@ const submitting = ref(false)
 const exportingData = ref(false)
 const testingProxyIds = ref<Set<number>>(new Set())
 const qualityCheckingProxyIds = ref<Set<number>>(new Set())
+const togglingProxyStatusIds = reactive(new Set<number>())
 const batchTesting = ref(false)
 const batchQualityChecking = ref(false)
 const proxyTableRef = ref<HTMLElement | null>(null)
@@ -1452,6 +1470,33 @@ const handleUpdateProxy = async () => {
     console.error('Error updating proxy:', error)
   } finally {
     submitting.value = false
+  }
+}
+
+const proxyStatusToggleDisabled = (proxy: Proxy): boolean =>
+  proxy.status === 'expired' || togglingProxyStatusIds.has(proxy.id)
+
+const proxyStatusToggleTitle = (proxy: Proxy): string => {
+  if (proxy.status === 'expired') return t('admin.proxies.expiredCannotEnable')
+  return proxy.status === 'active' ? t('admin.proxies.disableProxy') : t('admin.proxies.enableProxy')
+}
+
+const handleToggleProxyStatus = async (proxy: Proxy, enabled: boolean) => {
+  if (proxy.status === 'expired') return
+  const nextStatus: 'active' | 'inactive' = enabled ? 'active' : 'inactive'
+  if (proxy.status === nextStatus || togglingProxyStatusIds.has(proxy.id)) return
+  togglingProxyStatusIds.add(proxy.id)
+  try {
+    const updated = await adminAPI.proxies.toggleStatus(proxy.id, nextStatus)
+    proxy.status = updated?.status ?? nextStatus
+    appStore.showSuccess(
+      enabled ? t('admin.proxies.proxyEnabled') : t('admin.proxies.proxyDisabled')
+    )
+  } catch (error: any) {
+    appStore.showError(error.response?.data?.detail || t('admin.proxies.failedToUpdate'))
+    console.error('Error toggling proxy status:', error)
+  } finally {
+    togglingProxyStatusIds.delete(proxy.id)
   }
 }
 
