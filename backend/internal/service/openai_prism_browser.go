@@ -207,59 +207,6 @@ func prismBrowserAdapterURL(baseURL string) (string, error) {
 	return parsed.String(), nil
 }
 
-// PrismBrowserState enumerates the gateway-side reasons the Prism path can be
-// unavailable before a request is ever sent. It mirrors the admission order in
-// callPrismBrowserForCaller, so the operations page reports the same first
-// failure an operator would read in the gateway log.
-type PrismBrowserState string
-
-const (
-	PrismBrowserStateDisabled        PrismBrowserState = "disabled"
-	PrismBrowserStateEndpointInvalid PrismBrowserState = "endpoint_invalid"
-	PrismBrowserStateKeyMissing      PrismBrowserState = "key_missing"
-	PrismBrowserStateReady           PrismBrowserState = "ready"
-)
-
-// PrismBrowserStatusView is the read-only gateway-side Prism configuration shown
-// to administrators. The bridge key is reported as a boolean only: the adapter
-// secret is never returned, logged, or cached.
-type PrismBrowserStatusView struct {
-	Enabled          bool              `json:"enabled"`
-	BaseURL          string            `json:"base_url"`
-	Endpoint         string            `json:"endpoint"`
-	APIKeyConfigured bool              `json:"api_key_configured"`
-	Models           []string          `json:"models"`
-	State            PrismBrowserState `json:"state"`
-}
-
-// PrismBrowserStatus reports the effective Prism adapter contract for this
-// process. The values are read at startup, so a configuration change needs a
-// restart; this view never probes the adapter and never claims it is healthy.
-func (s *OpenAIGatewayService) PrismBrowserStatus() PrismBrowserStatusView {
-	view := PrismBrowserStatusView{Models: PrismBrowserSupportedModels(), State: PrismBrowserStateDisabled}
-	if s == nil || s.cfg == nil {
-		return view
-	}
-	view.Enabled = s.cfg.Gateway.PrismBrowser.Enabled
-	view.BaseURL = strings.TrimSpace(s.cfg.Gateway.PrismBrowser.BaseURL)
-	view.APIKeyConfigured = strings.TrimSpace(s.cfg.Gateway.PrismBrowser.APIKey) != ""
-	if !view.Enabled {
-		return view
-	}
-	endpoint, err := prismBrowserAdapterURL(view.BaseURL)
-	if err != nil {
-		view.State = PrismBrowserStateEndpointInvalid
-		return view
-	}
-	view.Endpoint = endpoint
-	if !view.APIKeyConfigured {
-		view.State = PrismBrowserStateKeyMissing
-		return view
-	}
-	view.State = PrismBrowserStateReady
-	return view
-}
-
 // prismBrowserAdapterMisconfigured reports the adapter's own authentication and
 // routing failures: the gateway and adapter disagree on the bridge key or path.
 // Passing those statuses through would tell the client its API key was rejected.

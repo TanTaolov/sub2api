@@ -13,21 +13,12 @@ import (
 type AccountOpsHandler struct {
 	svc     *service.AccountOpsService
 	email   *service.EmailService
-	gateway *service.OpenAIGatewayService
 }
 
 func NewAccountOpsHandler(svc *service.AccountOpsService, email *service.EmailService) *AccountOpsHandler {
 	return &AccountOpsHandler{svc: svc, email: email}
 }
 
-// SetOpenAIGatewayService injects the service that owns the Prism adapter
-// configuration. It is attached after construction, matching the account
-// handler, so no generated wire file has to change.
-func (h *AccountOpsHandler) SetOpenAIGatewayService(gateway *service.OpenAIGatewayService) {
-	if h != nil {
-		h.gateway = gateway
-	}
-}
 func (h *AccountOpsHandler) GetConfig(c *gin.Context) {
 	cfg, err := h.svc.GetConfig(c.Request.Context())
 	if err != nil {
@@ -84,18 +75,6 @@ func (h *AccountOpsHandler) List(c *gin.Context) {
 		events = events[:limit]
 	}
 	response.Success(c, gin.H{"items": events, "has_more": more})
-}
-
-// PrismStatus reports the gateway-side Prism adapter configuration shown in
-// 智能运维. It is a read-only snapshot of startup configuration: it never probes
-// the adapter, never replays a request, and never returns the bridge key.
-// GET /api/v1/admin/account-ops/prism/status
-func (h *AccountOpsHandler) PrismStatus(c *gin.Context) {
-	if h == nil || h.gateway == nil {
-		response.Error(c, http.StatusServiceUnavailable, "Prism status unavailable")
-		return
-	}
-	response.Success(c, h.gateway.PrismBrowserStatus())
 }
 
 func (h *AccountOpsHandler) BalanceAccounts(c *gin.Context) {

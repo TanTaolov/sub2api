@@ -18,7 +18,6 @@ import misc from './misc'
 import requestTiming from './requestTiming'
 
 import autoConfig from './autoConfig'
-import prismStatus from './prismStatus'
 
 export default {
   autoConfig,
@@ -30,7 +29,6 @@ export default {
   pelicanTests,
   tokenGuardV2,
   requestTiming,
-  prismStatus,
   ...landing,
   ...common,
   ...dashboard,

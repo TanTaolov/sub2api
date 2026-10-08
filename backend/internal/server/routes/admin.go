@@ -827,8 +827,6 @@ func registerScheduledTestRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 	admin.PUT("/account-ops/rules/:id", h.Admin.AccountOps.SaveRule)
 	admin.DELETE("/account-ops/rules/:id", h.Admin.AccountOps.DeleteRule)
 	admin.GET("/account-ops/alerts", h.Admin.AccountOps.List)
-	// 智能运维 → Prism 状态：网关侧适配器配置与模型范围（只读，不返回桥接密钥）
-	admin.GET("/account-ops/prism/status", h.Admin.AccountOps.PrismStatus)
 	admin.GET("/account-ops/balance-accounts", h.Admin.AccountOps.BalanceAccounts)
 	admin.GET("/account-ops/threshold-accounts", h.Admin.AccountOps.ThresholdAccounts)
 	admin.POST("/account-ops/webhooks/:id/test", h.Admin.AccountOps.TestWebhook)

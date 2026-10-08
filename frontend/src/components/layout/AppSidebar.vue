@@ -301,7 +301,6 @@ const AccountOpsIcon = { render: () => h(Icon, { name: 'userCog', size: 'sm' }) 
 const TokenGuardIcon = { render: () => h(Icon, { name: 'shieldKey', size: 'sm' }) }
 const CredentialOpsIcon = { render: () => h(Icon, { name: 'credentialOps', size: 'sm' }) }
 const PelicanTestsIcon = { render: () => h(Icon, { name: 'beaker', size: 'sm' }) }
-const PrismStatusIcon = { render: () => h(Icon, { name: 'globe', size: 'sm' }) }
 const SupportTicketIcon = { render: () => h(Icon, { name: 'chat' }) }
 const SupportTicketInboxIcon = { render: () => h(Icon, { name: 'inbox' }) }
 
@@ -864,7 +863,6 @@ const adminNavItems = computed((): NavItem[] => {
       { path: '/admin/account-quality', label: t('qualityOps.title'), icon: QualityOpsIcon },
       { path: '/admin/controlled-experiments', label: t('controlledExperiments.title'), icon: QualityOpsIcon },
       { path: '/admin/account-ops', label: t('accountOps.title'), icon: AccountOpsIcon },
-      { path: '/admin/prism-status', label: t('prismStatus.title'), icon: PrismStatusIcon },
       { path: '/admin/token-guard', label: t('tokenGuard.title'), icon: TokenGuardIcon },
       { path: '/admin/token-guard-v2', label: t('tokenGuardV2.title'), icon: CredentialOpsIcon },
       { path: '/admin/pelican-tests', label: t('pelicanTests.title'), icon: PelicanTestsIcon },

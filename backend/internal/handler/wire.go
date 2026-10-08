@@ -67,7 +67,6 @@ func ProvideAdminHandlers(
 	accountHandler.SetCodexHarvestService(codexHarvest)
 	accountHandler.SetOpenAIGatewayService(openAIGatewayService)
 	accountHandler.SetOpenCodeGoUsageService(opencodeGoUsage)
-	accountOpsHandler.SetOpenAIGatewayService(openAIGatewayService)
 	return &AdminHandlers{
 		RequestCapture:         requestCaptureHandler,
 		Dashboard:              dashboardHandler,
