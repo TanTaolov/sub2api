@@ -136,6 +136,7 @@ func RegisterAdminRoutes(
 
 		// 定时测试计划
 		registerScheduledTestRoutes(admin, h)
+		registerControlledExperimentRoutes(admin, h)
 
 		// 鹈鹕测智用户展示
 		registerPelicanShowcaseRoutes(admin, h)
@@ -822,6 +823,7 @@ func registerScheduledTestRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 	admin.PUT("/account-ops/notification-settings", h.Admin.AccountOps.SaveNotificationSettings)
 	admin.PUT("/account-ops/webhooks/:id", h.Admin.AccountOps.SaveWebhook)
 	admin.DELETE("/account-ops/webhooks/:id", h.Admin.AccountOps.DeleteWebhook)
+	admin.PUT("/account-ops/rules/batch", h.Admin.AccountOps.SaveRulesBatch)
 	admin.PUT("/account-ops/rules/:id", h.Admin.AccountOps.SaveRule)
 	admin.DELETE("/account-ops/rules/:id", h.Admin.AccountOps.DeleteRule)
 	admin.GET("/account-ops/alerts", h.Admin.AccountOps.List)
@@ -876,6 +878,17 @@ func registerScheduledTestRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 
 // Admins browse the gallery through the user page. The Smart Ops page edits the gallery
 // settings and the group tests that feed it.
+func registerControlledExperimentRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
+	experiments := admin.Group("/controlled-experiments")
+	experiments.Use(h.Admin.ControlledExperiment.FullAdmin)
+	experiments.GET("/catalog", h.Admin.ControlledExperiment.Catalog)
+	experiments.GET("", h.Admin.ControlledExperiment.List)
+	experiments.POST("", h.Admin.ControlledExperiment.Create)
+	experiments.GET("/:id", h.Admin.ControlledExperiment.Report)
+	experiments.POST("/:id/start", h.Admin.ControlledExperiment.Start)
+	experiments.POST("/:id/stop", h.Admin.ControlledExperiment.Stop)
+}
+
 func registerPelicanShowcaseRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 	admin.GET("/pelican-showcase/settings", h.PelicanShowcase.GetSettings)
 	admin.PUT("/pelican-showcase/settings", h.PelicanShowcase.UpdateSettings)
