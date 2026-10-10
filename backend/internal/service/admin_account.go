@@ -1040,6 +1040,9 @@ func (s *adminServiceImpl) UpdateAccountExtra(ctx context.Context, id int64, upd
 		if err := s.validateExcelBPS403GroupSettings(ctx, &merged); err != nil {
 			return err
 		}
+		if s.excelOAuthReauth != nil {
+			updates[ExcelBPSAuthorizationPendingKey] = merged.Extra[ExcelBPSAuthorizationPendingKey]
+		}
 	}
 	updates = MergeOpenAICodexTicketExtra(updates, nil)
 	updates = sanitizedCodexFingerprintExtraUpdates(updates)
@@ -1175,6 +1178,7 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 	_, moveChanged := input.Extra[ExcelBPSAutoMoveOn403Key]
 	_, targetChanged := input.Extra[ExcelBPS403TargetGroupIDKey]
 	_, bpsChanged := input.Extra["openai_excel_bps"]
+	pendingByAccount := make(map[int64]bool)
 	_, planChanged := input.Credentials["plan_type"]
 	if moveChanged || targetChanged || bpsChanged || planChanged {
 		for _, account := range cachedTargets {
@@ -1193,6 +1197,7 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 			if err := s.validateExcelBPS403GroupSettings(ctx, &merged); err != nil {
 				return nil, err
 			}
+			pendingByAccount[account.ID] = merged.Extra[ExcelBPSAuthorizationPendingKey] == true
 		}
 	}
 	if input.ProbeEnabled != nil {
@@ -1404,6 +1409,11 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 		}
 		defer func() { _ = proxyTx.Rollback() }()
 		updateCtx = dbent.NewTxContext(ctx, proxyTx)
+	}
+	// Run bulk update for column/jsonb fields first; the BPS authorization flag must
+	// land in the same write as the other column and jsonb fields.
+	if s.excelOAuthReauth != nil && bpsChanged {
+		repoUpdates.ExcelBPSAuthorizationPending = pendingByAccount
 	}
 	// Both fixed and per-account random assignments use one repository bulk write.
 	if _, err := s.accountRepo.BulkUpdate(updateCtx, input.AccountIDs, repoUpdates); err != nil {
