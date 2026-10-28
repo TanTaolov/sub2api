@@ -301,6 +301,10 @@ func TestUpstreamChannelEntityHTTPAccountProfitPersistence(t *testing.T) {
 	var auditRaw string
 	require.NoError(t, db.QueryRow(`SELECT COALESCE(jsonb_agg(to_jsonb(a))::text,'[]') FROM audit_logs a WHERE action LIKE 'admin.upstream_channel.%'`).Scan(&auditRaw))
 	require.Contains(t, auditRaw, "filter_hash")
+	var createdAudits int
+	require.NoError(t, db.QueryRow(`SELECT count(*) FROM audit_logs WHERE action='admin.upstream_channel.post' AND status_code=200 AND (extra->>'target_channel_id')::bigint IN ($1,$2)`, a.ID, b.ID).Scan(&createdAudits))
+	require.Equal(t, 2, createdAudits, "creation audit must identify assigned immutable channel IDs")
+
 	require.NotContains(t, auditRaw, "实体备注")
 	require.NotContains(t, auditRaw, "secret-query")
 }

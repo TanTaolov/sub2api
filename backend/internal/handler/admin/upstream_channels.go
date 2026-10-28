@@ -95,6 +95,7 @@ func (h *ChannelHandler) MutateUpstreamChannel(c *gin.Context) {
 		response.Success(c, gin.H{"deleted": id})
 		return
 	}
+	middleware.SetAuditExtra(c, map[string]any{"target_channel_id": out.ID, "config_version": out.Revision})
 	response.Success(c, out)
 }
 func (h *ChannelHandler) ReadUpstreamChannelBindings(c *gin.Context) {
