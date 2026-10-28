@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestUpstreamChannelEntityValidation(t *testing.T) {
@@ -23,6 +24,19 @@ func TestUpstreamChannelEntityValidation(t *testing.T) {
 	for _, m := range []UpstreamChannelBindingsMutation{{Confirm: false, Bindings: []UpstreamChannelBinding{{AccountID: 1}}}, {Confirm: true, Bindings: make([]UpstreamChannelBinding, 101)}, {Confirm: true, Bindings: []UpstreamChannelBinding{{AccountID: 1}, {AccountID: 1}}}} {
 		require.Error(t, ValidateUpstreamChannelBindings(m))
 	}
+}
+
+func TestExplicitChannelProfitFilterNormalization(t *testing.T) {
+	now := time.Now()
+	f := UpstreamOperationsFilter{From: now.Add(-time.Hour), Until: now, Upstream: "channel:27", Dimension: "upstream", ModelScope: "public", Sort: "name", Direction: "asc", Page: 1, PageSize: 20}
+	require.NoError(t, NormalizeProfitOperationsFilter(&f))
+	require.Equal(t, int64(27), f.ChannelID)
+	require.Empty(t, f.Upstream)
+	f.Upstream = "channel:0"
+	require.Error(t, NormalizeProfitOperationsFilter(&f))
+	f.Upstream = "channel:28"
+	f.ChannelID = 27
+	require.Error(t, NormalizeProfitOperationsFilter(&f))
 }
 
 func TestExplicitChannelProfitFilterNormalization(t *testing.T) {
