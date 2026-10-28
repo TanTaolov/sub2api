@@ -95,7 +95,6 @@ func readProfitURLRemarks(ctx context.Context, tx *sql.Tx, usage json.RawMessage
 	for _, row := range visible.Members {
 		add(row.Key)
 	}
-	add(f.Upstream)
 	keys := make([]string, 0, len(out))
 	for key := range out {
 		keys = append(keys, key)

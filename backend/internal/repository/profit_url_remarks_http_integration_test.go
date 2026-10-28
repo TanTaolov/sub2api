@@ -32,9 +32,13 @@ func TestProfitURLRemarksHTTPPostgresPersistenceIdentityAuditAndConcurrency(t *t
 	var adminID, userID int64
 	require.NoError(t, db.QueryRow(`INSERT INTO users(email,password_hash,role,status) VALUES('remarks-admin@test.invalid','fixture','admin','active') RETURNING id`).Scan(&adminID))
 	require.NoError(t, db.QueryRow(`INSERT INTO users(email,password_hash,role,status) VALUES('remarks-user@test.invalid','fixture','user','active') RETURNING id`).Scan(&userID))
-	adminToken, err := auth.GenerateToken(ctx, &service.User{ID: adminID, Email: "remarks-admin@test.invalid", Role: service.RoleAdmin})
+	adminUser, err := userRepo.GetByID(ctx, adminID)
 	require.NoError(t, err)
-	userToken, err := auth.GenerateToken(ctx, &service.User{ID: userID, Email: "remarks-user@test.invalid", Role: service.RoleUser})
+	regularUser, err := userRepo.GetByID(ctx, userID)
+	require.NoError(t, err)
+	adminToken, err := auth.GenerateToken(ctx, adminUser)
+	require.NoError(t, err)
+	userToken, err := auth.GenerateToken(ctx, regularUser)
 	require.NoError(t, err)
 	upstream := "https://remarks.example:8443/Tenant/v1"
 	urls := []string{"HTTPS://REMARKS.EXAMPLE:8443/Tenant/v1/", upstream, "https://remarks.example:9443/Tenant/v1", "https://remarks.example:8443/Other/v1", "https://remarks.example:8443/tenant/v1", "https://remarks.example:8443/Tenant/%2F", "https://name:secret@remarks.example/v1?api_key=query-secret"}
@@ -180,10 +184,30 @@ func TestProfitURLRemarksHTTPPostgresPersistenceIdentityAuditAndConcurrency(t *t
 	_, err = db.Exec(`UPDATE accounts SET name='renamed member' WHERE id=$1`, ids[0])
 	require.NoError(t, err)
 	require.Equal(t, "独立端口", read(urls[2]).Remark)
+	w = request("PUT", "url-remark", mutation(upstream, "改名后稳定备注", 3), adminToken)
+	require.Equal(t, 200, w.Code, w.Body.String())
+	var replacement int64
+	require.NoError(t, db.QueryRow(`INSERT INTO accounts(name,platform,type,credentials) VALUES('new member','openai','apikey',$1::jsonb) RETURNING id`, fmt.Sprintf(`{"base_url":%q}`, upstream)).Scan(&replacement))
+	for _, id := range []int64{ids[0], replacement, ids[6]} {
+		w = request("GET", fmt.Sprintf("snapshot?from=%s&until=%s&account_id=%d&page_size=1", now.Add(-time.Hour).Format(time.RFC3339), now.Format(time.RFC3339), id), "", adminToken)
+		require.Equal(t, 200, w.Code, w.Body.String())
+		var body struct {
+			Data service.ProfitOperationsSnapshot
+		}
+		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
+		if id == ids[6] {
+			require.Empty(t, body.Data.URLRemarks, "invalid effective URL has no editable identity")
+			require.NotContains(t, w.Body.String(), "query-secret")
+			require.NotContains(t, w.Body.String(), "credential-canary")
+			require.NotContains(t, w.Body.String(), "name:secret")
+		} else {
+			require.Equal(t, "改名后稳定备注", body.Data.URLRemarks[upstream].Remark, "name, account creation and page row position cannot change URL identity")
+		}
+	}
 	audit.Stop()
 	var count int
 	require.NoError(t, db.QueryRow(`SELECT count(*) FROM audit_logs WHERE actor_user_id=$1 AND action='admin.profit_url_remark.update' AND status_code=200`, adminID).Scan(&count))
-	require.GreaterOrEqual(t, count, 5)
+	require.GreaterOrEqual(t, count, 6)
 	var auditRaw string
 	require.NoError(t, db.QueryRow(`SELECT COALESCE(jsonb_agg(to_jsonb(a))::text,'[]') FROM audit_logs a WHERE actor_user_id=$1`, adminID).Scan(&auditRaw))
 	require.Contains(t, auditRaw, "config_version")

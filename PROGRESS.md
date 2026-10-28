@@ -14,8 +14,10 @@
 - [x] 已实现管理员 API、revision CAS / 清空 tombstone、正文省略审计；后端动态验收 pending
 - [x] 已补 API → 独立迁移 PostgreSQL → GET / snapshot 回归；执行 pending 远端 CI
 - [x] 精确利润页编辑、保存、取消、失败草稿、清空、Unicode 长度、刷新组件测试通过；浏览器 pending 远端 CI
-- [ ] 初步实现提交 / push / Draft PR（验收项保持 pending）
+- [x] 初步实现已提交 `008ca5059` / push；Draft PR https://github.com/ranxi2001/sub2api/pull/593，目标 production，验收项保持 pending
 - [ ] 所有 push / PR checks（filter=all）及 raw logs 审核、失败修复
 - [ ] 最终 head 冻结，交父级审查；不 merge / release / deploy
 
 初步实现已完成：新专属 workflow 含后端持久化变异 RED→GREEN、既有利润/URL 回归及浏览器。未在本机运行 Go 编译/动态测试、Docker 或全量前端 build/lint/typecheck。`gofmt`、`git diff --check`、浏览器脚本语法检查通过。即刻创建 Draft PR，完整动态验收 pending。
+
+复查补强（下一提交）：元数据仅来自快照实际发现的 URL；新增账号改名 / 新同 URL 成员 / 无效含密 URL 的快照断言。真实 JWT fixture 改为从 repository 读取完整用户后签发，以遵循现有密码指纹 TokenVersion 机制。前端 saved 事件使用显式更新函数，避免模板闭包依赖可空快照。
