@@ -32,7 +32,7 @@ func (c *codexOrderedSchedulerCache) GetAccounts(ctx context.Context, ids []int6
 	}
 	accounts := make(map[int64]*Account, len(ids))
 	for _, id := range ids {
-		account, err := c.SchedulerCache.GetAccount(ctx, id)
+		account, err := c.GetAccount(ctx, id)
 		if err != nil {
 			return nil, err
 		}
