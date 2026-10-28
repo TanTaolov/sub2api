@@ -30,3 +30,11 @@ it('keeps selection after 409 and failed readback, rereads revisions without ove
 it('does not allow unbounded filtered or more than 100 accounts', async () => {
  for (const ids of [[], Array.from({ length: 101 }, (_, i) => i + 1)]) { const w = mount(AccountUpstreamChannelBinding, { props: { accountIds: ids } }); expect(w.get('[data-testid="open-channel-bindings"]').attributes('disabled')).toBeDefined(); w.unmount() }
 })
+
+it('ignores old account read replies when selection changes to another account with the same count', async () => {
+ let resolve: ((value: ReturnType<typeof rows>) => void) | undefined
+ vi.mocked(readChannelBindings).mockImplementationOnce(() => new Promise(done => { resolve = done }))
+ const w = mount(AccountUpstreamChannelBinding, { props: { accountIds: [1, 2] } }); await w.get('[data-testid="open-channel-bindings"]').trigger('click'); await flushPromises()
+ await w.setProps({ accountIds: [3, 4] }); resolve!(rows()); await flushPromises()
+ expect(w.find('[data-testid="save-channel-binding"]').exists()).toBe(false); expect(bindChannelAccounts).not.toHaveBeenCalled(); w.unmount()
+})

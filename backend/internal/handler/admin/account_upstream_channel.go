@@ -37,7 +37,7 @@ func (h *AccountHandler) enrichUpstreamChannelBindings(ctx context.Context, item
 		for i := range bindings {
 			if index, ok := byID[bindings[i].AccountID]; ok {
 				b := bindings[i]
-				items[index].Account.UpstreamChannelBinding = &b
+				items[index].UpstreamChannelBinding = &b
 			}
 		}
 	}

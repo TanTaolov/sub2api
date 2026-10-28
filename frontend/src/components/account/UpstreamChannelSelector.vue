@@ -2,8 +2,8 @@
   <section class="space-y-2 rounded-lg border p-3 dark:border-dark-600" data-testid="upstream-channel-selector">
     <label class="block font-medium">{{ t('upstreamEntities.accountChannel') }}</label>
     <p class="text-xs text-gray-500">{{ t('upstreamEntities.history') }}</p>
-    <div class="flex flex-wrap gap-2"><input v-model="search" class="input min-w-0 flex-1" :placeholder="t('upstreamEntities.search')" /><button type="button" class="btn btn-secondary" :disabled="loading" @click="load(1)">{{ t('upstreamEntities.load') }}</button><a href="/admin/upstream-channels" target="_blank" rel="noopener" class="btn btn-secondary">{{ t('upstreamEntities.manage') }}</a></div>
-    <select :value="modelValue" class="input w-full" data-testid="upstream-channel-select" @focus="ensureLoaded" @change="emit('update:modelValue', Number(($event.target as HTMLSelectElement).value))">
+    <div class="flex flex-wrap gap-2"><input v-model="search" class="input min-w-0 flex-1" :placeholder="t('upstreamEntities.search')" /><button type="button" class="btn btn-secondary" :disabled="loading || disabled" @click="load(1)">{{ t('upstreamEntities.load') }}</button><a href="/admin/upstream-channels" target="_blank" rel="noopener" class="btn btn-secondary">{{ t('upstreamEntities.manage') }}</a></div>
+    <select :disabled="disabled" :value="modelValue" class="input w-full" data-testid="upstream-channel-select" @focus="ensureLoaded" @change="emit('update:modelValue', Number(($event.target as HTMLSelectElement).value))">
       <option v-if="allowKeep" :value="-1">{{ t('upstreamEntities.keep') }}</option><option :value="0">{{ t('upstreamEntities.unbound') }}</option>
       <option v-if="selected && !items.some(c => c.id === selected?.id)" :value="selected.id">{{ selected.name }} · {{ selected.code }} (#{{ selected.id }})</option>
       <option v-for="c in items" :key="c.id" :value="c.id">{{ c.name }} · {{ c.code }} (#{{ c.id }}) · {{ c.members }}</option>
@@ -16,7 +16,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { listUpstreamChannels, type UpstreamChannel } from '@/api/admin/upstreamChannels'
-defineProps<{ modelValue: number; allowKeep?: boolean; selected?: UpstreamChannel }>()
+defineProps<{ modelValue: number; allowKeep?: boolean; selected?: UpstreamChannel; disabled?: boolean }>()
 const emit = defineEmits<{ 'update:modelValue': [value: number] }>()
 const { t } = useI18n()
 const items = ref<UpstreamChannel[]>([]), search = ref(''), total = ref(0), page = ref(1), loaded = ref(false), loading = ref(false), error = ref(false)
