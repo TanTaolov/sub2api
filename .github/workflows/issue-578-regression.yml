@@ -8,6 +8,7 @@ on:
     paths:
       - 'backend/internal/service/**'
       - 'backend/internal/handler/admin/openai_oauth_handler*'
+      - 'backend/internal/handler/admin/issue_578*'
       - '.github/workflows/issue-578-regression.yml'
   workflow_dispatch:
 
@@ -37,6 +38,21 @@ jobs:
           cache-dependency-path: backend/go.sum
       - name: Verify toolchain
         run: go version | tee evidence/toolchain.txt
+      - name: Prepare dependencies and loopback-only test runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd backend && go mod download)
+          cat > "$RUNNER_TEMP/issue-578-offline" <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          exec sudo env PATH="$PATH" GOPATH="$(go env GOPATH)" \
+            GOCACHE="$(go env GOCACHE)" GOMODCACHE="$(go env GOMODCACHE)" \
+            GOPROXY=off GOSUMDB=off \
+            unshare --net bash -c 'ip link set lo up; exec "$@"' bash "$@"
+          SH
+          chmod +x "$RUNNER_TEMP/issue-578-offline"
+          "$RUNNER_TEMP/issue-578-offline" ip -brief address | tee evidence/offline-network.txt
       - name: Prove behavioral RED on pinned production baseline
         shell: bash
         env:
@@ -49,7 +65,7 @@ jobs:
           echo "$BASELINE" > evidence/baseline-head.txt
           cp backend/internal/service/issue_578_regression_test.go "$red_tree/backend/internal/service/"
           set +e
-          (cd "$red_tree/backend" && go test -tags=unit ./internal/service -run '^TestIssue578(HeaderLatestValue|HeaderSerialAndRetry|QueryUsageSynchronizesNonzero|BPSTTLRefreshAndThrottle)$' -count=1 -v) > evidence/baseline-red.log 2>&1
+          (cd "$red_tree/backend" && "$RUNNER_TEMP/issue-578-offline" go test -tags=unit ./internal/service -run '^TestIssue578(HeaderLatestValue|HeaderSerialAndRetry|QueryUsageSynchronizesNonzero|BPSTTLRefreshAndThrottle)$' -count=1 -v) > evidence/baseline-red.log 2>&1
           result=$?
           set -e
           cat evidence/baseline-red.log
@@ -68,15 +84,15 @@ jobs:
         working-directory: backend
         run: |
           set -o pipefail
-          go test -tags=unit ./internal/service -run '^(TestIssue578|TestExcelBPSQuotaSnapshot|TestExcelBPS429|TestOpenAIQuotaRecovery|TestShouldRefreshOpenAICodexSnapshot|TestGetOpenAIUsage_SparkShadow|TestQueryUsageAgentIdentity|TestQueryUsageShadow|TestOpenAIQuotaAutoReset|TestShouldAutoPauseOpenAIAccountByQuota|TestEvaluateAccountSchedulingThreshold_OpenAI)' -count=1 -v 2>&1 | tee ../evidence/green-service.log
-          go test -tags=unit ./internal/handler/admin -run '^TestIssue578|^TestOpenAI.*(Quota|Refresh)' -count=1 -v 2>&1 | tee ../evidence/green-admin.log
+          "$RUNNER_TEMP/issue-578-offline" go test -tags=unit ./internal/service -run '^(TestIssue578|TestExcelBPSQuotaSnapshot|TestExcelBPS429|TestOpenAIQuotaRecovery|TestShouldRefreshOpenAICodexSnapshot|TestGetOpenAIUsage_SparkShadow|TestQueryUsageAgentIdentity|TestQueryUsageShadow|TestOpenAIQuotaAutoReset|TestShouldAutoPauseOpenAIAccountByQuota|TestEvaluateAccountSchedulingThreshold_OpenAI)' -count=1 -v 2>&1 | tee ../evidence/green-service.log
+          "$RUNNER_TEMP/issue-578-offline" go test -tags=unit ./internal/handler/admin -run '^TestIssue578|^TestOpenAI.*(Quota|Refresh)' -count=1 -v 2>&1 | tee ../evidence/green-admin.log
       - name: Exact head concurrency regressions
         if: '!cancelled()'
         working-directory: backend
         shell: bash
         run: |
           set -o pipefail
-          go test -race -tags=unit ./internal/service -run '^TestIssue578' -count=3 -v 2>&1 | tee ../evidence/race.log
+          "$RUNNER_TEMP/issue-578-offline" go test -race -tags=unit ./internal/service -run '^TestIssue578' -count=3 -v 2>&1 | tee ../evidence/race.log
       - uses: actions/upload-artifact@v7
         if: always()
         with:
