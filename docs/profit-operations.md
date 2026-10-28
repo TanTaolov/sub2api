@@ -1,25 +1,16 @@
 # 独立上游渠道对象与当前利润归属
 
-本 PR 完整范围以本节为准。URL 只用于未绑定账号的自动分析分组；渠道备注仅属于独立渠道对象，不存在按 URL 唯一键的可写备注入口。
+利润运营页 `/admin/profit-operations` 和账户管理共同使用显式上游渠道实体：不可变内部 ID、不可变唯一 code、唯一可编辑名称、备注及 revision。账号通过外键显式归属；同渠道可有不同 URL，不同渠道可有相同 URL，未知/不支持获取的账号可手动绑定。
 
-渠道有不可变内部 ID / 唯一 code、可编辑唯一名称和备注，账号通过独立外键关系显式归属。绑定不依赖 URL 识别或获取能力；一个渠道可包含不同 URL、未知 URL 和不支持获取的账号，不同渠道也可包含同 URL。
+渠道管理入口 `/admin/upstream-channels`，账户新建/编辑/批量选择以及利润页均可管理。批量操作须明确选中最多100个账号、确认成员影响并按版本 CAS；保存后 GET 读回。删除要求无绑定成员并确认版本；先明确解绑，外键 RESTRICT，不级联删除账号或 usage。账号 hard-delete 只删自身绑定记录并递增 channel revision，历史 usage 保留。
 
-- 管理入口 `/admin/upstream-channels`，账户管理和精确利润页均可进入。利润页直接管理渠道；名称/备注保存前显示成员数量并确认，保存后 GET 读回。
-- 账号新建选择渠道并确认，普通新建和绑定在同一事务；各导入流程仅对新建账号追加显式绑定，不覆盖已有账号归属。编辑/批量弹窗独立提供归属保存：最多 100 个明确账号，读取当前版本与归属，确认影响后原子 CAS 保存并 GET 读回；全筛选模式不做无限绑定。
-- 修改账号名称、URL、分页位置或渠道显示名不会改变内部 ID 关联。绑定变动会递增渠道版本，使先前确认的影响人数失效。
-- 删除只允许无绑定对象且必须确认 revision；渠道外键 RESTRICT，不级联删除账号/usage。账号被硬删除时仅清除其自身绑定记录并递增渠道 revision；历史usage保留。有成员先在分页成员列表明确选择并确认解绑，读取新版本后删除。解绑保留每账号版本 tombstone，防旧编辑复活。
-- 利润优先 `channel:<内部ID>` 聚合；未绑定才回退现有安全 URL 或 unknown。展示显式/未绑定来源。统计代表**当前绑定配置**，不是历史路由快照；绑定、改名、解绑不重写原 usage。成本仍是已保存 total_cost × 当前账号成本倍率，未叠加模型成本。
-- migration 312 增加独立对象和关联表；不从 URL 值、显示名或历史 usage 猜测归属，不回填历史 usage。
-- API `/api/v1/admin/upstream-channels`、`/:id`、`/:id/members` 及 `/api/v1/admin/upstream-channel-bindings`。仅管理员可管理，沿用写审计，正文省略，仅记录 ID/版本/有界数量/目标摘要。
+利润按显式 channel ID 优先聚合；未绑定账号才按安全有效 URL 聚类，否则进入 unknown。归属是**当前配置**，不是历史路由快照；不回填历史用量。成本口径不变：估算成本 = 已保存 `usage_logs.total_cost` × 当前账号统一成本倍率 `extra.cost_multiplier`（未设置沿用既有默认 0.1），收入 = 已保存 `actual_cost`，利润 = 收入 − 估算成本；不额外叠加模型成本、账号扣费倍率或账本数据。
 
-# 独立利润运维（stacked）
+Migration 312 创建独立的 `upstream_channels` / `upstream_channel_bindings` 对象与关联表；不按 URL、展示名称或历史账本推断关系。旧分支URL备注迁移/API/UI已从本PR撤除，不回填其数据。
 
-Depends-on #585；base `fix/upstream-url-channel-operations`。本PR差异只新增利润页面/API、财务聚合/来源、导航、财务测试和本说明。URL身份解析复用渠道PR，不另建渠道分组。
+## 验收记录
 
-**修正旧混合#584口径：估算成本 = 保存的usage.total_cost × 当前独立成本倍率extra.cost_multiplier；收入 = 保存actual_cost；利润 = 扣费金额 − 估算成本。** 用户扣费倍率已包含在保存actual_cost，不再乘；account_rate_multiplier不是成本倍率。account_stats_cost可由管理员自定义统计价卡或不同模型价生成，不一定等于标准模型收费基数，故不用于此用户确认的成本公式。旧profit scorer仍用account_stats_cost是其调度评分口径，本PR不改评分或账本。
-
-默认0.1明确调度估算，零倍率保留；缺失/无效/未知不当0，零收入毛利率未知，汇总由金额总额计算。金额使用历史保存值，缓存/按次已含其中，不按当前价卡重算。当前成本倍率/归属无历史快照，逐账号来源及配置updated_at明确为估算，订阅计价不等于现金收款。
-
-- [ ] 本head成本口径RED→GREEN：标准10、统计8、账号扣费倍率999、成本倍率.25、用户扣费4 → 成本2.5，利润1.5。
-- [ ] 财务零值/亏损/未知/分页/半开区间/只读HTTP→PG。
-- [ ] 本head前端完整/浏览器及全套CI。
+- 当前 Draft PR #593 在唯一 branch 上实现全部上述范围。远端真实 HTTP → 私有迁移 PostgreSQL → GET / 账户创建绑定 / 利润跨页与 ID 下钻回归，以及精确利润页、渠道页、AccountsView 的合成浏览器截图由专属 workflow 执行。
+- 当前唯一剩余测试是完整 Go unit/integration push 和 PR 两项；本机遵守约束，未执行 Go 动态、Docker、完整前端 build/lint/typecheck。完整前端构建、频道绑定后端与专属实体回归都已在当前 head 对应远端检查中完成/等待最终完整 CI。
+- UI/API 使用虚构数据；浏览器阻断真实 `/api/` 和外部网络，无付费模型请求。
+- 不改变路由、凭据、倍率、利润公式、历史 usage 或财务账本，不 merge/release/deploy/生产访问。
