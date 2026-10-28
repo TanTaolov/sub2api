@@ -180,6 +180,7 @@ func TestUpstreamChannelEntityHTTPAccountProfitPersistence(t *testing.T) {
 	aKey := fmt.Sprintf("channel:%d", a.ID)
 	bKey := fmt.Sprintf("channel:%d", b.ID)
 	selected := profit(aKey, 1)
+	require.Equal(t, a.ID, selected.Scope.ChannelID, "public endpoint must normalize channel:<id> into the explicit FK scope")
 	var selectedData struct {
 		Rows  []row
 		Total int
