@@ -69,7 +69,7 @@ jobs:
         run: |
           set -o pipefail
           go test -tags=unit ./internal/service -run '^(TestIssue578|TestExcelBPSQuotaSnapshot|TestExcelBPS429|TestOpenAIQuotaRecovery|TestShouldRefreshOpenAICodexSnapshot|TestGetOpenAIUsage_SparkShadow|TestQueryUsageAgentIdentity|TestQueryUsageShadow|TestOpenAIQuotaAutoReset|TestShouldAutoPauseOpenAIAccountByQuota|TestEvaluateAccountSchedulingThreshold_OpenAI)' -count=1 -v 2>&1 | tee ../evidence/green-service.log
-          go test -tags=unit ./internal/handler/admin -run '^TestOpenAI.*(Quota|Refresh)' -count=1 -v 2>&1 | tee ../evidence/green-admin.log
+          go test -tags=unit ./internal/handler/admin -run '^TestIssue578|^TestOpenAI.*(Quota|Refresh)' -count=1 -v 2>&1 | tee ../evidence/green-admin.log
       - name: Exact head concurrency regressions
         if: '!cancelled()'
         working-directory: backend

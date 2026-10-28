@@ -8,3 +8,6 @@
 - First action: writing behavior regressions before changing application code. Dedicated workflow will transplant these tests onto the pinned baseline and require assertion failures (build/setup failure is not RED evidence).
 - Draft PR / exact head CI / independent parent review: pending.
 - Evidence directory: `/data/development/artifacts/sub2api-issue-578`.
+- Initial implementation committed/pushed as `99147b5253d8f83b015b75d5e939b39e58b8ff88`; Draft PR https://github.com/ranxi2001/sub2api/pull/591 targets production and contains `Fixes #578` plus pending acceptance checklist.
+- Remote push run 40739626916 completed behavioral baseline RED step successfully; exact-head GREEN and race are still running. All push/PR check-runs retrieved with `filter=all` to evidence directory; no passing claim yet.
+- Follow-up regressions added for credit/threshold semantics, Spark independence, malformed/mismatched payloads, explicit refresh persistence failure reporting, concurrent TTL reservation and queued header vs explicit query ordering. No existing assertion or skip removed.

@@ -721,10 +721,9 @@ func (s *AccountUsageService) getOpenAIUsage(ctx context.Context, account *Accou
 
 	if (force || shouldRefreshOpenAICodexSnapshot(account, usage, now)) && s.shouldProbeOpenAICodexSnapshot(account.ID, now, force) {
 		if account.IsShadow() || account.IsExcelBPSEnabled() {
-			// Spark shadow accounts fetch usage from /wham/usage (bengalfox channel)
-			// via the shared OpenAIQuotaService, which resolves credentials from the
-			// parent account.  The result is written to the shadow row's own codex_*
-			// Extra keys and immediately reflected in the returned UsageInfo.
+			// BPS queries reuse quota OAuth authentication, never a model probe
+			// or the independent BPS grant. Spark resolves parent credentials
+			// but persists only its own bengalfox windows on the shadow row.
 			if s.openAIQuotaService != nil {
 				if quotaUsage, err := s.openAIQuotaService.QueryUsage(ctx, account.ID); err == nil {
 					if updates := quotaUsage.schedulingUpdates; len(updates) > 0 {
@@ -791,10 +790,9 @@ func isOpenAICodexSnapshotStale(account *Account, now time.Time) bool {
 	if account == nil || !account.IsOpenAIOAuth() {
 		return false
 	}
-	// 普通账号的 codex 刷新走 probe(/responses 头),要求 WSv2;但 spark 影子走 QueryUsage
-	// (/wham/usage body 的 codex_bengalfox),与 WSv2 无关——不能用 WSv2 门控其 staleness,否则首刷后
-	// codex_5h/7d 已存在→staleness 恒 false→spark 窗口永久冻结(外审第9轮 P1)。影子改按
-	// codex_usage_updated_at TTL 判定;实际查询频率仍由 shouldProbeOpenAICodexSnapshot 的缓存 TTL 节流。
+	// Native probes retain their WSv2 eligibility. BPS and Spark use the quota
+	// endpoint independently of transport; their complete windows still expire.
+	// shouldProbeOpenAICodexSnapshot bounds concurrent/stale automatic reads.
 	if !account.IsShadow() && !account.IsExcelBPSEnabled() && !account.IsOpenAIResponsesWebSocketV2Enabled() {
 		return false
 	}

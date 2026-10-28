@@ -110,6 +110,8 @@ func TestIssue578HeaderLatestValue(t *testing.T) {
 	s.UpdateCodexUsageSnapshotFromHeaders(ctx, a.ID, excelBPSQuotaHeaders("100", "20"))
 	current := issue578WaitUsage(t, r, a.ID, 100)
 	require.True(t, EvaluateAccountSchedulingThreshold(current, nil, time.Now()).ShouldPause, "89 -> 100 must close the explicit 90%% scheduling gate")
+	paused, _ := shouldAutoPauseOpenAIAccountByQuota(context.Background(), current)
+	require.True(t, paused, "latest snapshot must also close the explicit auto-pause gate")
 	r.mu.Lock()
 	require.LessOrEqual(t, r.writes, 3, "burst must coalesce; no per-response database writes")
 	r.mu.Unlock()
@@ -182,6 +184,8 @@ func TestIssue578QueryUsageSynchronizesNonzero(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 100.0, current.Extra["codex_5h_used_percent"], "successful query must synchronously update scheduler windows")
 	require.True(t, EvaluateAccountSchedulingThreshold(current, nil, time.Now()).ShouldPause)
+	paused, _ := shouldAutoPauseOpenAIAccountByQuota(context.Background(), current)
+	require.True(t, paused)
 }
 
 func TestIssue578BPSTTLRefreshAndThrottle(t *testing.T) {

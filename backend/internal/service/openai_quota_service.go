@@ -181,10 +181,10 @@ func (s *OpenAIQuotaService) QueryUsage(ctx context.Context, accountID int64) (*
 	agentIdentity := s.isAgentIdentityAccount(ctx, accountID)
 	// Observe before querying upstream; a concurrent 429 must survive recovery.
 	var observed *openAIQuotaRecoveryObservation
-	shadow := false
+	var queriedAccount *Account
 	if account, readErr := s.accountRepo.GetByID(callCtx, accountID); readErr == nil {
+		queriedAccount = account
 		observed = observeOpenAIQuotaRecovery(account, time.Now())
-		shadow = account.IsShadow()
 	}
 
 	var payload OpenAIQuotaUsage
@@ -193,6 +193,7 @@ func (s *OpenAIQuotaService) QueryUsage(ctx context.Context, accountID int64) (*
 		if headerErr != nil {
 			return nil, infraerrors.Newf(http.StatusBadGateway, "OPENAI_QUOTA_AUTH_FAILED", "failed to build upstream authentication: %v", headerErr)
 		}
+		queryStartedAt := time.Now()
 		resp, err := client.R().
 			SetContext(callCtx).
 			SetHeaders(quotaHeaders).
@@ -218,13 +219,21 @@ func (s *OpenAIQuotaService) QueryUsage(ctx context.Context, accountID int64) (*
 			slog.Warn("openai_quota_query_failed", "account_id", accountID, "status", status, "body", body)
 			return nil, infraerrors.Newf(mapUpstreamStatus(status), "OPENAI_QUOTA_UPSTREAM_ERROR", "upstream returned %d: %s", status, body)
 		}
-		if updates := openAIQuotaSchedulingUpdates(resp.Bytes(), shadow, chatGPTAccountID, time.Now()); len(updates) > 0 {
+		// A failed row read cannot safely choose global vs Spark windows.
+		var updates map[string]any
+		if queriedAccount != nil && !identityValuesConflict(queriedAccount.GetCredential("email"), payload.Email) {
+			updates = openAIQuotaSchedulingUpdates(resp.Bytes(), queriedAccount.IsShadow(), chatGPTAccountID, time.Now())
+		}
+		if len(updates) > 0 {
+			// Order by request observation, so a slow earlier query cannot undo
+			// a later response/header snapshot. Resets use response receipt time.
+			updates["codex_usage_updated_at"] = queryStartedAt.UTC().Format(time.RFC3339Nano)
 			payload.schedulingUpdates = updates
 			written, writeErr := persistCodexUsageUpdates(callCtx, s.accountRepo, accountID, updates)
 			payload.UsageCachePersisted = written && writeErr == nil
 			if writeErr != nil {
 				slog.Warn("openai_quota_usage_snapshot_failed", "account_id", accountID, "error", writeErr)
-			} else if written && !shadow {
+			} else if written && !queriedAccount.IsShadow() {
 				// Recovery still requires the original complete-zero payload and
 				// observed generation; nonzero/partial data never clears a 429.
 				recoverOpenAIQuotaRateLimit(callCtx, s.accountRepo, observed, openAIQuotaRecoveryUsageUpdates(resp.Bytes(), time.Now()))
