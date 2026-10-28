@@ -179,6 +179,14 @@ func TestUpstreamChannelEntityHTTPAccountProfitPersistence(t *testing.T) {
 	}
 	aKey := fmt.Sprintf("channel:%d", a.ID)
 	bKey := fmt.Sprintf("channel:%d", b.ID)
+	selected := profit(aKey, 1)
+	var selectedData struct {
+		Rows  []row
+		Total int
+	}
+	require.NoError(t, json.Unmarshal(selected.Usage, &selectedData))
+	require.Equal(t, 1, selectedData.Total, "drill-down filters by explicit foreign key rather than URL text")
+	require.Equal(t, 4, selectedData.Rows[0].Requests)
 	require.Equal(t, 4, all[aKey].Requests, "explicit ownership groups different, unknown and unsupported URLs")
 	require.Equal(t, 6.0, all[aKey].Profit, "confirmed formula: saved total_cost × current account multiplier only")
 	require.Equal(t, "explicit", all[aKey].Assignment)
