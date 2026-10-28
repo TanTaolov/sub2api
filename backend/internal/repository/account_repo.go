@@ -2095,7 +2095,12 @@ func (r *accountRepository) syncSchedulerAccountSnapshot(ctx context.Context, ac
 	if r == nil || r.schedulerCache == nil || accountID <= 0 {
 		return
 	}
-	if err := r.publishSchedulerAccountSnapshot(ctx, accountID); err != nil {
+	account, err := r.GetByID(ctx, accountID)
+	if err != nil {
+		logger.LegacyPrintf("repository.account", "[Scheduler] sync account snapshot read failed: id=%d err=%v", accountID, err)
+		return
+	}
+	if err := r.schedulerCache.SetAccount(ctx, account); err != nil {
 		logger.LegacyPrintf("repository.account", "[Scheduler] sync account snapshot write failed: id=%d err=%v", accountID, err)
 	}
 }
