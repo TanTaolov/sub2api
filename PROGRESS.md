@@ -21,7 +21,8 @@
 - `3dea0176a` 远端专属 PostgreSQL PR job `123003424834` 已通过：DTO / URL identity / 实际路由授权；丢弃持久化备注的变异 RED 确认命中 `API must persist the submitted note`；恢复后真实 HTTP → 私有迁移 PostgreSQL → GET / snapshot GREEN。涵盖同 URL、path / port / case / 转义边界、创建与更新并发、清空与旧版本、改名 / 新账号 / 分页、审计隐私及财务行不变。
 - `3dea0176a` 远端专属前端 push job `123003396360` 已通过组件 10/10、完整 build/typecheck 和精确页面浏览器；桌面 / 移动截图、0 browser errors / 0 live API / 0 paid requests。
 - 初始 head 专属后端失败 raw 日志确认 JWT fixture 缺失密码指纹，预期 403 实得 401；`3dea0176a` 改为 repository 完整用户签发，保留所有授权断言后通过。
-- 本提交补上审计目标 identity 摘要及断言，继续走同套 CI。
+- `8c70a2521` 补上审计目标 identity 摘要及断言，push/PR 专属回归均通过。
+- 最终复核发现并修复前端 409 契约：apiClient 拦截器返回顶层 status；新增真实 API module + client interceptors + Vue editor 的 adapter 回归，先确认 2 项 RED，再兼容顶层 status / Axios response.status。原授权和冲突断言均保留，继续走同套 CI。
 
 ## 最终验收与冻结
 

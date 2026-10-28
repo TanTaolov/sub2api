@@ -47,7 +47,7 @@ describe('profit-operations URL channel remarks', () => {
   const w = mount(ProfitOperationsView); await flushPromises()
   await w.get('[data-testid="edit-url-remark"]').trigger('click')
   await w.get('textarea').setValue('保留的草稿')
-  vi.mocked(saveUpstreamURLRemark).mockRejectedValueOnce({ response: { status: 409 } })
+  vi.mocked(saveUpstreamURLRemark).mockRejectedValueOnce({ status: 409, reason: 'UPSTREAM_URL_REMARK_CONFLICT' })
   await w.get('[data-testid="save-url-remark"]').trigger('click'); await flushPromises()
   expect(w.get('textarea').element.value).toBe('保留的草稿')
   expect(w.get('[data-testid="url-remark-error"]').text()).toContain('其他管理员')

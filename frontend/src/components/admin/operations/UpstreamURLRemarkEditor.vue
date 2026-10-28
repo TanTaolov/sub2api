@@ -43,7 +43,8 @@ async function save() {
  try {
   written = await saveUpstreamURLRemark({ upstream: props.value.upstream, remark: draft.value.trim(), revision: current.value.revision })
  } catch (err) {
-  conflicted.value = (err as { response?: { status?: number } }).response?.status === 409
+  const failure = err as { status?: number; response?: { status?: number } }
+  conflicted.value = (failure.status ?? failure.response?.status) === 409
   error.value = t(conflicted.value ? 'profitOps.remarkConflict' : 'profitOps.remarkFailed')
   busy.value = false; return
  }

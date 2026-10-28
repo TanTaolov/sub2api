@@ -88,7 +88,7 @@ jobs:
       - run: pnpm --dir frontend install --frozen-lockfile
       - name: Actual profit page and remark editor components
         working-directory: frontend
-        run: pnpm exec vitest run src/views/admin/__tests__/ProfitOperationsView.spec.ts src/views/admin/__tests__/ProfitURLRemarks.spec.ts --maxWorkers=1 --minWorkers=1 --no-file-parallelism
+        run: pnpm exec vitest run src/views/admin/__tests__/ProfitOperationsView.spec.ts src/views/admin/__tests__/ProfitURLRemarks.spec.ts src/views/admin/__tests__/ProfitURLRemarksAPI.spec.ts --maxWorkers=1 --minWorkers=1 --no-file-parallelism
       - run: pnpm --dir frontend run build
       - name: Install isolated browser
         run: |
