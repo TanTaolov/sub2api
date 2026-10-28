@@ -1,0 +1,86 @@
+name: Issue 578 offline regression
+
+on:
+  push:
+    branches: ['fix/issue-578-bps-usage-snapshot']
+  pull_request:
+    branches: [production]
+    paths:
+      - 'backend/internal/service/**'
+      - 'backend/internal/handler/admin/openai_oauth_handler*'
+      - '.github/workflows/issue-578-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - name: Record exact tested head
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          mkdir -p evidence
+          git rev-parse HEAD | tee evidence/head.txt
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          sha256sum backend/internal/service/issue_578_regression_test.go > evidence/tests.sha256
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Verify toolchain
+        run: go version | tee evidence/toolchain.txt
+      - name: Prove behavioral RED on pinned production baseline
+        shell: bash
+        env:
+          BASELINE: 08d69a522c79a182fd681ead8fa4d848d9e1554e
+        run: |
+          set -euo pipefail
+          red_tree="$RUNNER_TEMP/issue-578-baseline"
+          mkdir -p "$red_tree"
+          git archive "$BASELINE" | tar -x -C "$red_tree"
+          echo "$BASELINE" > evidence/baseline-head.txt
+          cp backend/internal/service/issue_578_regression_test.go "$red_tree/backend/internal/service/"
+          set +e
+          (cd "$red_tree/backend" && go test -tags=unit ./internal/service -run '^TestIssue578(HeaderLatestValue|HeaderSerialAndRetry|QueryUsageSynchronizesNonzero|BPSTTLRefreshAndThrottle)$' -count=1 -v) > evidence/baseline-red.log 2>&1
+          result=$?
+          set -e
+          cat evidence/baseline-red.log
+          echo "$result" > evidence/baseline-exit.txt
+          test "$result" -ne 0
+          if grep -Eq '\[build failed\]|\[setup failed\]|undefined:|syntax error:|no tests to run|panic:' evidence/baseline-red.log; then
+            echo 'Build/setup failures are not behavioral RED evidence'
+            exit 1
+          fi
+          for name in HeaderLatestValue HeaderSerialAndRetry QueryUsageSynchronizesNonzero BPSTTLRefreshAndThrottle; do
+            grep -F -- "--- FAIL: TestIssue578$name" evidence/baseline-red.log
+          done
+      - name: Exact head offline regressions and preserved controls
+        if: '!cancelled()'
+        shell: bash
+        working-directory: backend
+        run: |
+          set -o pipefail
+          go test -tags=unit ./internal/service -run '^(TestIssue578|TestExcelBPSQuotaSnapshot|TestExcelBPS429|TestOpenAIQuotaRecovery|TestShouldRefreshOpenAICodexSnapshot|TestGetOpenAIUsage_SparkShadow|TestQueryUsageAgentIdentity|TestQueryUsageShadow|TestOpenAIQuotaAutoReset|TestShouldAutoPauseOpenAIAccountByQuota|TestEvaluateAccountSchedulingThreshold_OpenAI)' -count=1 -v 2>&1 | tee ../evidence/green-service.log
+          go test -tags=unit ./internal/handler/admin -run '^TestOpenAI.*(Quota|Refresh)' -count=1 -v 2>&1 | tee ../evidence/green-admin.log
+      - name: Exact head concurrency regressions
+        if: '!cancelled()'
+        working-directory: backend
+        shell: bash
+        run: |
+          set -o pipefail
+          go test -race -tags=unit ./internal/service -run '^TestIssue578' -count=3 -v 2>&1 | tee ../evidence/race.log
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: issue-578-${{ github.event_name }}-${{ github.run_id }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14

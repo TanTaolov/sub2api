@@ -104,7 +104,9 @@ type OpenAIQuotaUsage struct {
 	RateLimitResetCredits *OpenAIRateLimitResetCredits `json:"rate_limit_reset_credits,omitempty"`
 	Credits               *OpenAICredits               `json:"credits,omitempty"`
 	FetchedAt             int64                        `json:"fetched_at"`
+	UsageCachePersisted   bool                         `json:"usage_cache_persisted"`
 	autoResetCandidates   []openAIAutoResetCreditCandidate
+	schedulingUpdates     map[string]any
 }
 
 // OpenAIQuotaResetCredit captures the redeemed credit metadata returned by the
@@ -179,8 +181,10 @@ func (s *OpenAIQuotaService) QueryUsage(ctx context.Context, accountID int64) (*
 	agentIdentity := s.isAgentIdentityAccount(ctx, accountID)
 	// Observe before querying upstream; a concurrent 429 must survive recovery.
 	var observed *openAIQuotaRecoveryObservation
+	shadow := false
 	if account, readErr := s.accountRepo.GetByID(callCtx, accountID); readErr == nil {
 		observed = observeOpenAIQuotaRecovery(account, time.Now())
+		shadow = account.IsShadow()
 	}
 
 	var payload OpenAIQuotaUsage
@@ -214,13 +218,16 @@ func (s *OpenAIQuotaService) QueryUsage(ctx context.Context, accountID int64) (*
 			slog.Warn("openai_quota_query_failed", "account_id", accountID, "status", status, "body", body)
 			return nil, infraerrors.Newf(mapUpstreamStatus(status), "OPENAI_QUOTA_UPSTREAM_ERROR", "upstream returned %d: %s", status, body)
 		}
-		if observed != nil {
-			if updates := openAIQuotaRecoveryUsageUpdates(resp.Bytes(), time.Now()); len(updates) > 0 {
-				if err := s.accountRepo.UpdateExtra(callCtx, accountID, updates); err != nil {
-					slog.Warn("openai_quota_recovery_snapshot_failed", "account_id", accountID, "error", err)
-				} else {
-					recoverOpenAIQuotaRateLimit(callCtx, s.accountRepo, observed, updates)
-				}
+		if updates := openAIQuotaSchedulingUpdates(resp.Bytes(), shadow, chatGPTAccountID, time.Now()); len(updates) > 0 {
+			payload.schedulingUpdates = updates
+			written, writeErr := persistCodexUsageUpdates(callCtx, s.accountRepo, accountID, updates)
+			payload.UsageCachePersisted = written && writeErr == nil
+			if writeErr != nil {
+				slog.Warn("openai_quota_usage_snapshot_failed", "account_id", accountID, "error", writeErr)
+			} else if written && !shadow {
+				// Recovery still requires the original complete-zero payload and
+				// observed generation; nonzero/partial data never clears a 429.
+				recoverOpenAIQuotaRateLimit(callCtx, s.accountRepo, observed, openAIQuotaRecoveryUsageUpdates(resp.Bytes(), time.Now()))
 			}
 		}
 		break
