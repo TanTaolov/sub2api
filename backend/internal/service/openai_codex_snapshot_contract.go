@@ -24,6 +24,25 @@ type codexOrderedSchedulerCache struct {
 	source LatestSchedulerAccountsRepository
 }
 
+// Keep the cache's existing bulk-read capability through the publication
+// wrapper; candidate hydration must not turn one MGET into N round trips.
+func (c *codexOrderedSchedulerCache) GetAccounts(ctx context.Context, ids []int64) (map[int64]*Account, error) {
+	if reader, ok := c.SchedulerCache.(schedulerAccountBatchReader); ok {
+		return reader.GetAccounts(ctx, ids)
+	}
+	accounts := make(map[int64]*Account, len(ids))
+	for _, id := range ids {
+		account, err := c.SchedulerCache.GetAccount(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		if account != nil {
+			accounts[id] = account
+		}
+	}
+	return accounts, nil
+}
+
 func (c *codexOrderedSchedulerCache) withFreshUsage(ctx context.Context, accounts []Account, publish func([]Account) error) error {
 	ids := make([]int64, 0, len(accounts))
 	for _, a := range accounts {

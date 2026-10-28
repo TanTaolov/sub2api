@@ -143,6 +143,8 @@ func TestIssue578ReviewCrossInstanceHeaderCASRedisSelection(t *testing.T) {
 	cached, err := f.cache.GetAccount(ctx, f.account.ID)
 	require.NoError(t, err)
 	require.Equal(t, 100.0, cached.Extra["codex_5h_used_percent"])
+	require.True(t, service.EvaluateAccountSchedulingThreshold(stored, nil, time.Now()).ShouldPause)
+	require.True(t, service.EvaluateAccountSchedulingThreshold(cached, nil, time.Now()).ShouldPause)
 	selected, err := b.SelectAccountForModel(ctx, nil, "", "gpt-5.3-codex")
 	require.Error(t, err, "actual selection must reject the explicit 90%% paused account")
 	require.Nil(t, selected)
