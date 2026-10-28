@@ -9,7 +9,7 @@
 - 修改账号名称、URL、分页位置或渠道显示名不会改变内部 ID 关联。绑定变动会递增渠道版本，使先前确认的影响人数失效。
 - 删除只允许无绑定对象且必须确认 revision；渠道外键 RESTRICT，不级联删除账号/usage。账号被硬删除时仅清除其自身绑定记录并递增渠道 revision；历史usage保留。有成员先在分页成员列表明确选择并确认解绑，读取新版本后删除。解绑保留每账号版本 tombstone，防旧编辑复活。
 - 利润优先 `channel:<内部ID>` 聚合；未绑定才回退现有安全 URL 或 unknown。展示显式/未绑定来源。统计代表**当前绑定配置**，不是历史路由快照；绑定、改名、解绑不重写原 usage。成本仍是已保存 total_cost × 当前账号成本倍率，未叠加模型成本。
-- migration 312 增加独立对象和关联表；不从旧 URL/备注猜测归属，不回填历史 usage。
+- migration 312 增加独立对象和关联表；不从 URL 值、显示名或历史 usage 猜测归属，不回填历史 usage。
 - API `/api/v1/admin/upstream-channels`、`/:id`、`/:id/members` 及 `/api/v1/admin/upstream-channel-bindings`。仅管理员可管理，沿用写审计，正文省略，仅记录 ID/版本/有界数量/目标摘要。
 
 # 独立利润运维（stacked）

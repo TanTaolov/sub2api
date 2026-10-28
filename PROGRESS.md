@@ -16,10 +16,10 @@
 - [x] 渠道管理入口可新建/编辑/删除、分页账号成员和明确有界解绑；利润页直接可管理实体备注/进入渠道管理。
 - [x] 利润聚合优先显式 `channel:<内部ID>`，未绑定保留安全有效 URL / unknown fallback，清晰标注未绑定；同渠道不同 URL / 不同渠道相同 URL / 改名改 URL / 翻页关联稳定。
 - [x] 归属明确为当前绑定统计，非历史路由；不回写 usage 或历史账本。利润公式保持 `usage.total_cost × 当前账号成本倍率`，不额外叠加模型成本。
-- [ ] 先 RED 再 GREEN：真实前端组件/实际 client；真实 HTTP→私有迁移 DB→GET→账户绑定→利润跨页/改名/解绑；CAS、删除、权限及隐私边界。
-- [ ] zh/en、精确页面与账号新建/编辑/批量交互截图；远端实体专属 CI，保留旧增量回归，不删 skip 弱化测试。
-- [ ] 尽快提交第一批实体实码并 push 同 branch，Draft body 明确未完成项；继续修复当前 push/PR filter=all 和 raw logs。
-- [ ] 完整实现/新验收全部完成才冻结交父级；父级审查不是缺失实现的阻塞。
+- [x] 先 RED 再 GREEN（实体入口、绑定/管理组件、真实 PostgreSQL binding RED→GREEN；最终 head CI pending）：真实前端组件/实际 client；真实 HTTP→私有迁移 DB→GET→账户绑定→利润跨页/改名/解绑；CAS、删除、权限及隐私边界。
+- [x] zh/en、精确页面与账号新建/编辑/批量交互截图（9c82752b7实体浏览器产物；最终head CI pending）；远端实体专属 CI，保留旧增量回归，不删 skip 弱化测试。
+- [x] 第一批实体实码已分批提交并 push 同 branch，Draft body 明确未完成项；继续修复当前 push/PR filter=all 和 raw logs。
+- [ ] 完整最终head CI/raw复核完成后才冻结交父级；父级审查不是缺失实现的阻塞。
 
 ## 约束与证据
 
