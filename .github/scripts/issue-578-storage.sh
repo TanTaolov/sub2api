@@ -3,6 +3,7 @@ set -euo pipefail
 workspace=$1
 red_tree=$2
 evidence=$3
+review2_tree=$4
 ip link set lo up
 ip -brief address > "$evidence/storage-network.txt"
 pg_bin=$(pg_config --bindir)
@@ -24,7 +25,7 @@ redis-server --bind 127.0.0.1 --port 56379 --save '' --appendonly no --daemonize
 export ISSUE578_POSTGRES_DSN='host=127.0.0.1 port=55432 user=postgres dbname=issue578 sslmode=disable'
 export ISSUE578_REDIS_ADDR='127.0.0.1:56379'
 set +e
-(cd "$red_tree/backend" && go test -tags=integration ./internal/integration/issue578 -run '^TestIssue578Review' -count=1 -v) > "$evidence/storage-red.log" 2>&1
+(cd "$red_tree/backend" && go test -tags=integration ./internal/integration/issue578 -run '^TestIssue578Review(CrossInstanceHeaderCASRedisSelection|CachePublicationCannotReorder)$' -count=1 -v) > "$evidence/storage-red.log" 2>&1
 red_status=$?
 set -e
 cat "$evidence/storage-red.log"
@@ -34,6 +35,17 @@ if grep -Eq '\[build failed\]|\[setup failed\]|undefined:|syntax error:|no tests
 if grep -q 'below-threshold control must actually select' "$evidence/storage-red.log"; then exit 1; fi
 grep -F -- '--- FAIL: TestIssue578ReviewCrossInstanceHeaderCASRedisSelection' "$evidence/storage-red.log"
 grep -F -- '--- FAIL: TestIssue578ReviewCachePublicationCannotReorder' "$evidence/storage-red.log"
+set +e
+(cd "$review2_tree/backend" && go test -tags=integration ./internal/integration/issue578 -run '^TestIssue578Review2' -count=1 -v) > "$evidence/storage-review2-red.log" 2>&1
+review2_status=$?
+set -e
+cat "$evidence/storage-review2-red.log"
+printf '%s\n' "$review2_status" > "$evidence/storage-review2-red-exit.txt"
+test "$review2_status" -ne 0
+if grep -Eq '\[build failed\]|\[setup failed\]|undefined:|syntax error:|no tests to run|panic:|--- SKIP:' "$evidence/storage-review2-red.log"; then exit 1; fi
+if grep -q 'below-threshold control must actually select' "$evidence/storage-review2-red.log"; then exit 1; fi
+grep -F -- '--- FAIL: TestIssue578Review2GenericRepositoryPublicationCannotRegress' "$evidence/storage-review2-red.log"
+grep -F -- '--- FAIL: TestIssue578Review2PartialPendingCannotRestampOlderWindow' "$evidence/storage-review2-red.log"
 (cd "$workspace/backend" && go test -race -tags=integration ./internal/integration/issue578 -run '^TestIssue578Review' -count=1 -v) 2>&1 | tee "$evidence/storage-green.log"
 if grep -Eq -- '--- SKIP:|no tests to run' "$evidence/storage-green.log"; then exit 1; fi
 cp "$fixture_dir/pg/server.log" "$evidence/postgres-server.log"

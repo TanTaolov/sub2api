@@ -1,5 +1,12 @@
 # Issue #578 delivery log
 
+## Review 2 reopened on c225 (current, acceptance blocked)
+
+- New independent source review blocks c225 despite its historical green checks: the ordinary repository single-account publisher bypasses the shared fresh-read/advisory boundary; coalescing/retry gives retained old fields a newer partial observation timestamp.
+- Ordinary merge (no rebase/force) incorporated production `12a49ef4ef6a2f116389701ac8f1fe620f27bbf5` (#592). Complete conflict list: only PROGRESS.md add/add. Both #578 and #582 records are preserved; #592 source/workflow changes are unmodified. Merge/pre-fix source: `60254aa9081f715161ef0c0ce3b6683e671b4798`.
+- Wrote review2 service + real PostgreSQL/Redis regressions before production edits. Dedicated workflow pins this exact merged pre-fix source for new behavioral RED, retains all historical RED/controls, and rejects build/setup errors, no-tests and SKIP as evidence. Test-only checkpoint pending remote RED; no claim of current-head acceptance.
+- Current writer: OpenAI Codex (system model GPT-6; exact model ID and reasoning setting unavailable in this runtime). No new subagents spawned. Previously disclosed Hermes/independent reviewers remain recorded in PR body. Local restriction unchanged: no Go build/dynamic tests, Docker, full lint/build or production access.
+
 ## Reopened after independent review (current work)
 
 - Read the complete `parent-independent-review.md`. Prior green CI and FINAL_VALIDATION.md do **not** constitute acceptance: parent review blocks PR #591.

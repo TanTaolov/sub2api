@@ -57,6 +57,33 @@ jobs:
           SH
           chmod +x "$RUNNER_TEMP/issue-578-offline"
           "$RUNNER_TEMP/issue-578-offline" ip -brief address | tee evidence/offline-network.txt
+      - name: Review 2 behavioral RED on exact merged pre-fix source
+        shell: bash
+        env:
+          REVIEW2_BASELINE: 60254aa9081f715161ef0c0ce3b6683e671b4798
+        run: |
+          set -euo pipefail
+          red_tree="$RUNNER_TEMP/issue-578-review2-red"
+          mkdir -p "$red_tree"
+          git archive "$REVIEW2_BASELINE" | tar -x -C "$red_tree"
+          cp backend/internal/service/issue_578_review2_regression_test.go "$red_tree/backend/internal/service/"
+          echo "$REVIEW2_BASELINE" > evidence/review2-baseline-head.txt
+          set +e
+          (cd "$red_tree/backend" && "$RUNNER_TEMP/issue-578-offline" go test -tags=unit ./internal/service -run '^TestIssue578Review2' -count=1 -v) > evidence/review2-red.log 2>&1
+          result=$?
+          set -e
+          cat evidence/review2-red.log
+          echo "$result" > evidence/review2-red-exit.txt
+          test "$result" -ne 0
+          if grep -Eq '\[build failed\]|\[setup failed\]|undefined:|syntax error:|no tests to run|panic:|--- SKIP:' evidence/review2-red.log; then exit 1; fi
+          grep -F -- '--- FAIL: TestIssue578Review2PendingFieldObservationSurvivesRetry' evidence/review2-red.log
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: issue-578-review2-red-${{ github.event_name }}-${{ github.run_id }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
       - name: Prove behavioral RED on pinned production baseline
         shell: bash
         env:
@@ -172,9 +199,14 @@ jobs:
           git archive 4f57d52e0f161f9dcd99ceb519cd4a102ad1394b | tar -x -C "$red_tree"
           mkdir -p "$red_tree/backend/internal/integration/issue578"
           cp backend/internal/integration/issue578/*test.go "$red_tree/backend/internal/integration/issue578/"
+          review2_tree="$RUNNER_TEMP/issue-578-storage-review2-red"
+          mkdir -p "$review2_tree"
+          git archive 60254aa9081f715161ef0c0ce3b6683e671b4798 | tar -x -C "$review2_tree"
+          cp backend/internal/integration/issue578/*test.go "$review2_tree/backend/internal/integration/issue578/"
+          echo 60254aa9081f715161ef0c0ce3b6683e671b4798 > evidence/review2-baseline-head.txt
           sudo env PATH="$PATH" GOPATH="$(go env GOPATH)" GOCACHE="$(go env GOCACHE)" \
             GOMODCACHE="$(go env GOMODCACHE)" GOPROXY=off GOSUMDB=off \
-            unshare --net bash .github/scripts/issue-578-storage.sh "$PWD" "$red_tree" "$PWD/evidence"
+            unshare --net bash .github/scripts/issue-578-storage.sh "$PWD" "$red_tree" "$PWD/evidence" "$review2_tree"
       - uses: actions/upload-artifact@v7
         if: always()
         with:
