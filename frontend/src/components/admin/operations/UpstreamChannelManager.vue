@@ -10,6 +10,7 @@
         <label class="block">{{ t('upstreamEntities.code') }}<input v-model="draft.code" class="input w-full" :disabled="draft.id > 0 || busy" maxlength="64" data-testid="channel-code" /></label>
         <label class="block">{{ t('upstreamEntities.name') }}<input v-model="draft.name" class="input w-full" :disabled="busy" data-testid="channel-name" /></label>
         <label class="block">{{ t('upstreamEntities.remark') }}<textarea v-model="draft.remark" class="input w-full" :disabled="busy" data-testid="channel-remark" /></label>
+        <p v-if="latestSaved" class="whitespace-pre-wrap text-sm">{{ t('profitOps.remarkCurrent') }}：{{ latestSaved }}</p>
         <p>{{ t('upstreamEntities.impact') }} {{ draft.members }} {{ t('upstreamEntities.accountsUnit') }}</p>
         <label v-if="draft.id" class="flex gap-2"><input v-model="confirmed" type="checkbox" data-testid="confirm-channel-edit" />{{ t('upstreamEntities.confirmEdit') }}</label>
         <p v-if="invalid" class="text-red-600">{{ t('upstreamEntities.validation') }}</p>
@@ -30,12 +31,13 @@ const props = defineProps<{ expanded?: boolean }>()
 const emit = defineEmits<{ changed: [] }>()
 const { t } = useI18n()
 const items = ref<UpstreamChannel[]>([]), total = ref(0), page = ref(1), search = ref(''), opened = ref(false), busy = ref(false), error = ref(''), saved = ref(false), confirmed = ref(false), needsRead = ref(false)
+const latestSaved = ref('')
 const draft = ref<UpstreamChannel | null>(null), memberChannel = ref<UpstreamChannel | null>(null), members = ref<ChannelBinding[]>([]), membersTotal = ref(0), memberPage = ref(1), selectedIds = ref<number[]>([])
 const invalid = computed(() => !draft.value || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(draft.value.code) || !draft.value.name.trim() || Array.from(draft.value.name.trim()).length > 100 || Array.from(draft.value.remark.trim()).length > 500)
 async function load(next = page.value) { busy.value = true; error.value = ''; try { const result = await listUpstreamChannels(search.value, next); items.value = result.items; total.value = result.total; page.value = next } catch { error.value = t('upstreamEntities.failed') } finally { busy.value = false } }
 function open() { opened.value = true; void load(1) }
-async function begin(id = 0) { error.value = ''; saved.value = false; confirmed.value = false; needsRead.value = false; if (!id) { draft.value = { id: 0, code: '', name: '', remark: '', revision: 0, members: 0 }; return } busy.value = true; try { draft.value = await getUpstreamChannel(id) } catch { error.value = t('upstreamEntities.failed') } finally { busy.value = false } }
-async function readLatest() { if (!draft.value?.id) return; busy.value = true; try { const fresh = await getUpstreamChannel(draft.value.id); draft.value.revision = fresh.revision; draft.value.members = fresh.members; confirmed.value = false; needsRead.value = false; error.value = ''; } catch { error.value = t('upstreamEntities.failed') } finally { busy.value = false } }
+async function begin(id = 0) { latestSaved.value = ''; error.value = ''; saved.value = false; confirmed.value = false; needsRead.value = false; if (!id) { draft.value = { id: 0, code: '', name: '', remark: '', revision: 0, members: 0 }; return } busy.value = true; try { draft.value = await getUpstreamChannel(id) } catch { error.value = t('upstreamEntities.failed') } finally { busy.value = false } }
+async function readLatest() { if (!draft.value?.id) return; busy.value = true; try { const fresh = await getUpstreamChannel(draft.value.id); latestSaved.value = `${fresh.name} · ${fresh.remark}`; draft.value.revision = fresh.revision; draft.value.members = fresh.members; confirmed.value = false; needsRead.value = false; error.value = ''; } catch { error.value = t('upstreamEntities.failed') } finally { busy.value = false } }
 async function save() {
  if (!draft.value || invalid.value || busy.value || needsRead.value || (draft.value.id > 0 && !confirmed.value)) return
  busy.value = true; error.value = ''; saved.value = false

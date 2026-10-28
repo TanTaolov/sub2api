@@ -1098,6 +1098,10 @@ func (h *AccountHandler) Create(c *gin.Context) {
 		response.BadRequest(c, "Invalid request: "+err.Error())
 		return
 	}
+	if _, observer := service.ObserverGroupIDs(c.Request.Context()); observer && req.UpstreamChannelID > 0 {
+		response.ErrorFrom(c, service.ErrObserverScope)
+		return
+	}
 	if req.UpstreamChannelID < 0 || (req.UpstreamChannelID > 0 && !req.ConfirmUpstreamChannel) {
 		response.ErrorFrom(c, service.ErrUpstreamChannelValidation)
 		return
