@@ -66,7 +66,7 @@ func (c *codexOrderedSchedulerCache) SetAccount(ctx context.Context, a *Account)
 	}
 	return c.withFreshUsage(ctx, []Account{*a}, func(fresh []Account) error {
 		if len(fresh) == 0 {
-			return c.SchedulerCache.DeleteAccount(ctx, a.ID)
+			return c.DeleteAccount(ctx, a.ID)
 		}
 		return c.SchedulerCache.SetAccount(ctx, &fresh[0])
 	})

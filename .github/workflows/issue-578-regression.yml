@@ -90,6 +90,13 @@ jobs:
           set -o pipefail
           "$RUNNER_TEMP/issue-578-offline" go test -tags=unit ./internal/service -run '^(TestIssue578|TestExcelBPSQuotaSnapshot|TestExcelBPS429|TestOpenAIQuotaRecovery|TestShouldRefreshOpenAICodexSnapshot|TestGetOpenAIUsage_SparkShadow|TestQueryUsageAgentIdentity|TestQueryUsageShadow|TestOpenAIQuotaAutoReset|TestShouldAutoPauseOpenAIAccountByQuota|TestEvaluateAccountSchedulingThreshold_OpenAI)' -count=1 -v 2>&1 | tee ../evidence/green-service.log
           "$RUNNER_TEMP/issue-578-offline" go test -tags=unit ./internal/handler/admin -run '^TestIssue578|^TestOpenAI.*(Quota|Refresh)' -count=1 -v 2>&1 | tee ../evidence/green-admin.log
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: issue-578-early-${{ github.event_name }}-${{ github.run_id }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
       - name: Review blockers behavioral RED on rejected head
         if: '!cancelled()'
         shell: bash
