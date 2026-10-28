@@ -2,7 +2,7 @@
 
 - 唯一 writer：本 worktree `sub2api-profit-url-channel-remarks` / branch `feat/profit-url-channel-remarks`；base production `08d69a522c79a182fd681ead8fa4d848d9e1554e`。
 - 已逐条消费用户更正：**URL 备注方案不是完整交付**。独立渠道内部 ID 才是关联键；可读唯一标识/名称和备注不是外键，绑定不要求可识别/可获取 URL。
-- 同一 Draft PR：https://github.com/ranxi2001/sub2api/pull/593 。旧 head `e6d2022cf` 的验证保留为历史证据，不再等待或重复独立验收。当前任务恢复实现，旧冻结记录已失效。
+- 同一 Draft PR：https://github.com/ranxi2001/sub2api/pull/593 。旧 head `e6d2022cf` 的验证保留为历史证据，不再等待或重复独立验收。当前任务恢复实现，旧冻结记录已失效。当前 head `bac3bddf8c11a92d6b98f7fa36cfbc0ba9f80e83`。
 - 已重新读取 DEV_GUIDE 和 PR 当前正文。当前远端标题已是渠道实体，但读取到的正文仍含旧 URL 增量及“冻结”描述；后续保留现有模板小节，仅准确更新完整范围状态/head/证据/未完成清单，不退回简版。
 - 披露：Codex / gpt-6.1-sol / xhigh；Hermes / gpt-6.1-sol / 推理档位未知（父级提供的参与声明）。不另启 writer。
 
@@ -36,3 +36,6 @@
 - 新页面先 RED（实体入口缺失），实现后旧账号+利润7 spec 324/324通过；新增管理/绑定6项通过。真实 HTTP→私有DB→GET→账户创建/绑定→利润跨页/改名/解绑回归已写，专属CI保留旧回归并新增丢弃绑定变异RED→GREEN。后端/完整前端 pending远端；截图正在补。
 
 - `b052fd0bd` 专属后端 push job 123035226410 已完成真实实体绑定变异 RED→GREEN 与账号管理/利润跨页全链路。首批前端 typecheck 两处 nullable 已修复；Go lint QF1008 已按 raw 修正。旧响应在账号选择变化时的隔离追加专属回归，不允许同数量的新选择接收旧集合。
+
+- 50f67c3b8 修复显式渠道下钻必须按 `channel_id` 外键过滤（同渠道不同URL不漏）；定向前端 7 spec 326/326 通过。其首个 security raw 的 undefined strconv 已在 bac3bddf8 修复。当前 head 的完整 push/PR/专属 channel CI pending。
+- 9c82752b7 专属 push/PR 的实体浏览器产物已归档于 `entity-browser-accepted-9c`：真实 ProfitOperationsView / UpstreamChannelsView / AccountsView，包含实体改名备注读回、账号新建确认、编辑解绑、批量绑定；verification 为 current head 9c82752b7、0 live API、0 paid requests、0 browser errors。截图不含真实账号/凭据。
