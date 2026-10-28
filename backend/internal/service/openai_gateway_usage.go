@@ -1215,8 +1215,8 @@ func (s *OpenAIGatewayService) updateCodexUsageSnapshot(ctx context.Context, acc
 	if len(updates) == 0 {
 		return
 	}
-	s.getCodexSnapshotThrottle().submitCodex(s.accountRepo, accountID, updates, func(updates map[string]any) error {
-		updateCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	s.getCodexSnapshotThrottle().submitCodex(s.accountRepo, accountID, updates, func(workerCtx context.Context, updates map[string]any) error {
+		updateCtx, cancel := context.WithTimeout(workerCtx, 5*time.Second)
 		defer cancel()
 		written, err := persistCodexUsageUpdates(updateCtx, s.accountRepo, accountID, updates)
 		if err == nil && written {

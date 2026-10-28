@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -46,6 +47,26 @@ type OpenAIRateLimitWindow struct {
 	LimitWindowSeconds int64   `json:"limit_window_seconds"`
 	ResetAfterSeconds  int64   `json:"reset_after_seconds"`
 	ResetAt            int64   `json:"reset_at"`
+	decoded            bool
+	usedPresent        bool
+	resetAfterPresent  bool
+}
+
+func (w *OpenAIRateLimitWindow) UnmarshalJSON(data []byte) error {
+	type plain OpenAIRateLimitWindow
+	var value plain
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fields); err != nil {
+		return err
+	}
+	*w = OpenAIRateLimitWindow(value)
+	w.decoded = true
+	w.usedPresent = len(fields["used_percent"]) > 0 && string(fields["used_percent"]) != "null"
+	w.resetAfterPresent = len(fields["reset_after_seconds"]) > 0 && string(fields["reset_after_seconds"]) != "null"
+	return nil
 }
 
 // OpenAIRateLimit is a rate-limit envelope (primary + optional secondary window).
@@ -107,6 +128,19 @@ type OpenAIQuotaUsage struct {
 	UsageCachePersisted   bool                         `json:"usage_cache_persisted"`
 	autoResetCandidates   []openAIAutoResetCreditCandidate
 	schedulingUpdates     map[string]any
+	schedulingObserved    bool
+	observedAt            time.Time
+}
+
+func (u *OpenAIQuotaUsage) UnmarshalJSON(data []byte) error {
+	type plain OpenAIQuotaUsage
+	var value plain
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*u = OpenAIQuotaUsage(value)
+	u.observedAt = time.Now()
+	return nil
 }
 
 // OpenAIQuotaResetCredit captures the redeemed credit metadata returned by the
@@ -219,6 +253,8 @@ func (s *OpenAIQuotaService) QueryUsage(ctx context.Context, accountID int64) (*
 			slog.Warn("openai_quota_query_failed", "account_id", accountID, "status", status, "body", body)
 			return nil, infraerrors.Newf(mapUpstreamStatus(status), "OPENAI_QUOTA_UPSTREAM_ERROR", "upstream returned %d: %s", status, body)
 		}
+		payload.schedulingObserved = true
+		payload.UsageCachePersisted = false
 		// A failed row read cannot safely choose global vs Spark windows.
 		var updates map[string]any
 		if queriedAccount != nil && !identityValuesConflict(queriedAccount.GetCredential("email"), payload.Email) {
@@ -323,7 +359,7 @@ func (s *OpenAIQuotaService) cacheResetCreditsSnapshot(ctx context.Context, acco
 		updates = make(map[string]any, 1)
 	}
 	updates[openaiQuotaResetCreditsKey] = credits
-	if err := s.accountRepo.UpdateExtra(ctx, accountID, updates); err != nil {
+	if _, err := persistCodexUsageUpdates(ctx, s.accountRepo, accountID, updates); err != nil {
 		return infraerrors.New(
 			http.StatusInternalServerError,
 			"OPENAI_QUOTA_CACHE_WRITE_FAILED",

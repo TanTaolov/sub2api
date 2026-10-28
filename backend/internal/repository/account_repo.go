@@ -2092,12 +2092,7 @@ func (r *accountRepository) syncSchedulerAccountSnapshot(ctx context.Context, ac
 	if r == nil || r.schedulerCache == nil || accountID <= 0 {
 		return
 	}
-	account, err := r.GetByID(ctx, accountID)
-	if err != nil {
-		logger.LegacyPrintf("repository.account", "[Scheduler] sync account snapshot read failed: id=%d err=%v", accountID, err)
-		return
-	}
-	if err := r.schedulerCache.SetAccount(ctx, account); err != nil {
+	if err := r.publishSchedulerAccountSnapshot(ctx, accountID); err != nil {
 		logger.LegacyPrintf("repository.account", "[Scheduler] sync account snapshot write failed: id=%d err=%v", accountID, err)
 	}
 }
@@ -2142,19 +2137,16 @@ func (r *accountRepository) syncSchedulerAccountSnapshots(ctx context.Context, a
 		return
 	}
 
-	accounts, err := r.GetByIDs(ctx, uniqueIDs)
+	err := r.WithLatestSchedulerAccounts(ctx, uniqueIDs, func(accounts []service.Account) error {
+		for i := range accounts {
+			if err := r.schedulerCache.SetAccount(ctx, &accounts[i]); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 	if err != nil {
-		logger.LegacyPrintf("repository.account", "[Scheduler] batch sync account snapshot read failed: count=%d err=%v", len(uniqueIDs), err)
-		return
-	}
-
-	for _, account := range accounts {
-		if account == nil {
-			continue
-		}
-		if err := r.schedulerCache.SetAccount(ctx, account); err != nil {
-			logger.LegacyPrintf("repository.account", "[Scheduler] batch sync account snapshot write failed: id=%d err=%v", account.ID, err)
-		}
+		logger.LegacyPrintf("repository.account", "[Scheduler] batch sync account snapshot failed: count=%d err=%v", len(uniqueIDs), err)
 	}
 }
 
@@ -3188,6 +3180,10 @@ func (r *accountRepository) AutoPauseExpiredAccounts(ctx context.Context, now ti
 func (r *accountRepository) UpdateExtra(ctx context.Context, id int64, updates map[string]any) error {
 	if scoped := r.accountTransactionScope(ctx); scoped != r {
 		return scoped.UpdateExtra(ctx, id, updates)
+	}
+	if hasCodexWindowUpdates(updates) {
+		_, err := r.UpdateCodexUsageSnapshot(ctx, id, updates)
+		return err
 	}
 	updates = stripCodexFingerprintSeedFromExtraUpdate(updates)
 	if len(updates) == 0 {

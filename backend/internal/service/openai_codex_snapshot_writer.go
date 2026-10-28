@@ -2,7 +2,8 @@ package service
 
 import (
 	"context"
-	"sync"
+	"errors"
+	"log/slog"
 	"time"
 )
 
@@ -12,12 +13,37 @@ type codexPendingWrite struct {
 	observedAt  time.Time
 }
 
-// Submit keeps one latest snapshot per account, including after a failed write.
-// Only its worker writes that account. Both successes and failures consume the
-// interval, so bursts and unavailable storage cannot turn into unbounded writes.
-func (t *accountWriteThrottle) submitCodex(repo AccountRepository, id int64, updates map[string]any, write func(map[string]any) error) {
+type codexWriteKey struct {
+	repo AccountRepository
+	id   int64
+}
+
+// Production repositories implement the shared, atomic observation CAS and
+// return a cache publication error even if the database write already committed.
+// In-memory/non-persistent adapters can retain the basic UpdateExtra contract.
+type CodexUsageSnapshotRepository interface {
+	UpdateCodexUsageSnapshot(context.Context, int64, map[string]any) (bool, error)
+}
+
+func (t *accountWriteThrottle) close() {
+	t.mu.Lock()
+	t.closed = true
+	if t.cancel != nil {
+		t.cancel()
+	}
+	t.mu.Unlock()
+	t.workers.Wait()
+}
+
+// One retained latest update per account, at most one attempt per interval.
+// Transient failures retry without another upstream response. Deleted accounts
+// and shutdown terminate the worker and release all pending state.
+func (t *accountWriteThrottle) submitCodex(repo AccountRepository, id int64, updates map[string]any, write func(context.Context, map[string]any) error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
+	if t.closed || id <= 0 {
+		return
+	}
 	if t.pending == nil {
 		t.pending = make(map[codexWriteKey]*codexPendingWrite)
 	}
@@ -37,16 +63,31 @@ func (t *accountWriteThrottle) submitCodex(repo AccountRepository, id int64, upd
 	}
 	pending := &codexPendingWrite{updates: updates, observedAt: observedAt}
 	t.pending[key] = pending
+	t.workers.Add(1)
 	go func() {
+		defer t.workers.Done()
+		defer func() {
+			t.mu.Lock()
+			if t.pending[key] == pending {
+				delete(t.pending, key)
+			}
+			t.mu.Unlock()
+		}()
 		for {
 			t.mu.Lock()
 			delay := time.Until(pending.lastAttempt.Add(t.minInterval))
 			t.mu.Unlock()
 			if delay > 0 {
-				time.Sleep(delay)
+				timer := time.NewTimer(delay)
+				select {
+				case <-t.ctx.Done():
+					timer.Stop()
+					return
+				case <-timer.C:
+				}
 			}
 			t.mu.Lock()
-			if len(pending.updates) == 0 {
+			if t.closed || len(pending.updates) == 0 {
 				delete(t.pending, key)
 				t.mu.Unlock()
 				return
@@ -55,36 +96,27 @@ func (t *accountWriteThrottle) submitCodex(repo AccountRepository, id int64, upd
 			pending.updates = nil
 			pending.lastAttempt = time.Now()
 			t.mu.Unlock()
-			err := write(current)
-			t.mu.Lock()
+			err := write(t.ctx, current)
+			if t.ctx.Err() != nil {
+				return
+			}
+			if errors.Is(err, ErrAccountNotFound) {
+				slog.Info("openai_codex_snapshot_worker_stopped", "account_id", id, "reason", "account_deleted")
+				return
+			}
 			if err != nil {
-				// Preserve failed fields, but never replace a newer queued field.
+				// Do not emit opaque repository/upstream text: it may contain secrets.
+				slog.Warn("openai_codex_snapshot_retry", "account_id", id, "error_code", "snapshot_persistence_failed")
+				t.mu.Lock()
 				for k, v := range pending.updates {
 					current[k] = v
 				}
 				pending.updates = current
+				t.mu.Unlock()
 			}
-			t.mu.Unlock()
 		}
 	}()
 }
-
-// A quota query/probe may finish while an older header snapshot is waiting for
-// its interval. Serialize these writers and reject older observations so that
-// the delayed header cannot undo a successful explicit refresh.
-type codexWriteKey struct {
-	repo AccountRepository
-	id   int64
-}
-type codexWriteOrder struct {
-	mu         sync.Mutex
-	observedAt time.Time
-}
-
-var codexWriteOrders = struct {
-	sync.Mutex
-	byKey map[codexWriteKey]*codexWriteOrder
-}{byKey: make(map[codexWriteKey]*codexWriteOrder)}
 
 func codexUpdatesTime(updates map[string]any) time.Time {
 	stamp, _ := updates["codex_usage_updated_at"].(string)
@@ -93,23 +125,11 @@ func codexUpdatesTime(updates map[string]any) time.Time {
 }
 
 func persistCodexUsageUpdates(ctx context.Context, repo AccountRepository, id int64, updates map[string]any) (bool, error) {
-	key := codexWriteKey{repo: repo, id: id}
-	codexWriteOrders.Lock()
-	order := codexWriteOrders.byKey[key]
-	if order == nil {
-		order = &codexWriteOrder{}
-		codexWriteOrders.byKey[key] = order
-	}
-	codexWriteOrders.Unlock()
-	order.mu.Lock()
-	defer order.mu.Unlock()
-	observedAt := codexUpdatesTime(updates)
-	if observedAt.Before(order.observedAt) {
-		return false, nil
+	if writer, ok := repo.(CodexUsageSnapshotRepository); ok {
+		return writer.UpdateCodexUsageSnapshot(ctx, id, updates)
 	}
 	if err := repo.UpdateExtra(ctx, id, updates); err != nil {
 		return false, err
 	}
-	order.observedAt = observedAt
 	return true, nil
 }

@@ -1,5 +1,16 @@
 # Issue #578 delivery log
 
+## Reopened after independent review (current work)
+
+- Read the complete `parent-independent-review.md`. Prior green CI and FINAL_VALIDATION.md do **not** constitute acceptance: parent review blocks PR #591.
+- P1 pending: replace process/repository-object-only ordering with an atomic shared persistence CAS and ordered cache publication; add two independent coordinator domains using the same real PostgreSQL/Redis and scheduler selection regression.
+- P1 pending: audit every Codex window writer, remove DTO/time restamping bypasses in CachePostResetSnapshot and auto-reset persistFreshUsage, retain original observation/presence, and exercise actual query -> downstream seams under races and missing fields.
+- P2 pending: stop/clean workers on ErrAccountNotFound, cancel waits and in-flight writes on service shutdown, preserve transient recovery, safely retire ordering state, and expose bounded non-sensitive errors; add lifecycle regressions.
+- Keep same branch/Draft PR; no neighbor #592 repository Redis files/workflows or neighbor worktree edits. No local Go compilation/dynamic tests, Docker/full frontend checks, production access or merge/release/deploy.
+- Preserve the parent's eight-section CONTRIBUTING PR body. Disclose Hermes independent review subAgent (`gpt-6.1-sol`, reasoning unknown). New-head remote checks/raw evidence and independent re-review remain required.
+- New behavior tests written first: real QueryUsage/details -> auto-reset/post-reset stale DTO seam; permanent deletion and shutdown cancellation. Implementation now routes Codex windows through a PostgreSQL observation-version CASE/UPDATE, serializes cache publishers using transaction advisory locks plus fresh committed reads, and wraps scheduler rebuild/token-refresh publication without touching repository Redis files.
+- Added dedicated shared-storage CI job: native isolated PostgreSQL/Redis inside loopback-only network namespace, two independent gateway/repository domains, actual 30-second delayed-header race, cache publication race and actual scheduler selection. The rejected head is tested RED with the same storage regressions. Dynamic results pending; this is initial review-fix increment, not acceptance.
+
 - Exclusive worktree/branch: `fix/issue-578-bps-usage-snapshot`; production baseline `08d69a522c79a182fd681ead8fa4d848d9e1554e`.
 - Read DEV_GUIDE.md; searched ancestors and all hidden/non-hidden workspace paths for AGENTS.md (none). Read full Issue #578 body and all comments (none), and #582 scope. No repository Redis files or neighbor workflows changed.
 - User restrictions override DEV_GUIDE local dynamic checks. Executed only local gofmt/static/diff checks; no local Go compilation/tests, Docker, full frontend checks, production access, model/paid/mail calls, merge, release or deploy.

@@ -9,6 +9,10 @@ on:
       - 'backend/internal/service/**'
       - 'backend/internal/handler/admin/openai_oauth_handler*'
       - 'backend/internal/handler/admin/issue_578*'
+      - 'backend/internal/repository/account_codex_snapshot*'
+      - 'backend/internal/repository/account_repo.go'
+      - 'backend/internal/integration/issue578/**'
+      - '.github/scripts/issue-578-storage.sh'
       - '.github/workflows/issue-578-regression.yml'
   workflow_dispatch:
 
@@ -86,6 +90,27 @@ jobs:
           set -o pipefail
           "$RUNNER_TEMP/issue-578-offline" go test -tags=unit ./internal/service -run '^(TestIssue578|TestExcelBPSQuotaSnapshot|TestExcelBPS429|TestOpenAIQuotaRecovery|TestShouldRefreshOpenAICodexSnapshot|TestGetOpenAIUsage_SparkShadow|TestQueryUsageAgentIdentity|TestQueryUsageShadow|TestOpenAIQuotaAutoReset|TestShouldAutoPauseOpenAIAccountByQuota|TestEvaluateAccountSchedulingThreshold_OpenAI)' -count=1 -v 2>&1 | tee ../evidence/green-service.log
           "$RUNNER_TEMP/issue-578-offline" go test -tags=unit ./internal/handler/admin -run '^TestIssue578|^TestOpenAI.*(Quota|Refresh)' -count=1 -v 2>&1 | tee ../evidence/green-admin.log
+      - name: Review blockers behavioral RED on rejected head
+        if: '!cancelled()'
+        shell: bash
+        env:
+          REVIEW_BASELINE: 4f57d52e0f161f9dcd99ceb519cd4a102ad1394b
+        run: |
+          set -euo pipefail
+          red_tree="$RUNNER_TEMP/issue-578-review-red"
+          mkdir -p "$red_tree"
+          git archive "$REVIEW_BASELINE" | tar -x -C "$red_tree"
+          cp backend/internal/service/issue_578_review_regression_test.go "$red_tree/backend/internal/service/"
+          set +e
+          (cd "$red_tree/backend" && "$RUNNER_TEMP/issue-578-offline" go test -tags=unit ./internal/service -run '^TestIssue578Review' -count=1 -v) > evidence/review-red.log 2>&1
+          result=$?
+          set -e
+          cat evidence/review-red.log
+          echo "$REVIEW_BASELINE" > evidence/review-baseline-head.txt
+          test "$result" -ne 0
+          if grep -Eq '\[build failed\]|\[setup failed\]|undefined:|syntax error:|no tests to run|panic:' evidence/review-red.log; then exit 1; fi
+          grep -F -- '--- FAIL: TestIssue578ReviewQueryDownstreamCannotRestampWindows' evidence/review-red.log
+          grep -F -- '--- FAIL: TestIssue578ReviewWorkerPermanentErrorAndShutdown' evidence/review-red.log
       - name: Exact head concurrency regressions
         if: '!cancelled()'
         working-directory: backend
@@ -97,6 +122,48 @@ jobs:
         if: always()
         with:
           name: issue-578-${{ github.event_name }}-${{ github.run_id }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  shared-storage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Prepare isolated PostgreSQL Redis and dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends postgresql redis-server
+          (cd backend && go mod download)
+      - name: Exact head and rejected-head shared storage regression
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          git rev-parse HEAD | tee evidence/head.txt
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          red_tree="$RUNNER_TEMP/issue-578-storage-red"
+          mkdir -p "$red_tree"
+          git archive 4f57d52e0f161f9dcd99ceb519cd4a102ad1394b | tar -x -C "$red_tree"
+          mkdir -p "$red_tree/backend/internal/integration/issue578"
+          cp backend/internal/integration/issue578/*test.go "$red_tree/backend/internal/integration/issue578/"
+          sudo env PATH="$PATH" GOPATH="$(go env GOPATH)" GOCACHE="$(go env GOCACHE)" \
+            GOMODCACHE="$(go env GOMODCACHE)" GOPROXY=off GOSUMDB=off \
+            unshare --net bash .github/scripts/issue-578-storage.sh "$PWD" "$red_tree" "$PWD/evidence"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: issue-578-storage-${{ github.event_name }}-${{ github.run_id }}
           path: evidence/
           if-no-files-found: error
           retention-days: 14

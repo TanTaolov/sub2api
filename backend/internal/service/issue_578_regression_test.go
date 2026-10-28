@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -18,6 +19,7 @@ import (
 // reset-card consumption, database, Redis or real credential is used.
 type issue578Repo struct {
 	AccountRepository
+	casMu     sync.Mutex
 	mu        sync.Mutex
 	accounts  map[int64]*Account
 	writes    int
@@ -26,6 +28,29 @@ type issue578Repo struct {
 	release   chan struct{}
 	active    int
 	maxActive int
+}
+
+func (r *issue578Repo) UpdateCodexUsageSnapshot(ctx context.Context, id int64, updates map[string]any) (bool, error) {
+	r.casMu.Lock()
+	defer r.casMu.Unlock()
+	r.mu.Lock()
+	current, _ := time.Parse(time.RFC3339Nano, fmt.Sprint(r.accounts[id].Extra["codex_usage_updated_at"]))
+	r.mu.Unlock()
+	observed, _ := time.Parse(time.RFC3339Nano, fmt.Sprint(updates["codex_usage_updated_at"]))
+	if observed.Before(current) {
+		display := make(map[string]any)
+		for key, value := range updates {
+			if key != "codex_usage_updated_at" && !strings.HasPrefix(key, "codex_5h_") && !strings.HasPrefix(key, "codex_7d_") && !strings.HasPrefix(key, "codex_primary_") && !strings.HasPrefix(key, "codex_secondary_") {
+				display[key] = value
+			}
+		}
+		if len(display) > 0 {
+			return false, r.UpdateExtra(ctx, id, display)
+		}
+		return false, nil
+	}
+	err := r.UpdateExtra(ctx, id, updates)
+	return err == nil, err
 }
 
 func (r *issue578Repo) GetByID(_ context.Context, id int64) (*Account, error) {
