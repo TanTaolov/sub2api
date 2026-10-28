@@ -21,6 +21,31 @@ func hasCodexWindowUpdates(updates map[string]any) bool {
 	return false
 }
 
+// Full account edits already hold FOR UPDATE in lockAndMergeAccountProbeExtra.
+// Preserve the committed usage generation when an unrelated edit carries a
+// stale full Extra object. Identity-changing edits retain their invalidation.
+func preserveCommittedCodexUsage(incoming, current map[string]any) map[string]any {
+	currentVersion, _ := strconv.ParseInt(fmt.Sprint(current[service.CodexUsageObservationVersionKey]), 10, 64)
+	incomingVersion, _ := strconv.ParseInt(fmt.Sprint(incoming[service.CodexUsageObservationVersionKey]), 10, 64)
+	if currentVersion <= 0 || incomingVersion > currentVersion {
+		return incoming
+	}
+	if incoming == nil {
+		incoming = make(map[string]any)
+	}
+	for key := range incoming {
+		if service.IsCodexUsageExtraKey(key) {
+			delete(incoming, key)
+		}
+	}
+	for key, value := range current {
+		if service.IsCodexUsageExtraKey(key) {
+			incoming[key] = value
+		}
+	}
+	return incoming
+}
+
 // The observation CAS is in the UPDATE, never in a preceding read. Independent
 // gateway processes and independent repository instances share the same fence.
 // Display caches are independent: an old usage observation can still refresh

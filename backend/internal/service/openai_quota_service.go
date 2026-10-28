@@ -268,7 +268,7 @@ func (s *OpenAIQuotaService) QueryUsage(ctx context.Context, accountID int64) (*
 			written, writeErr := persistCodexUsageUpdates(callCtx, s.accountRepo, accountID, updates)
 			payload.UsageCachePersisted = written && writeErr == nil
 			if writeErr != nil {
-				slog.Warn("openai_quota_usage_snapshot_failed", "account_id", accountID, "error", writeErr)
+				slog.Warn("openai_quota_usage_snapshot_failed", "account_id", accountID, "error_code", "snapshot_persistence_failed")
 			} else if written && !queriedAccount.IsShadow() {
 				// Recovery still requires the original complete-zero payload and
 				// observed generation; nonzero/partial data never clears a 429.

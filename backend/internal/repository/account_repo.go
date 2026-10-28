@@ -860,6 +860,9 @@ func lockAndMergeAccountProbeExtra(
 		}
 	}
 	extra := service.MergeOpenAICodexTicketExtra(copyJSONMap(normalizeJSONMap(account.Extra)), currentExtra)
+	if identityUnchanged {
+		extra = preserveCommittedCodexUsage(extra, currentExtra)
+	}
 	extra = service.MergeExcelBPS403Marker(extra, currentExtra)
 	// Isolation is server-owned. A normal save must use the latest value read
 	// under this row lock, including absence after a legitimate restoration.

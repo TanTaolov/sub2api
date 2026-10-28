@@ -44,6 +44,9 @@ func (t *accountWriteThrottle) submitCodex(repo AccountRepository, id int64, upd
 	if t.closed || id <= 0 {
 		return
 	}
+	if t.ctx == nil {
+		t.ctx, t.cancel = context.WithCancel(context.Background())
+	}
 	if t.pending == nil {
 		t.pending = make(map[codexWriteKey]*codexPendingWrite)
 	}

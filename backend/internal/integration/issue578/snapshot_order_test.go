@@ -115,6 +115,12 @@ func TestIssue578ReviewCrossInstanceHeaderCASRedisSelection(t *testing.T) {
 		x, e := f.repoB.GetByID(ctx, f.account.ID)
 		return e == nil && x.Extra["codex_5h_used_percent"] == 88.0
 	}, 3*time.Second, 10*time.Millisecond)
+	before, err := b.SelectAccountForModel(ctx, nil, "", "gpt-5.3-codex")
+	require.NoError(t, err, "below-threshold control must actually select this fixture")
+	require.NotNil(t, before)
+	require.Equal(t, f.account.ID, before.ID)
+	staleFull, err := f.repoA.GetByID(ctx, f.account.ID)
+	require.NoError(t, err)
 	a.UpdateCodexUsageSnapshotFromHeaders(ctx, f.account.ID, headers("89"))
 	q := quota(t, f.repoB, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -138,6 +144,15 @@ func TestIssue578ReviewCrossInstanceHeaderCASRedisSelection(t *testing.T) {
 	selected, err := b.SelectAccountForModel(ctx, nil, "", "gpt-5.3-codex")
 	require.Error(t, err, "actual selection must reject the explicit 90%% paused account")
 	require.Nil(t, selected)
+	// A stale bulk/admin object and a late scheduler publisher must not restore
+	// their old Extra after the usage CAS has already committed.
+	stale := *staleFull
+	stale.Name = "unrelated admin edit"
+	require.NoError(t, f.repoA.Update(ctx, &stale))
+	require.NoError(t, snapshot.UpdateAccountInCache(ctx, before))
+	cached, err = f.cache.GetAccount(ctx, f.account.ID)
+	require.NoError(t, err)
+	require.Equal(t, 100.0, cached.Extra["codex_5h_used_percent"])
 }
 
 type blockingCache struct {
