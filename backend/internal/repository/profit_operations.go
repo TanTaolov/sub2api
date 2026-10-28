@@ -222,7 +222,7 @@ func (r *channelRepository) ReadProfitOperations(ctx context.Context, f service.
           AND jsonb_typeof(r.pelican_config->'quality')='object' AND $8::text IS NOT NULL
         ` + classifier
 		quality += ` SELECT jsonb_build_object('source','scheduled_test_results complete frozen plan+round+model; current account cohort', 'summary',(SELECT jsonb_build_object('rounds',count(*),'passed',count(*) FILTER(WHERE outcome='passed'),'degraded',count(*) FILTER(WHERE outcome='degraded'),'inconclusive',count(*) FILTER(WHERE outcome='inconclusive')) FROM classified),'rows',COALESCE((SELECT jsonb_agg(to_jsonb(c)) FROM (SELECT * FROM classified ORDER BY id DESC LIMIT $9 OFFSET $10)c),'[]'::jsonb),'total',(SELECT count(*) FROM classified))`
-		out.Quality = readUpstreamSection(ctx, tx, quality, args...)
+		out.Quality = readUpstreamSection(ctx, tx, quality, args[:10]...)
 	}
 	if err = tx.Commit(); err != nil {
 		return nil, err
