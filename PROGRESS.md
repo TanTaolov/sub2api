@@ -39,3 +39,5 @@
 
 - 50f67c3b8 修复显式渠道下钻必须按 `channel_id` 外键过滤（同渠道不同URL不漏）；定向前端 7 spec 326/326 通过。其首个 security raw 的 undefined strconv 已在 bac3bddf8 修复。当前 head 的完整 push/PR/专属 channel CI pending。
 - 9c82752b7 专属 push/PR 的实体浏览器产物已归档于 `entity-browser-accepted-9c`：真实 ProfitOperationsView / UpstreamChannelsView / AccountsView，包含实体改名备注读回、账号新建确认、编辑解绑、批量绑定；verification 为 current head 9c82752b7、0 live API、0 paid requests、0 browser errors。截图不含真实账号/凭据。
+
+- 显式利润下钻支持 `channel_id`（也规范化 `channel:<id>`），按绑定FK跨不同URL过滤，不再把实体当URL文本；加入服务解析/冲突测试和真实 repository `Total=1 / Requests=4` 跨实体下钻回归。相关4个定向spec 12/12本机通过。当前最终尝试head `14c00451b16340662259d312c18306b7e0d66e8a`，完整push/PR CI pending。
