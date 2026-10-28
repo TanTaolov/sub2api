@@ -13,7 +13,7 @@
 - [x] 管理员 CRUD / list / GET / binding preview+readback API、observer/普通用户拒绝、审计正文省略及目标摘要。
 - [x] 删除仅允许无绑定渠道并要求版本与确认；有绑定返回冲突，先执行明确有界解绑；FK RESTRICT，不级联删账号/usage，不静默重归属。
 - [x] 账户管理新建、编辑、批量选择器、当前归属展示与管理入口；失败保留选择/草稿，真实 API 保存后 GET 读回，避免账号已建却因绑定失败重复建账号。
-- [x] 渠道管理入口可新建/编辑/删除、分页账号成员和明确有界解绑；利润页直接可管理备注/进入渠道管理。
+- [x] 渠道管理入口可新建/编辑/删除、分页账号成员和明确有界解绑；利润页直接可管理实体备注/进入渠道管理。
 - [x] 利润聚合优先显式 `channel:<内部ID>`，未绑定保留安全有效 URL / unknown fallback，清晰标注未绑定；同渠道不同 URL / 不同渠道相同 URL / 改名改 URL / 翻页关联稳定。
 - [x] 归属明确为当前绑定统计，非历史路由；不回写 usage 或历史账本。利润公式保持 `usage.total_cost × 当前账号成本倍率`，不额外叠加模型成本。
 - [ ] 先 RED 再 GREEN：真实前端组件/实际 client；真实 HTTP→私有迁移 DB→GET→账户绑定→利润跨页/改名/解绑；CAS、删除、权限及隐私边界。
@@ -42,3 +42,5 @@
 
 - 显式利润下钻支持 `channel_id`（也规范化 `channel:<id>`），按绑定FK跨不同URL过滤，不再把实体当URL文本；加入服务解析/冲突测试和真实 repository `Total=1 / Requests=4` 跨实体下钻回归。相关4个定向spec 12/12本机通过。当前最终尝试head `14c00451b16340662259d312c18306b7e0d66e8a`，完整push/PR CI pending。
 - 最新完整 filter=all head 已滚动至 e0f095ae4；CI 实测暴露 `upstream_channels_test.go` 同名测试被重复追加，已于后续 head 删除重复。旧上游 Operations RED workflow 会将整个 service 文件替换为基线，下一提交为该测试夹具保留 channel_id DTO 并剔除已迁移的 duplicate multiplier helper，不改变原两项真实RED assertion。
+
+- 用户纠正再次确认“停止URL唯一键备注方案”。当前修复阶段移除该独立可写API/UI及竞争数据表入口，保留安全URL作为**未绑定自动聚合fallback**；不按旧URL笔记猜测显式实体或旧usage历史归属。新增实体是唯一可管理渠道/备注。

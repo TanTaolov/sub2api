@@ -201,10 +201,6 @@ func (r *channelRepository) ReadProfitOperations(ctx context.Context, f service.
 	if err = tx.QueryRowContext(ctx, query, args...).Scan(&out.Usage); err != nil {
 		return nil, fmt.Errorf("read upstream usage: %w", err)
 	}
-	out.URLRemarks, err = readProfitURLRemarks(ctx, tx, out.Usage, f)
-	if err != nil {
-		return nil, err
-	}
 	profitErrors := strings.Replace(upstreamOperationsErrors, upstreamOperationsCohort, profitOperationsCohort, 1)
 	profitErrors = strings.Replace(profitErrors, "params AS (SELECT $8::text AS model_scope)", "params AS (SELECT $8::text AS model_scope,$9::int AS page_size,$10::int AS row_offset,$11::bigint AS selected_channel_id)", 1)
 	out.Errors = readUpstreamSection(ctx, tx, profitErrors, args...)

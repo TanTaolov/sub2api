@@ -11,8 +11,7 @@ import (
 
 type ProfitOperationsSnapshot struct {
 	UpstreamOperationsSnapshot
-	Currency   string                       `json:"currency"`
-	URLRemarks map[string]UpstreamURLRemark `json:"url_remarks"`
+	Currency string `json:"currency"`
 }
 
 type ProfitOperationsRepository interface {

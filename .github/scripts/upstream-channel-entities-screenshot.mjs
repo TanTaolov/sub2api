@@ -35,7 +35,7 @@ apiClient.defaults.adapter=async config=>{
  else if(url.includes('upstream-billing-rates'))data={items:[],total:0,page:1,page_size:20};
  else if(url==='/admin/profit-operations/snapshot'){
   const metrics={requests:2,standard_charge:20,request_income:8,estimated_cost:5,estimated_profit:3,margin:.375,cost_covered_requests:2,unknown_cost_requests:0,unknown_upstream_requests:0};
-  data={scope:config.params,queried_at:now,currency:'USD',url_remarks:{},usage:{summary:metrics,rows:[{...metrics,key:'channel:7',name:channel.name,channel_id:7,channel_code:channel.code,channel_remark:channel.remark,assignment:'explicit'}],total:1,catalog:[{key:'channel:7',name:channel.name,accounts:2}],catalog_total:1,members:[],member_total:0,accounts:[],capacity:{accounts:2,schedulable:2,configured_concurrency:6}},quality:{status:'ready',data:{summary:{},rows:[]}},errors:{status:'ready',data:{rows:[]}}};
+  data={scope:config.params,queried_at:now,currency:'USD',usage:{summary:metrics,rows:[{...metrics,key:'channel:7',name:channel.name,channel_id:7,channel_code:channel.code,channel_remark:channel.remark,assignment:'explicit'}],total:1,catalog:[{key:'channel:7',name:channel.name,accounts:2,channel_id:7,channel_code:channel.code,channel_remark:channel.remark,assignment:'explicit'}],catalog_total:1,members:[],member_total:0,accounts:[],capacity:{accounts:2,schedulable:2,configured_concurrency:6}},quality:{status:'ready',data:{summary:{},rows:[]}},errors:{status:'ready',data:{rows:[]}}};
  }else if(url.includes('management-capabilities'))data={web_search_enabled:false,account_quota_notify_enabled:false};
  else if(url.includes('credential-encryption'))data={configured:true,source:'server_config'};
  else if(url.includes('check-mixed-channel'))data={has_risk:false};

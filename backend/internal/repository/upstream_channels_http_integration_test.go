@@ -25,7 +25,7 @@ import (
 
 func TestUpstreamChannelEntityHTTPAccountProfitPersistence(t *testing.T) {
 	ctx := context.Background()
-	db, client := repository.ProfitURLRemarksTestDatabase(t)
+	db, client := repository.UpstreamChannelsTestDatabase(t)
 	userRepo := repository.NewUserRepository(client, db)
 	cfg := &config.Config{JWT: config.JWTConfig{Secret: "entity-isolated-test", ExpireHour: 1}}
 	var uid, regular int64
@@ -271,6 +271,16 @@ func TestUpstreamChannelEntityHTTPAccountProfitPersistence(t *testing.T) {
 	out = profit("https://different.example:8443/Tenant/v2", 1)
 	require.NoError(t, json.Unmarshal(out.Usage, &fallback))
 	require.Equal(t, "unbound_url", fallback.Rows[0].Assignment)
+	// Hard deleting an account removes its ownership FK and increments the entity CAS revision; usage/ledger rows remain intact.
+	beforeDeleteRevision := get(b.ID).Revision
+	require.NoError(t, repository.NewAdminAccountRepository(client, db, nil).Delete(ctx, ids[4]))
+	require.Greater(t, get(b.ID).Revision, beforeDeleteRevision)
+	var retainedUsage int
+	require.NoError(t, db.QueryRow(`SELECT count(*) FROM usage_logs WHERE account_id=$1`, ids[4]).Scan(&retainedUsage))
+	require.Equal(t, 1, retainedUsage)
+	var bindingCount int
+	require.NoError(t, db.QueryRow(`SELECT count(*) FROM upstream_channel_bindings WHERE account_id=$1`, ids[4]).Scan(&bindingCount))
+	require.Zero(t, bindingCount)
 	audit.Stop()
 	var auditRaw string
 	require.NoError(t, db.QueryRow(`SELECT COALESCE(jsonb_agg(to_jsonb(a))::text,'[]') FROM audit_logs a WHERE action LIKE 'admin.upstream_channel.%'`).Scan(&auditRaw))

@@ -1,4 +1,16 @@
 export default {
+  "save": "保存",
+  "cancel": "取消",
+  "noRemark": "未填写备注",
+  "edit": "编辑渠道",
+  "currentRemark": "当前已保存备注",
+
+  "save": "保存",
+  "cancel": "取消",
+  "noRemark": "未填写备注",
+  "edit": "编辑渠道",
+  "currentRemark": "当前已保存备注",
+
   "title": "Upstream channel entities",
   "manage": "Manage upstream channels",
   "accountChannel": "Upstream channel ownership",

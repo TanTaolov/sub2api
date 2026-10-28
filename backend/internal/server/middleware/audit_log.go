@@ -137,7 +137,6 @@ var auditSensitiveReads = map[string]string{
 
 // auditActionOverrides 变更类请求的动作名精确映射（未命中时自动推导）。
 var auditActionOverrides = map[string]string{
-	"PUT /api/v1/admin/profit-operations/url-remark":          "admin.profit_url_remark.update",
 	"PUT /api/v1/admin/risk-control/evidence/config":          "admin.cyber_evidence.config.update",
 	"DELETE /api/v1/admin/risk-control/logs/:id/evidence":     "admin.cyber_evidence.delete",
 	"POST /api/v1/auth/login":                                 service.AuditActionLogin,
@@ -169,7 +168,6 @@ var auditBodyOmittedRoutes = map[string]struct{}{
 	"PUT /api/v1/admin/upstream-channels/:id":                   {},
 	"DELETE /api/v1/admin/upstream-channels/:id":                {},
 	"PUT /api/v1/admin/upstream-channel-bindings":               {},
-	"PUT /api/v1/admin/profit-operations/url-remark":            {},
 	"POST /api/v1/admin/settings/ip-audit/release":              {},
 	"PUT /api/v1/admin/settings/ip-risk":                        {},
 	"POST /api/v1/admin/settings/ip-risk/anonymous-unban":       {},
