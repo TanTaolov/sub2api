@@ -41,3 +41,4 @@
 - 9c82752b7 专属 push/PR 的实体浏览器产物已归档于 `entity-browser-accepted-9c`：真实 ProfitOperationsView / UpstreamChannelsView / AccountsView，包含实体改名备注读回、账号新建确认、编辑解绑、批量绑定；verification 为 current head 9c82752b7、0 live API、0 paid requests、0 browser errors。截图不含真实账号/凭据。
 
 - 显式利润下钻支持 `channel_id`（也规范化 `channel:<id>`），按绑定FK跨不同URL过滤，不再把实体当URL文本；加入服务解析/冲突测试和真实 repository `Total=1 / Requests=4` 跨实体下钻回归。相关4个定向spec 12/12本机通过。当前最终尝试head `14c00451b16340662259d312c18306b7e0d66e8a`，完整push/PR CI pending。
+- 最新完整 filter=all head 已滚动至 e0f095ae4；CI 实测暴露 `upstream_channels_test.go` 同名测试被重复追加，已于后续 head 删除重复。旧上游 Operations RED workflow 会将整个 service 文件替换为基线，下一提交为该测试夹具保留 channel_id DTO 并剔除已迁移的 duplicate multiplier helper，不改变原两项真实RED assertion。
