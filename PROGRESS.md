@@ -20,7 +20,7 @@
 
 ## 完整验证（此前已验收 head bfb1f3804）
 
-- 本机定向 Vitest 8 spec / 329 assertions；包含账号新建、编辑、批量、实体管理、绑定失败/读回/版本冲突、语言完整性。未运行 Go 编译/动态、Docker 或全量前端构建。
+- 本机定向 Vitest 8 spec / 329 assertions；包含账号新建、编辑、批量、实体管理、绑定失败/读回/版本冲突、语言完整性。最新实体管理回归还实际点击取消、清空并重挂载确认，以及写后GET失败保留草稿/重新读取后确认。未运行 Go 编译/动态、Docker 或全量前端构建。
 - 远端 filter=all：28 success / 3 既有条件 skipped（upstream v0.2.19 regression、CLA check/lock）；所有 check 全部完成，无失败。
 - push / PR 通用 workflow 的 unit、integration、lint、安全及前端关键检查均通过；完整前端 build/typecheck 与实体专属测试均按实际 head 运行。
 - 专属 PostgreSQL 变异绑定 RED 命中“explicit binding must persist independently of URL eligibility”；恢复后真实 Gin API → 私有 migration 312 DB → GET → 实际账户创建/绑定 → 利润跨页/改名/解绑/删除为 GREEN。同一实体跨不同 URL、两个实体共享相同 URL、无效 URL/动态 OAuth 都覆盖。
