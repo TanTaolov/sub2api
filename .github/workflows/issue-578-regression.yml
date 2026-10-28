@@ -146,10 +146,18 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - name: Prepare isolated PostgreSQL Redis and dependencies
+        shell: bash
         run: |
+          set -euo pipefail
+          mkdir -p evidence
+          git rev-parse HEAD | tee evidence/head.txt
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends postgresql redis-server
-          (cd backend && go mod download)
+          for attempt in 1 2 3 4 5; do
+            if (cd backend && go mod download); then break; fi
+            if [ "$attempt" -eq 5 ]; then exit 1; fi
+            sleep "$attempt"
+          done
       - name: Exact head and rejected-head shared storage regression
         shell: bash
         env:
