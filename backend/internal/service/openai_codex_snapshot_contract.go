@@ -2,15 +2,42 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 	"strings"
+	"time"
 )
 
 const CodexUsageObservationVersionKey = "codex_usage_observed_at_ns"
+const CodexUsageFieldVersionsKey = "codex_usage_field_versions"
+
+func IsCodexUsageFieldKey(key string) bool {
+	return strings.HasPrefix(key, "codex_5h_") || strings.HasPrefix(key, "codex_7d_") ||
+		strings.HasPrefix(key, "codex_primary_") || strings.HasPrefix(key, "codex_secondary_")
+}
+
+// CodexUsageFieldVersions retains each present field's original observation.
+// Coalesced packets may contain several generations; their overall timestamp
+// must never be used to restamp an already versioned field.
+func CodexUsageFieldVersions(updates map[string]any, observed time.Time) map[string]any {
+	original, _ := updates[CodexUsageFieldVersionsKey].(map[string]any)
+	versions := make(map[string]any)
+	for key := range updates {
+		if !IsCodexUsageFieldKey(key) {
+			continue
+		}
+		version, err := strconv.ParseInt(fmt.Sprint(original[key]), 10, 64)
+		if err != nil || version <= 0 {
+			version = observed.UnixNano()
+		}
+		versions[key] = strconv.FormatInt(version, 10)
+	}
+	return versions
+}
 
 func IsCodexUsageExtraKey(key string) bool {
 	return key == "codex_usage_updated_at" || key == CodexUsageObservationVersionKey ||
-		strings.HasPrefix(key, "codex_5h_") || strings.HasPrefix(key, "codex_7d_") ||
-		strings.HasPrefix(key, "codex_primary_") || strings.HasPrefix(key, "codex_secondary_")
+		key == CodexUsageFieldVersionsKey || IsCodexUsageFieldKey(key)
 }
 
 // The callback runs while the shared database publication locks are held.

@@ -3,14 +3,15 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
+	"strconv"
 	"time"
 )
 
 type codexPendingWrite struct {
 	updates     map[string]any
 	lastAttempt time.Time
-	observedAt  time.Time
 }
 
 type codexWriteKey struct {
@@ -51,20 +52,11 @@ func (t *accountWriteThrottle) submitCodex(repo AccountRepository, id int64, upd
 		t.pending = make(map[codexWriteKey]*codexPendingWrite)
 	}
 	key := codexWriteKey{repo: repo, id: id}
-	observedAt := codexUpdatesTime(updates)
 	if pending := t.pending[key]; pending != nil {
-		if !observedAt.Before(pending.observedAt) {
-			if pending.updates == nil {
-				pending.updates = make(map[string]any)
-			}
-			for k, v := range updates {
-				pending.updates[k] = v
-			}
-			pending.observedAt = observedAt
-		}
+		pending.updates = mergeCodexUsageUpdates(pending.updates, updates)
 		return
 	}
-	pending := &codexPendingWrite{updates: updates, observedAt: observedAt}
+	pending := &codexPendingWrite{updates: mergeCodexUsageUpdates(nil, updates)}
 	t.pending[key] = pending
 	t.workers.Add(1)
 	go func() {
@@ -111,14 +103,36 @@ func (t *accountWriteThrottle) submitCodex(repo AccountRepository, id int64, upd
 				// Do not emit opaque repository/upstream text: it may contain secrets.
 				slog.Warn("openai_codex_snapshot_retry", "account_id", id, "error_code", "snapshot_persistence_failed")
 				t.mu.Lock()
-				for k, v := range pending.updates {
-					current[k] = v
-				}
-				pending.updates = current
+				pending.updates = mergeCodexUsageUpdates(current, pending.updates)
 				t.mu.Unlock()
 			}
 		}
 	}()
+}
+
+// One latest value and source version per known header field, not one queued
+// item per response. Both normal coalescing and retries use this same merge.
+func mergeCodexUsageUpdates(current, incoming map[string]any) map[string]any {
+	currentTime, incomingTime := codexUpdatesTime(current), codexUpdatesTime(incoming)
+	versions := CodexUsageFieldVersions(current, currentTime)
+	incomingVersions := CodexUsageFieldVersions(incoming, incomingTime)
+	if current == nil {
+		current = make(map[string]any)
+	}
+	for key, value := range incoming {
+		if IsCodexUsageFieldKey(key) {
+			oldVersion, _ := strconv.ParseInt(fmt.Sprint(versions[key]), 10, 64)
+			newVersion, _ := strconv.ParseInt(fmt.Sprint(incomingVersions[key]), 10, 64)
+			if oldVersion > newVersion {
+				continue
+			}
+			current[key], versions[key] = value, incomingVersions[key]
+		} else if key != CodexUsageFieldVersionsKey && !incomingTime.Before(currentTime) {
+			current[key] = value
+		}
+	}
+	current[CodexUsageFieldVersionsKey] = versions
+	return current
 }
 
 func codexUpdatesTime(updates map[string]any) time.Time {

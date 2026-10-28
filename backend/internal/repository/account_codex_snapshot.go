@@ -15,7 +15,7 @@ import (
 
 func hasCodexWindowUpdates(updates map[string]any) bool {
 	for key := range updates {
-		if service.IsCodexUsageExtraKey(key) && key != "codex_usage_updated_at" && key != service.CodexUsageObservationVersionKey {
+		if service.IsCodexUsageFieldKey(key) {
 			return true
 		}
 	}
@@ -73,7 +73,21 @@ func (r *accountRepository) UpdateCodexUsageSnapshot(ctx context.Context, id int
 		window["codex_usage_updated_at"] = observed.UTC().Format(time.RFC3339Nano)
 	}
 	version := strconv.FormatInt(observed.UnixNano(), 10)
-	window[service.CodexUsageObservationVersionKey] = version
+	versions := service.CodexUsageFieldVersions(window, observed)
+	delete(window, "codex_usage_updated_at")
+	delete(window, service.CodexUsageObservationVersionKey)
+	delete(window, service.CodexUsageFieldVersionsKey)
+	versionsJSON, err := json.Marshal(versions)
+	if err != nil {
+		return false, err
+	}
+	metadataJSON, err := json.Marshal(map[string]any{
+		"codex_usage_updated_at":                observed.UTC().Format(time.RFC3339Nano),
+		service.CodexUsageObservationVersionKey: version,
+	})
+	if err != nil {
+		return false, err
+	}
 	windowJSON, err := json.Marshal(window)
 	if err != nil {
 		return false, err
@@ -94,14 +108,30 @@ func (r *accountRepository) UpdateCodexUsageSnapshot(ctx context.Context, id int
 			client = tx.Client()
 		}
 	}
-	rows, err := client.QueryContext(ctx, `UPDATE accounts
- SET extra = (COALESCE(extra,'{}'::jsonb) || $1::jsonb) ||
- CASE WHEN (CASE WHEN extra->>'codex_usage_observed_at_ns' ~ '^[0-9]{1,19}$'
- THEN (extra->>'codex_usage_observed_at_ns')::numeric ELSE 0 END) <= $3::numeric
- THEN $2::jsonb ELSE '{}'::jsonb END,
+	// Every field is compared in this atomic UPDATE against its own committed
+	// version. _legacy freezes the pre-field-version fence for existing rows;
+	// advancing another window must not advance this fallback. No pre-read CAS.
+	rows, err := client.QueryContext(ctx, `UPDATE accounts AS a
+ SET extra = (COALESCE(a.extra,'{}'::jsonb) || $1::jsonb) || (
+ SELECT COALESCE(jsonb_object_agg(incoming.key, incoming.value),'{}'::jsonb) ||
+ jsonb_build_object('codex_usage_field_versions',
+   jsonb_build_object('_legacy', COALESCE(a.extra->'codex_usage_field_versions'->'_legacy',
+     a.extra->'codex_usage_observed_at_ns', '"0"'::jsonb)) ||
+   COALESCE(a.extra->'codex_usage_field_versions','{}'::jsonb) ||
+   COALESCE(jsonb_object_agg(incoming.key, $3::jsonb->incoming.key),'{}'::jsonb))
+ FROM jsonb_each($2::jsonb) AS incoming
+ WHERE (CASE WHEN COALESCE(a.extra->'codex_usage_field_versions'->>incoming.key,
+   a.extra->'codex_usage_field_versions'->>'_legacy', a.extra->>'codex_usage_observed_at_ns','0') ~ '^[0-9]{1,19}$'
+ THEN COALESCE(a.extra->'codex_usage_field_versions'->>incoming.key,
+   a.extra->'codex_usage_field_versions'->>'_legacy', a.extra->>'codex_usage_observed_at_ns','0')::numeric
+ ELSE 0 END) <= ($3::jsonb->>incoming.key)::numeric
+ ) || CASE WHEN (CASE WHEN a.extra->>'codex_usage_observed_at_ns' ~ '^[0-9]{1,19}$'
+ THEN (a.extra->>'codex_usage_observed_at_ns')::numeric ELSE 0 END) <= $4::numeric
+ THEN $5::jsonb ELSE '{}'::jsonb END,
  updated_at=NOW()
- WHERE id=$4 AND deleted_at IS NULL
- RETURNING extra->>'codex_usage_observed_at_ns' = $3::text`, string(displayJSON), string(windowJSON), version, id)
+ WHERE id=$6 AND deleted_at IS NULL
+ RETURNING extra->'codex_usage_field_versions' @> $3::jsonb`,
+		string(displayJSON), string(windowJSON), string(versionsJSON), version, string(metadataJSON), id)
 	if err != nil {
 		return false, err
 	}
