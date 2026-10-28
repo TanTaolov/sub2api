@@ -5,7 +5,7 @@
     <div class="flex flex-wrap gap-2"><input v-model="search" class="input min-w-0 flex-1" :placeholder="t('upstreamEntities.search')" /><button type="button" class="btn btn-secondary" :disabled="loading" @click="load(1)">{{ t('upstreamEntities.load') }}</button><a href="/admin/upstream-channels" target="_blank" rel="noopener" class="btn btn-secondary">{{ t('upstreamEntities.manage') }}</a></div>
     <select :value="modelValue" class="input w-full" data-testid="upstream-channel-select" @focus="ensureLoaded" @change="emit('update:modelValue', Number(($event.target as HTMLSelectElement).value))">
       <option v-if="allowKeep" :value="-1">{{ t('upstreamEntities.keep') }}</option><option :value="0">{{ t('upstreamEntities.unbound') }}</option>
-      <option v-if="selected && !items.some(c => c.id === selected.id)" :value="selected.id">{{ selected.name }} · {{ selected.code }} (#{{ selected.id }})</option>
+      <option v-if="selected && !items.some(c => c.id === selected?.id)" :value="selected.id">{{ selected.name }} · {{ selected.code }} (#{{ selected.id }})</option>
       <option v-for="c in items" :key="c.id" :value="c.id">{{ c.name }} · {{ c.code }} (#{{ c.id }}) · {{ c.members }}</option>
     </select>
     <div v-if="loaded" class="flex gap-2 text-sm"><button type="button" :disabled="loading || page <= 1" @click="load(page - 1)">{{ t('profitOps.previous') }}</button><span>{{ page }} / {{ total }}</span><button type="button" :disabled="loading || page * 20 >= total" @click="load(page + 1)">{{ t('profitOps.next') }}</button></div>

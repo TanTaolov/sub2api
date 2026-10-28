@@ -45,7 +45,7 @@ async function save() {
   const fresh = await getUpstreamChannel(written.id)
   if (fresh.name !== draft.value.name.trim() || fresh.remark !== draft.value.remark.trim() || fresh.revision !== written.revision) throw new Error('readback')
   draft.value = null; needsRead.value = false; saved.value = true; await load(); emit('changed')
- } catch (cause) { const e = cause as { status?: number; response?: { status?: number } }; needsRead.value = draft.value.id > 0; error.value = t((e.status ?? e.response?.status) === 409 ? 'upstreamEntities.conflict' : 'upstreamEntities.readbackFailed') }
+ } catch (cause) { const e = cause as { status?: number; response?: { status?: number } }; needsRead.value = (draft.value?.id ?? 0) > 0; error.value = t((e.status ?? e.response?.status) === 409 ? 'upstreamEntities.conflict' : 'upstreamEntities.readbackFailed') }
  finally { busy.value = false }
 }
 async function remove() { if (!draft.value?.id || draft.value.members || !confirmed.value || needsRead.value) return; busy.value = true; error.value = ''; try { await deleteUpstreamChannel(draft.value.id, draft.value.revision); draft.value = null; await load(); emit('changed') } catch { needsRead.value = true; error.value = t('upstreamEntities.deleteBlocked') } finally { busy.value = false } }
