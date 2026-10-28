@@ -11,6 +11,7 @@ chmod 755 "$fixture_dir"
 mkdir "$fixture_dir/pg"
 chown postgres:postgres "$fixture_dir/pg"
 cleanup() {
+  chmod -R a+rX "$evidence"
   redis-cli -p 56379 shutdown nosave >/dev/null 2>&1 || true
   runuser -u postgres -- "$pg_bin/pg_ctl" -D "$fixture_dir/pg" -m immediate stop >/dev/null 2>&1 || true
   rm -rf "$fixture_dir"
@@ -30,6 +31,7 @@ cat "$evidence/storage-red.log"
 printf '%s\n' "$red_status" > "$evidence/storage-red-exit.txt"
 test "$red_status" -ne 0
 if grep -Eq '\[build failed\]|\[setup failed\]|undefined:|syntax error:|no tests to run|panic:|--- SKIP:' "$evidence/storage-red.log"; then exit 1; fi
+if grep -q 'below-threshold control must actually select' "$evidence/storage-red.log"; then exit 1; fi
 grep -F -- '--- FAIL: TestIssue578ReviewCrossInstanceHeaderCASRedisSelection' "$evidence/storage-red.log"
 grep -F -- '--- FAIL: TestIssue578ReviewCachePublicationCannotReorder' "$evidence/storage-red.log"
 (cd "$workspace/backend" && go test -race -tags=integration ./internal/integration/issue578 -run '^TestIssue578Review' -count=1 -v) 2>&1 | tee "$evidence/storage-green.log"

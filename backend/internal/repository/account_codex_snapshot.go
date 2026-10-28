@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
 	"strconv"
@@ -85,11 +86,13 @@ func (r *accountRepository) UpdateCodexUsageSnapshot(ctx context.Context, id int
 	var tx *dbent.Tx
 	if dbent.TxFromContext(ctx) == nil {
 		tx, err = r.client.Tx(ctx)
-		if err != nil {
+		if err != nil && !errors.Is(err, dbent.ErrTxStarted) {
 			return false, err
 		}
-		defer func() { _ = tx.Rollback() }()
-		client = tx.Client()
+		if tx != nil {
+			defer func() { _ = tx.Rollback() }()
+			client = tx.Client()
+		}
 	}
 	rows, err := client.QueryContext(ctx, `UPDATE accounts
  SET extra = (COALESCE(extra,'{}'::jsonb) || $1::jsonb) ||
@@ -145,10 +148,14 @@ func (r *accountRepository) WithLatestSchedulerAccounts(ctx context.Context, ids
 		return publish(nil)
 	}
 	tx, err := r.client.Tx(ctx)
-	if err != nil {
+	if err != nil && !errors.Is(err, dbent.ErrTxStarted) {
 		return err
 	}
-	defer func() { _ = tx.Rollback() }()
+	client := r.client
+	if tx != nil {
+		defer func() { _ = tx.Rollback() }()
+		client = tx.Client()
+	}
 	keys := make([]int64, 0, len(ids))
 	for _, id := range ids {
 		if id > 0 {
@@ -158,13 +165,13 @@ func (r *accountRepository) WithLatestSchedulerAccounts(ctx context.Context, ids
 	slices.Sort(keys)
 	keys = slices.Compact(keys)
 	for _, key := range keys {
-		if _, err := tx.Client().ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", key); err != nil {
+		if _, err := client.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", key); err != nil {
 			return err
 		}
 	}
 	scoped := *r
-	scoped.client = tx.Client()
-	scoped.sql = tx.Client()
+	scoped.client = client
+	scoped.sql = client
 	scoped.schedulerCache = nil
 	accounts, err := scoped.GetByIDs(ctx, ids)
 	if err != nil {
@@ -177,7 +184,10 @@ func (r *accountRepository) WithLatestSchedulerAccounts(ctx context.Context, ids
 	if err := publish(values); err != nil {
 		return err
 	}
-	return tx.Commit()
+	if tx != nil {
+		return tx.Commit()
+	}
+	return nil
 }
 
 func (r *accountRepository) publishSchedulerAccountSnapshot(ctx context.Context, id int64) error {

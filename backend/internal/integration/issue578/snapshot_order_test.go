@@ -106,7 +106,9 @@ func headers(used string) http.Header {
 func TestIssue578ReviewCrossInstanceHeaderCASRedisSelection(t *testing.T) {
 	f := setup(t)
 	ctx := context.Background()
-	snapshot := service.NewSchedulerSnapshotService(f.cache, nil, f.repoB, nil, &config.Config{})
+	snapshotConfig := &config.Config{}
+	snapshotConfig.Gateway.Scheduling.DbFallbackEnabled = true
+	snapshot := service.NewSchedulerSnapshotService(f.cache, nil, f.repoB, nil, snapshotConfig)
 	a, b := gateway(f.repoA, nil), gateway(f.repoB, snapshot)
 	t.Cleanup(a.CloseOpenAIWSPool)
 	t.Cleanup(b.CloseOpenAIWSPool)
