@@ -144,7 +144,7 @@ func TestIssue578ReviewCrossInstanceHeaderCASRedisSelection(t *testing.T) {
 	stored, err := f.repoA.GetByID(ctx, f.account.ID)
 	require.NoError(t, err)
 	require.Equal(t, 100.0, stored.Extra["codex_5h_used_percent"])
-	t.Logf("after delayed header DB updated_at=%v usage=%v version=%v", stored.Extra["codex_usage_updated_at"], stored.Extra["codex_5h_used_percent"], stored.Extra[service.CodexUsageObservationVersionKey])
+	t.Logf("after delayed header DB updated_at=%v usage=%v version=%v", stored.Extra["codex_usage_updated_at"], stored.Extra["codex_5h_used_percent"], stored.Extra["codex_usage_observed_at_ns"])
 	cached, err := f.cache.GetAccount(ctx, f.account.ID)
 	require.NoError(t, err)
 	require.Equal(t, 100.0, cached.Extra["codex_5h_used_percent"])
