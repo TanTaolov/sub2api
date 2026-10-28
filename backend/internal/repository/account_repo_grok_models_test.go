@@ -218,6 +218,7 @@ func TestGrokCatalogCASRefreshesSingleAccountOutsideTransaction(t *testing.T) {
 
 	require.NoError(t, err)
 	require.True(t, applied)
+	require.NoError(t, mock.ExpectationsWereMet(), "scheduler refresh query sequence")
 	require.Equal(t, 1, cache.setAccounts)
 	require.Zero(t, cache.bucketOps)
 	require.NotNil(t, cache.lastAccount)
