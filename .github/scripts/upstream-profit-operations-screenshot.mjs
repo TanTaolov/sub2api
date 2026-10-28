@@ -52,7 +52,7 @@ const browser=await chromium.launch({headless:true})
 try {
  const page=await browser.newPage({viewport:{width:1440,height:1100}}),errors=[],apiRequests=[]
  page.on('pageerror',e=>errors.push(e.message))
- await page.route('**/api/**',route=>{apiRequests.push(route.request().url());return route.abort()})
+ await page.route('**/*',route=>{if(new URL(route.request().url()).pathname.startsWith('/api/')){apiRequests.push(route.request().url());return route.abort()}return route.continue()})
  for(const kind of ['profit']){
   await page.goto(`http://127.0.0.1:4183/admin/${kind}-operations`,{waitUntil:'networkidle'})
   await page.getByTestId('profit-summary').getByText('33.33%',{exact:true}).waitFor()
