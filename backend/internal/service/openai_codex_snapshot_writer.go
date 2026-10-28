@@ -81,7 +81,10 @@ type codexWriteOrder struct {
 	observedAt time.Time
 }
 
-var codexWriteOrders sync.Map
+var codexWriteOrders = struct {
+	sync.Mutex
+	byKey map[codexWriteKey]*codexWriteOrder
+}{byKey: make(map[codexWriteKey]*codexWriteOrder)}
 
 func codexUpdatesTime(updates map[string]any) time.Time {
 	stamp, _ := updates["codex_usage_updated_at"].(string)
@@ -91,8 +94,13 @@ func codexUpdatesTime(updates map[string]any) time.Time {
 
 func persistCodexUsageUpdates(ctx context.Context, repo AccountRepository, id int64, updates map[string]any) (bool, error) {
 	key := codexWriteKey{repo: repo, id: id}
-	value, _ := codexWriteOrders.LoadOrStore(key, &codexWriteOrder{})
-	order := value.(*codexWriteOrder)
+	codexWriteOrders.Lock()
+	order := codexWriteOrders.byKey[key]
+	if order == nil {
+		order = &codexWriteOrder{}
+		codexWriteOrders.byKey[key] = order
+	}
+	codexWriteOrders.Unlock()
 	order.mu.Lock()
 	defer order.mu.Unlock()
 	observedAt := codexUpdatesTime(updates)
