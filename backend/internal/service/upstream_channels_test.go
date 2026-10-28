@@ -38,16 +38,3 @@ func TestExplicitChannelProfitFilterNormalization(t *testing.T) {
 	f.ChannelID = 27
 	require.Error(t, NormalizeProfitOperationsFilter(&f))
 }
-
-func TestExplicitChannelProfitFilterNormalization(t *testing.T) {
-	now := time.Now()
-	f := UpstreamOperationsFilter{From: now.Add(-time.Hour), Until: now, Upstream: "channel:27", Dimension: "upstream", ModelScope: "public", Sort: "name", Direction: "asc", Page: 1, PageSize: 20}
-	require.NoError(t, NormalizeProfitOperationsFilter(&f))
-	require.Equal(t, int64(27), f.ChannelID)
-	require.Empty(t, f.Upstream)
-	f.Upstream = "channel:0"
-	require.Error(t, NormalizeProfitOperationsFilter(&f))
-	f.Upstream = "channel:28"
-	f.ChannelID = 27
-	require.Error(t, NormalizeProfitOperationsFilter(&f))
-}
