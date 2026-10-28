@@ -1,4 +1,5 @@
 export default {
+  "confirmNewChannel": "Confirm creating this channel: its unique code cannot change later; it currently has no bound accounts.",
   "save": "Save",
   "cancel": "Cancel",
   "noRemark": "No remark",

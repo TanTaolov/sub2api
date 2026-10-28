@@ -8,7 +8,7 @@ import (
 )
 
 func TestUpstreamChannelEntityValidation(t *testing.T) {
-	m := UpstreamChannelMutation{Code: "relay-a", Name: "  上游A  ", Remark: " 说明 "}
+	m := UpstreamChannelMutation{Confirm: true, Code: "relay-a", Name: "  上游A  ", Remark: " 说明 "}
 	require.NoError(t, ValidateUpstreamChannelMutation(&m, true))
 	require.Equal(t, "上游A", m.Name)
 	for _, code := range []string{"", "a/b", "https://host", "备注", strings.Repeat("x", 65)} {

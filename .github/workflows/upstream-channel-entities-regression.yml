@@ -9,6 +9,7 @@ on:
       - '**/AccountUpstreamChannel*'
       - 'frontend/src/components/account/*AccountModal.vue'
       - 'backend/migrations/312_upstream_channel_entities.sql'
+      - 'backend/migrations/313_upstream_channel_binding_delete_revision.sql'
       - '**/profit_operations*'
       - '**/ProfitOperations*'
       - '**/ProfitAnalytics*'
@@ -36,7 +37,7 @@ jobs:
       - run: git rev-parse HEAD
       - name: DTO, URL identity and actual admin route authorization
         working-directory: backend
-        run: go test -tags=unit ./internal/service ./internal/handler/admin ./internal/server/routes -run '^Test(UpstreamChannel|ProfitOperations)' -count=1 -v
+        run: go test -tags=unit ./internal/service ./internal/handler/admin ./internal/server/routes -run '^Test(UpstreamChannel|ProfitOperations|ExplicitChannelProfitFilter)' -count=1 -v
       - name: Explicit ownership regression RED against discarded binding
         working-directory: backend
         shell: bash
@@ -60,12 +61,37 @@ jobs:
           test "$result" -ne 0
           grep -q 'explicit binding must persist independently of URL eligibility' "$RUNNER_TEMP/entity-bind-red.log"
           grep -q 'FAIL: TestUpstreamChannelEntityHTTPAccountProfitPersistence' "$RUNNER_TEMP/entity-bind-red.log"
+      - name: Soft deletion ownership regression RED against implicit detachment
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          target=internal/repository/account_repo.go
+          cp "$target" "$RUNNER_TEMP/entity-account-current.go"
+          trap 'cp "$RUNNER_TEMP/entity-account-current.go" "$target"' EXIT
+          python3 - <<'PYRED'
+          from pathlib import Path
+          p=Path('internal/repository/account_repo.go')
+          s=p.read_text()
+          marker='func (r *accountRepository) Delete(ctx context.Context, id int64) error {'
+          assert s.count(marker)==1
+          mutation='\n if _,err:=r.sql.ExecContext(ctx,`DELETE FROM upstream_channel_bindings WHERE account_id=$1`,id);err!=nil{return err}\n'
+          p.write_text(s.replace(marker,marker+mutation))
+          PYRED
+          set +e
+          go test -tags=integration ./internal/repository -run '^TestUpstreamChannelEntitySoftDeleteRetainsOwnership$' -count=1 -v > "$RUNNER_TEMP/entity-soft-delete-red.log" 2>&1
+          result=$?
+          set -e
+          cat "$RUNNER_TEMP/entity-soft-delete-red.log"
+          test "$result" -ne 0
+          grep -q 'soft-deleted accounts must retain explicit analytics ownership' "$RUNNER_TEMP/entity-soft-delete-red.log"
+          grep -q 'FAIL: TestUpstreamChannelEntitySoftDeleteRetainsOwnership' "$RUNNER_TEMP/entity-soft-delete-red.log"
       - name: Real API to private migrated PostgreSQL to GET; existing profit and upstream URL-attribution regressions
         working-directory: backend
         shell: bash
         run: |
           set -euo pipefail
-          go test -tags=integration ./internal/repository -run '^Test(UpstreamChannelEntity|ProfitOperations|UpstreamOperations)' -count=1 -v | tee "$RUNNER_TEMP/profit-url-green.log"
+          go test -tags=integration ./internal/repository -run '^Test(UpstreamChannelEntity|ProfitOperations|UpstreamOperations)' -count=1 -v | tee "$RUNNER_TEMP/entity-green.log"
       - uses: actions/upload-artifact@v7
         if: always()
         with:

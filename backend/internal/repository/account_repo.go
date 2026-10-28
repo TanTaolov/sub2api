@@ -1296,34 +1296,8 @@ func (r *accountRepository) Delete(ctx context.Context, id int64) error {
 		// 已处于外部事务中（ErrTxStarted），复用当前 client
 		txClient = r.client
 	}
-	// A hard-deleted account owns no analytics binding row or CAS tombstone.
-	// Removing this metadata never changes usage history or channel ownership.
-	var upstreamChannelID sql.NullInt64
-	rows, err := txClient.QueryContext(ctx, `SELECT channel_id FROM upstream_channel_bindings WHERE account_id=$1 FOR UPDATE`, id)
-	if err != nil {
-		return err
-	}
-	if rows.Next() {
-		if err = rows.Scan(&upstreamChannelID); err != nil {
-			_ = rows.Close()
-			return err
-		}
-	}
-	if err = rows.Err(); err != nil {
-		_ = rows.Close()
-		return err
-	}
-	if err = rows.Close(); err != nil {
-		return err
-	}
-	if _, err := txClient.ExecContext(ctx, `DELETE FROM upstream_channel_bindings WHERE account_id=$1`, id); err != nil {
-		return err
-	}
-	if upstreamChannelID.Valid {
-		if _, err := txClient.ExecContext(ctx, `UPDATE upstream_channels SET revision=revision+1,updated_at=CURRENT_TIMESTAMP WHERE id=$1`, upstreamChannelID.Int64); err != nil {
-			return err
-		}
-	}
+	// Account.Delete is a soft delete. Keep explicit analytics ownership for
+	// retained usage; only the FK handles a true physical account deletion.
 
 	if _, err := txClient.AccountGroup.Delete().Where(dbaccountgroup.AccountIDEQ(id)).Exec(ctx); err != nil {
 		return err

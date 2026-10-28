@@ -87,7 +87,7 @@ func TestUpstreamChannelEntityHTTPAccountProfitPersistence(t *testing.T) {
 	}
 	create := func(code, name string) service.UpstreamChannel {
 		var c service.UpstreamChannel
-		decode(request("POST", "/upstream-channels", service.UpstreamChannelMutation{Code: code, Name: name, Remark: "实体备注"}, token), &c)
+		decode(request("POST", "/upstream-channels", service.UpstreamChannelMutation{Code: code, Name: name, Remark: "实体备注", Confirm: true}, token), &c)
 		require.Positive(t, c.ID)
 		return c
 	}
@@ -96,10 +96,11 @@ func TestUpstreamChannelEntityHTTPAccountProfitPersistence(t *testing.T) {
 		decode(request("GET", fmt.Sprintf("/upstream-channels/%d", id), nil, token), &c)
 		return c
 	}
+	require.Equal(t, 400, request("POST", "/upstream-channels", service.UpstreamChannelMutation{Code: "unconfirmed", Name: "Unconfirmed"}, token).Code)
 	a := create("supplier-a", "供应商A")
 	b := create("supplier-b", "供应商B")
-	require.Equal(t, 409, request("POST", "/upstream-channels", service.UpstreamChannelMutation{Code: a.Code, Name: "另一个名字"}, token).Code)
-	require.Equal(t, 409, request("POST", "/upstream-channels", service.UpstreamChannelMutation{Code: "unique-code", Name: a.Name}, token).Code)
+	require.Equal(t, 409, request("POST", "/upstream-channels", service.UpstreamChannelMutation{Code: a.Code, Name: "另一个名字", Confirm: true}, token).Code)
+	require.Equal(t, 409, request("POST", "/upstream-channels", service.UpstreamChannelMutation{Code: "unique-code", Name: a.Name, Confirm: true}, token).Code)
 	for _, path := range []string{"/upstream-channels", "/upstream-channel-bindings?account_ids=1"} {
 		require.Equal(t, 401, request("GET", path, nil, "").Code)
 		require.Equal(t, 403, request("GET", path, nil, userToken).Code)
@@ -116,6 +117,8 @@ func TestUpstreamChannelEntityHTTPAccountProfitPersistence(t *testing.T) {
 		require.NoError(t, db.QueryRow(`INSERT INTO accounts(name,platform,type,credentials,extra) VALUES($1,$2,$3,$4::jsonb,'{"cost_multiplier":0.25}') RETURNING id`, fmt.Sprintf("entity-account-%d", i), fixture.platform, fixture.kind, string(credentials)).Scan(&id))
 		ids = append(ids, id)
 		_, e = db.Exec(`INSERT INTO usage_logs(user_id,api_key_id,account_id,request_id,model,total_cost,actual_cost,account_stats_cost,account_rate_multiplier,created_at) VALUES($1,$2,$3,$4,'entity-model',10,4,8,999,$5)`, uid, key, id, fmt.Sprintf("entity-request-%d", i), now.Add(-time.Minute))
+		require.NoError(t, e)
+		_, e = db.Exec(`INSERT INTO ops_error_logs(account_id,model,error_phase,error_type,status_code,is_count_tokens,created_at) VALUES($1,'entity-model','upstream','http_error',502,false,$2)`, id, now.Add(-time.Minute))
 		require.NoError(t, e)
 	}
 	bindings := func(accounts []int64) []service.UpstreamChannelBinding {
@@ -188,6 +191,11 @@ func TestUpstreamChannelEntityHTTPAccountProfitPersistence(t *testing.T) {
 	require.NoError(t, json.Unmarshal(selected.Usage, &selectedData))
 	require.Equal(t, 1, selectedData.Total, "drill-down filters by explicit foreign key rather than URL text")
 	require.Equal(t, 4, selectedData.Rows[0].Requests)
+	require.Equal(t, "ready", selected.Errors.Status)
+	var selectedErrors struct{ Records int }
+	require.NoError(t, json.Unmarshal(selected.Errors.Data, &selectedErrors))
+	require.Equal(t, 4, selectedErrors.Records, "explicit entity filters retained errors to the same account cohort")
+
 	require.Equal(t, 4, all[aKey].Requests, "explicit ownership groups different, unknown and unsupported URLs")
 	require.Equal(t, 6.0, all[aKey].Profit, "confirmed formula: saved total_cost × current account multiplier only")
 	require.Equal(t, "explicit", all[aKey].Assignment)
@@ -271,16 +279,24 @@ func TestUpstreamChannelEntityHTTPAccountProfitPersistence(t *testing.T) {
 	out = profit("https://different.example:8443/Tenant/v2", 1)
 	require.NoError(t, json.Unmarshal(out.Usage, &fallback))
 	require.Equal(t, "unbound_url", fallback.Rows[0].Assignment)
-	// Hard deleting an account removes its ownership FK and increments the entity CAS revision; usage/ledger rows remain intact.
+	// Ordinary account deletion is soft: retain explicit ownership for historical usage.
 	beforeDeleteRevision := get(b.ID).Revision
 	require.NoError(t, repository.NewAdminAccountRepository(client, db, nil).Delete(ctx, ids[4]))
-	require.Greater(t, get(b.ID).Revision, beforeDeleteRevision)
+	require.Equal(t, beforeDeleteRevision, get(b.ID).Revision)
 	var retainedUsage int
 	require.NoError(t, db.QueryRow(`SELECT count(*) FROM usage_logs WHERE account_id=$1`, ids[4]).Scan(&retainedUsage))
 	require.Equal(t, 1, retainedUsage)
 	var bindingCount int
 	require.NoError(t, db.QueryRow(`SELECT count(*) FROM upstream_channel_bindings WHERE account_id=$1`, ids[4]).Scan(&bindingCount))
-	require.Zero(t, bindingCount)
+	require.Equal(t, 1, bindingCount, "soft deletion must retain explicit channel ownership")
+	retainedBinding := bindings(ids[4:5])[0]
+	require.Equal(t, b.ID, retainedBinding.ChannelID)
+	require.True(t, retainedBinding.Deleted)
+	retainedProfit := profit(bKey, 1)
+	var retained struct{ Rows []row }
+	require.NoError(t, json.Unmarshal(retainedProfit.Usage, &retained))
+	require.Equal(t, bKey, retained.Rows[0].Key)
+
 	audit.Stop()
 	var auditRaw string
 	require.NoError(t, db.QueryRow(`SELECT COALESCE(jsonb_agg(to_jsonb(a))::text,'[]') FROM audit_logs a WHERE action LIKE 'admin.upstream_channel.%'`).Scan(&auditRaw))

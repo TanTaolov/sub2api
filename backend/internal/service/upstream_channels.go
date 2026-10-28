@@ -79,7 +79,7 @@ func ValidateUpstreamChannelMutation(m *UpstreamChannelMutation, create bool) er
 		return ErrUpstreamChannelValidation
 	}
 	if create {
-		if !upstreamChannelCode.MatchString(m.Code) {
+		if !m.Confirm || !upstreamChannelCode.MatchString(m.Code) {
 			return ErrUpstreamChannelValidation
 		}
 	} else if m.Revision == nil || *m.Revision < 1 || *m.Revision == math.MaxInt64 || !m.Confirm {

@@ -1,4 +1,5 @@
 export default {
+  "confirmNewChannel": "确认创建此渠道：唯一标识创建后不可变；当前尚无绑定账号。",
   "save": "保存",
   "cancel": "取消",
   "noRemark": "未填写备注",
