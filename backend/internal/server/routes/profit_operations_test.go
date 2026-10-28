@@ -18,7 +18,7 @@ func TestProfitOperationsRoutesRequireExistingAdministratorAuthentication(t *tes
 	group.Use(gin.HandlerFunc(middleware.NewAdminAuthMiddleware(nil, nil, nil, nil)))
 	// Exercise actual route registration (including static/wildcard coexistence).
 	registerChannelRoutes(group, &handler.Handlers{Admin: &handler.AdminHandlers{Channel: admin.NewChannelHandler(nil, nil, nil)}})
-	for _, tc := range []struct{ method, path string }{{"GET", "/profit-operations/snapshot"}} {
+	for _, tc := range []struct{ method, path string }{{"GET", "/profit-operations/snapshot"}, {"GET", "/profit-operations/url-remark"}, {"PUT", "/profit-operations/url-remark"}} {
 		t.Run(tc.method+tc.path, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, httptest.NewRequest(tc.method, "/api/v1/admin"+tc.path, nil))
@@ -35,7 +35,7 @@ func TestProfitOperationsRoutesDenyScopedObserverManagement(t *testing.T) {
 	})
 	group.Use((&admin.AccountHandler{}).AuthorizeObserver)
 	registerChannelRoutes(group, &handler.Handlers{Admin: &handler.AdminHandlers{Channel: admin.NewChannelHandler(nil, nil, nil)}})
-	for _, tc := range []struct{ method, path string }{{"GET", "/profit-operations/snapshot"}} {
+	for _, tc := range []struct{ method, path string }{{"GET", "/profit-operations/snapshot"}, {"GET", "/profit-operations/url-remark"}, {"PUT", "/profit-operations/url-remark"}} {
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, httptest.NewRequest(tc.method, "/api/v1/admin"+tc.path, nil))
 		require.Equal(t, 403, w.Code)

@@ -14,13 +14,17 @@ const output = process.env.UPSTREAM_SCREENSHOT_DIR
 await fs.mkdir(output, { recursive: true })
 const fixture = `
 let failed=false;
+const upstream='https://relay.example:8443/tenant/v1';
+let saved={upstream,remark:'共享渠道备注',revision:1};
+export async function readUpstreamURLRemark(){return {...saved}}
+export async function saveUpstreamURLRemark(body){saved={...body,revision:body.revision+1};return {...saved}}
 globalThis.__upstreamFixture={queries:[],fail:()=>failed=true};
 export async function readProfitOperations(query){
  globalThis.__upstreamFixture.queries.push({...query});if(failed)throw new Error('synthetic query failure');
  const now=new Date().toISOString();
  const metrics={requests:1604,standard_charge:120,request_income:45,estimated_cost:30,estimated_profit:15,margin:1/3,covered_estimated_cost:30,covered_income:45,cost_covered_requests:1604,unknown_cost_requests:0,unknown_upstream_requests:4,saved_multiplier_requests:1600,default_multiplier_requests:4,saved_stats_base_requests:1500,standard_base_fallback_requests:104,subscription_requests:10,deleted_account_requests:2,samples:1320,unknown_samples:88,p50_ms:820,p90_ms:1900,p95_ms:2450,duration_p90_ms:4300,oldest_config_updated_at:now,latest_config_updated_at:now};
  const key=query.dimension==='upstream'?'https://relay.example:8443/tenant/v1':query.dimension==='account'?'42':'vendor-model';
- return {scope:query,queried_at:now,attribution:'current_account_config_estimate_no_historical_snapshot',currency:'USD billing units',
+ return {url_remarks:{[upstream]:{...saved}},scope:query,queried_at:now,attribution:'current_account_config_estimate_no_historical_snapshot',currency:'USD billing units',
  usage:{summary:metrics,total:1,rows:[{...metrics,key,name:key}],catalog:[{key:'https://relay.example:8443/tenant/v1',name:'https://relay.example:8443/tenant/v1',accounts:2}],catalog_total:1,member_total:1,members:[{id:42,name:'合成账号 A',cost_basis:'current_saved_multiplier',multiplier:0.25}],account_details_limit:100,accounts:[{id:42,name:'合成账号 A',key:'https://relay.example:8443/tenant/v1',attribution:'current_config',multiplier:0.25,cost_basis:'current_saved_multiplier',updated_at:now,deleted:false}],capacity:{accounts:2,schedulable:2,configured_concurrency:20}},
  quality:{status:'ready',data:{summary:{rounds:2,passed:1,degraded:0,inconclusive:1},total:2,rows:[{id:9,account_id:42,plan_id:8,measured_model:'vendor-model',observed_at:now,probes:1,passed_probes:1,expected:2,outcome:'inconclusive',round_complete:false,round_probes:1,round_expected:2,actions:[]}]},queried_at:now},
  errors:{status:'ready',data:{records:5,upstream_5xx:2,rows:[{error_type:'upstream',error_phase:'forward',status_code:502,records:5}]},queried_at:now}};
@@ -49,6 +53,17 @@ try {
  for(const kind of ['profit']){
   await page.goto(`http://127.0.0.1:4183/admin/${kind}-operations`,{waitUntil:'networkidle'})
   await page.getByTestId('profit-summary').getByText('33.33%',{exact:true}).waitFor()
+  await page.getByTestId('profit-url-remarks').getByText('共享渠道备注',{exact:true}).waitFor()
+  await page.getByTestId('edit-url-remark').click()
+  await page.locator('textarea').fill('浏览器编辑备注')
+  await page.getByTestId('cancel-url-remark').click()
+  await page.getByTestId('edit-url-remark').click()
+  if(await page.locator('textarea').inputValue()!=='共享渠道备注')throw new Error('cancel_kept_draft')
+  await page.locator('textarea').fill('浏览器保存并读回备注')
+  await page.getByTestId('save-url-remark').click()
+  await page.getByTestId('edit-url-remark').waitFor()
+  await page.getByTestId('refresh-operations').click()
+  await page.getByText('浏览器保存并读回备注',{exact:true}).waitFor()
   await page.screenshot({path:path.join(output,`${kind}-desktop-synthetic.png`),fullPage:true})
   await page.getByTestId('drill-row').click()
   await page.waitForFunction(()=>globalThis.__upstreamFixture.queries.at(-1).dimension==='account')

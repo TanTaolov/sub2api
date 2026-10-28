@@ -22,6 +22,11 @@
       <template v-if="snapshot && !error">
         <p class="break-words text-xs text-gray-500" data-testid="applied-scope">{{ snapshot.scope.from }} ≤ t &lt; {{ snapshot.scope.until }} · {{ snapshot.currency }} · {{ t('profitOps.queried') }} {{ snapshot.queried_at }}</p>
         <section class="card space-y-3 p-4"><h2 class="font-semibold">{{ t('profitOps.discovery') }}</h2><p class="text-xs text-gray-500">{{ t('profitOps.discoveryNote') }}</p><div class="flex flex-wrap gap-2"><button v-for="c in snapshot.usage.catalog" :key="c.key" class="btn btn-secondary max-w-full break-all" @click="selectUpstream(c.key)">{{ c.name }} · {{ c.accounts }}</button></div><p class="text-xs">{{ applied.page }} · {{ snapshot.usage.catalog_total }}</p></section>
+        <section v-if="snapshot.url_remarks && Object.keys(snapshot.url_remarks).length" class="card space-y-3 p-4" data-testid="profit-url-remarks">
+          <h2 class="font-semibold">{{ t('profitOps.urlRemarks') }}</h2>
+          <p class="text-sm text-gray-500">{{ t('profitOps.urlRemarksNote') }}</p>
+          <UpstreamURLRemarkEditor v-for="note in snapshot.url_remarks" :key="note.upstream" :value="note" @saved="snapshot.url_remarks[$event.upstream] = $event" />
+        </section>
         <section v-if="applied.upstream || applied.account_id" class="card space-y-3 p-4"><h2 class="font-semibold">{{ t('profitOps.currentMembers') }}</h2><p class="text-xs text-gray-500">{{ t('profitOps.memberNote') }}</p><div class="flex flex-wrap gap-2"><button v-for="a in snapshot.usage.members" :key="a.id" class="btn btn-secondary" data-testid="member-drill" @click="selectAccount(a.id)">{{ a.name }} #{{ a.id }} · {{ a.cost_basis }} × {{ number(a.multiplier,4) }}</button></div><p class="text-xs">{{ applied.page }} · {{ snapshot.usage.member_total }}</p></section>
         <section class="card space-y-4 p-4" data-testid="profit-summary">
           <h2 class="font-semibold">{{ t('profitOps.summary') }}</h2>
@@ -50,6 +55,7 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import SmartOpsNav from './SmartOpsNav.vue'
+import UpstreamURLRemarkEditor from './UpstreamURLRemarkEditor.vue'
 import { readProfitOperations, type OperationsQuery, type OperationsSnapshot, type OperationsRow, type ProfitMetrics } from '@/api/admin/profitOperations'
 const { t } = useI18n()
 const amountKeys = ['requests','standard_charge','request_income','estimated_cost','estimated_profit','margin'] as const

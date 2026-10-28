@@ -18,10 +18,20 @@ export interface ProfitMetrics {
 export interface OperationsRow extends ProfitMetrics { key: string; name: string }
 export interface AccountBasis { id: number; name: string; key: string; attribution: string; updated_at: string; deleted: boolean; multiplier: number | null; cost_basis: string }
 export interface OperationsSnapshot {
+ url_remarks?: Record<string, UpstreamURLRemark>
  scope: OperationsQuery; queried_at: string; attribution: string; currency: string
  usage: { summary: ProfitMetrics; rows: OperationsRow[]; total: number; accounts: AccountBasis[]; members: AccountBasis[]; member_total: number; capacity: { accounts: number; schedulable: number; configured_concurrency: number }; account_details_limit: number; catalog: Array<{key: string; name: string; accounts: number}>; catalog_total: number; historical_upstream_snapshot_requests: number; historical_cost_multiplier_snapshot_requests: number; cost_formula: string; income_source: string; standard_source: string }
  quality: Section<Quality & { total: number }>; errors: Section<ErrorLogs>
 }
 export async function readProfitOperations( params: OperationsQuery, signal?: AbortSignal): Promise<OperationsSnapshot> {
  return (await apiClient.get<OperationsSnapshot>('/admin/profit-operations/snapshot', { params, signal })).data
+}
+
+export interface UpstreamURLRemark { upstream: string; remark: string; revision: number }
+export interface UpstreamURLRemarkMutation { upstream: string; remark: string; revision: number }
+export async function readUpstreamURLRemark(upstream: string): Promise<UpstreamURLRemark> {
+ return (await apiClient.get<UpstreamURLRemark>('/admin/profit-operations/url-remark', { params: { upstream } })).data
+}
+export async function saveUpstreamURLRemark(body: UpstreamURLRemarkMutation): Promise<UpstreamURLRemark> {
+ return (await apiClient.put<UpstreamURLRemark>('/admin/profit-operations/url-remark', body)).data
 }
