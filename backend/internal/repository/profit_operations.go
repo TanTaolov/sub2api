@@ -205,7 +205,9 @@ func (r *channelRepository) ReadProfitOperations(ctx context.Context, f service.
 	if err != nil {
 		return nil, err
 	}
-	out.Errors = readUpstreamSection(ctx, tx, strings.Replace(upstreamOperationsErrors, upstreamOperationsCohort, profitOperationsCohort, 1), args...)
+	profitErrors := strings.Replace(upstreamOperationsErrors, upstreamOperationsCohort, profitOperationsCohort, 1)
+	profitErrors = strings.Replace(profitErrors, "params AS (SELECT $8::text AS model_scope)", "params AS (SELECT $8::text AS model_scope,$9::int AS page_size,$10::int AS row_offset,$11::bigint AS selected_channel_id)", 1)
+	out.Errors = readUpstreamSection(ctx, tx, profitErrors, args...)
 	if f.Model != "" && f.ModelScope != "upstream" {
 		out.Quality = service.ChannelOperationsSection{Status: "unsupported_scope", Data: json.RawMessage("null"), Error: "Quality uses probe model identity; public/recorded aliases cannot be inferred", QueriedAt: out.QueriedAt}
 	} else {

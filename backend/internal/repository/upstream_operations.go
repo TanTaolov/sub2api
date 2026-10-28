@@ -183,7 +183,7 @@ func readUpstreamSection(ctx context.Context, tx *sql.Tx, query string, args ...
 	return out
 }
 
-const upstreamOperationsErrors = `WITH ` + upstreamOperationsCohort + `, params AS (SELECT $8::text AS model_scope,$9::int AS page_size,$10::int AS row_offset,$11::bigint AS selected_channel_id), scoped AS (
+const upstreamOperationsErrors = `WITH ` + upstreamOperationsCohort + `, params AS (SELECT $8::text AS model_scope), scoped AS (
  SELECT e.error_type,e.error_phase,e.status_code,e.upstream_status_code,e.created_at FROM ops_error_logs e
  WHERE e.created_at >= $1 AND e.created_at < $2 AND COALESCE(e.is_count_tokens,false)=false
  AND ($4='' OR e.account_id IN (SELECT id FROM cohort)) AND ($5::bigint=0 OR e.account_id=$5) AND ($6::bigint=0 OR e.group_id=$6)
