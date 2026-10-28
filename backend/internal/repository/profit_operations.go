@@ -115,7 +115,7 @@ const profitOperationsBase = `WITH ` + profitOperationsCohort + `, scoped AS (
  COALESCE(NULLIF(u.requested_model,''),u.model) AS public_model,
  u.total_cost AS cost_base
  FROM usage_logs u LEFT JOIN accounts_config c ON c.id=u.account_id
- WHERE u.created_at >= $1 AND u.created_at < $2 AND ($5::bigint=0 OR u.account_id=$5)
+ WHERE u.created_at >= $1 AND u.created_at < $2 AND ($5::bigint=0 OR u.account_id=$5) AND ($11::bigint=0 OR c.id IS NOT NULL)
  AND ($4='' OR COALESCE(c.key,'unknown:account_missing')=$4) AND ($6::bigint=0 OR u.group_id=$6)
  AND ($7='' OR CASE $8 WHEN 'public' THEN COALESCE(NULLIF(u.requested_model,''),u.model) WHEN 'recorded' THEN u.model WHEN 'upstream' THEN u.upstream_model END=$7)
 ), priced AS (
