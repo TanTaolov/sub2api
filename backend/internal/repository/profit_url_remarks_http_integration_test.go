@@ -4,6 +4,8 @@ package repository_test
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http/httptest"
@@ -211,6 +213,8 @@ func TestProfitURLRemarksHTTPPostgresPersistenceIdentityAuditAndConcurrency(t *t
 	var auditRaw string
 	require.NoError(t, db.QueryRow(`SELECT COALESCE(jsonb_agg(to_jsonb(a))::text,'[]') FROM audit_logs a WHERE actor_user_id=$1`, adminID).Scan(&auditRaw))
 	require.Contains(t, auditRaw, "config_version")
+	identityHash := sha256.Sum256([]byte(upstream))
+	require.Contains(t, auditRaw, hex.EncodeToString(identityHash[:]), "audit must identify the URL target without copying its text or credentials")
 	for _, secret := range []string{"query-secret", "credential-canary", "name:secret", "共享渠道备注", "并发-"} {
 		require.NotContains(t, auditRaw, secret, "request body must be omitted even on validation failure")
 	}

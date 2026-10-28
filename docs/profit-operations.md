@@ -15,7 +15,7 @@ Depends-on #585；base `fix/upstream-url-channel-operations`。本PR差异只新
 
 利润页 `/admin/profit-operations` 的「URL 渠道备注」可直接编辑、保存、取消和读取最新备注。最多 500 个 Unicode 字符，首尾空白去除；空白保存即清空。保存后通过独立 GET 确认，失败保留草稿；409 后需读取最新备注，核对当前保存内容再提交。页面刷新重新从服务器读取。
 
-备注仅存于 `upstream_url_channel_remarks`（migration 312），键严格使用现有 `ResolveOperationsUpstream` 的安全有效 URL，包含有意义的 path / port / 转义边界及平台尾斜杠规则。同 URL 账号共用；未知或含凭据/query/fragment 的 URL 不可写。PUT 校验键确实存在于当前账号有效投影。清空保留 revision 防止旧版本复活。写入使用现有管理员认证、observer 拒绝与审计队列，审计正文整体省略，保留动作、操作者、结果和配置版本。
+备注仅存于 `upstream_url_channel_remarks`（migration 312），键严格使用现有 `ResolveOperationsUpstream` 的安全有效 URL，包含有意义的 path / port / 转义边界及平台尾斜杠规则。同 URL 账号共用；未知或含凭据/query/fragment 的 URL 不可写。PUT 校验键确实存在于当前账号有效投影。清空保留 revision 防止旧版本复活。写入使用现有管理员认证、observer 拒绝与审计队列，审计正文整体省略，保留动作、操作者、结果、配置版本和安全 identity 的 SHA-256 摘要（复用 filter_hash）。
 
 API：`GET/PUT /api/v1/admin/profit-operations/url-remark`；快照新增 `url_remarks`，只附加当前页面可见 identity 的元数据。不改变利润公式、历史 usage、账号路由或凭据、模型定价、账本结算支付。
 

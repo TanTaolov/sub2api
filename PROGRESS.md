@@ -1,23 +1,30 @@
 # URL 渠道备注进度
 
 - 专属 worktree / branch：`sub2api-profit-url-channel-remarks` / `feat/profit-url-channel-remarks`；base `08d69a522c79a182fd681ead8fa4d848d9e1554e`，目标 `production`。
-- 已读 `DEV_GUIDE.md`；本 worktree 与父目录未发现 `AGENTS.md`。不操作邻居 worktree。
-- 已核对精确入口 `ProfitOperationsView → ProfitAnalytics`，路由要求管理员，scoped observer 禁止管理。
-- 复用 `ResolveOperationsUpstream` 的有效 URL identity；拒绝凭据、query、fragment；保留有意义的端口、path 大小写和转义边界，保留平台已有尾斜杠规则。
-- 既有 channel operations 表绑定模型定价 channel / 手工分组；账号 notes 绑定账号，均不适合作为共享 URL 备注。采用独立最小表，不修改账号、路由、财务数据。
-- 验证顺序：先跑既有定向前端回归，再补组件回归并观察 RED，然后实现。Go 动态、Docker、全量前端 build/lint/typecheck 仅远端 CI。
-- 产物：`/data/development/artifacts/sub2api-profit-url-channel-remarks`。
+- Draft PR：https://github.com/ranxi2001/sub2api/pull/593 。初步实现即提交 `008ca5059` / push / 创建 Draft，未等待全部 CI；后续持续同 branch 修复。
+- 已读 `DEV_GUIDE.md`；本 worktree 与父目录未发现 `AGENTS.md`。未操作邻居 #578 / #582 worktree 或原 profit worktree。
+- 精确页面：`/admin/profit-operations` → `ProfitOperationsView` → `ProfitAnalytics`，页面直接提供中文备注编辑、保存、取消和最新读回。
 
-## 待验收
+## 实现边界
 
-- [x] 现有前端基线 5/5；新增先 RED（4 失败），实现后合计 GREEN 10/10，日志已存产物目录
-- [x] 已实现管理员 API、revision CAS / 清空 tombstone、正文省略审计；后端动态验收 pending
-- [x] 已补 API → 独立迁移 PostgreSQL → GET / snapshot 回归；执行 pending 远端 CI
-- [x] 精确利润页编辑、保存、取消、失败草稿、清空、Unicode 长度、刷新组件测试通过；浏览器 pending 远端 CI
-- [x] 初步实现已提交 `008ca5059` / push；Draft PR https://github.com/ranxi2001/sub2api/pull/593，目标 production，验收项保持 pending
-- [ ] 所有 push / PR checks（filter=all）及 raw logs 审核、失败修复
-- [ ] 最终 head 冻结，交父级审查；不 merge / release / deploy
+- 复用 `ResolveOperationsUpstream` 的规范化有效 URL identity；拒绝凭据、query、fragment / 未知桶，保留有意义的 port、path 大小写、转义边界及平台尾斜杠规则。仅显示实际快照发现的 identity；写入时再次验证投影归属。
+- 已检查账号 notes 与 channel description / channel operations：前者绑定账号，后者绑定模型定价 channel / 手工分组，均无法自然复用为 URL 共享备注，因此增加最小独立表 migration 312。
+- 同 URL 的多个 / 新增 / 改名账号共享备注；保存按 revision CAS，空白保存清空并保留版本防 ABA。首尾空白去除，最多 500 Unicode 字符。
+- 保存后独立 GET 确认；保存失败 / 409 / 读回失败均保留草稿，显式重新读取当前保存内容后再提交。
+- 复用管理员认证、observer 拒绝及审计队列；审计正文整体省略，记录操作者、结果、配置版本及安全 identity SHA-256（filter_hash），不复制 URL / 备注文本。
+- 仅分析元数据；不修改账号路由、凭据、定价倍率、利润公式、历史 usage、账本结算支付。未 merge / release / deploy，未访问生产 SSH / DB / Redis，未调用付费模型。
 
-初步实现已完成：新专属 workflow 含后端持久化变异 RED→GREEN、既有利润/URL 回归及浏览器。未在本机运行 Go 编译/动态测试、Docker 或全量前端 build/lint/typecheck。`gofmt`、`git diff --check`、浏览器脚本语法检查通过。即刻创建 Draft PR，完整动态验收 pending。
+## 已获得的验证证据
 
-复查补强（下一提交）：元数据仅来自快照实际发现的 URL；新增账号改名 / 新同 URL 成员 / 无效含密 URL 的快照断言。真实 JWT fixture 改为从 repository 读取完整用户后签发，以遵循现有密码指纹 TokenVersion 机制。前端 saved 事件使用显式更新函数，避免模板闭包依赖可空快照。
+- 本地先跑既有利润页 5/5 GREEN，再补新增组件测试得到 RED（4 失败），实现后合计 10/10 GREEN；没有删除 / skip / 弱化原测试。
+- 本地仅依赖安装、定向 Vitest、gofmt、diff 检查和脚本语法检查；未运行 Go 编译 / 动态测试、Docker、全量 frontend build / lint / typecheck。
+- `3dea0176a` 远端专属 PostgreSQL PR job `123003424834` 已通过：DTO / URL identity / 实际路由授权；丢弃持久化备注的变异 RED 确认命中 `API must persist the submitted note`；恢复后真实 HTTP → 私有迁移 PostgreSQL → GET / snapshot GREEN。涵盖同 URL、path / port / case / 转义边界、创建与更新并发、清空与旧版本、改名 / 新账号 / 分页、审计隐私及财务行不变。
+- `3dea0176a` 远端专属前端 push job `123003396360` 已通过组件 10/10、完整 build/typecheck 和精确页面浏览器；桌面 / 移动截图、0 browser errors / 0 live API / 0 paid requests。
+- 初始 head 专属后端失败 raw 日志确认 JWT fixture 缺失密码指纹，预期 403 实得 401；`3dea0176a` 改为 repository 完整用户签发，保留所有授权断言后通过。
+- 本提交补上审计目标 identity 摘要及断言，继续走同套 CI。
+
+## 最终验收与冻结
+
+- 专属 workflow：`.github/workflows/profit-url-remarks-regression.yml`，push + PR 均检查实际 head。Go / Docker / 完整前端动态检查仅远端执行，私有 database + 显式 Ent runtime，不清空共享 fixture。
+- 全部 push / PR 检查（`check-runs?filter=all`）、原始 logs、每个 head 的状态和最终验收记录持续保存在 `/data/development/artifacts/sub2api-profit-url-channel-remarks/`，以 `runs.json`、`checks-<head>.json` 与 `ACCEPTANCE.md` 为交接证据。
+- 最终必须等待所有检查完成并审核失败 raw 日志；保持 Draft，完成后冻结 branch 交父级审查，不 merge / release / deploy。CI 尚未完成时 PR body 保持 pending 清单；验收结果在最终交接记录列明。

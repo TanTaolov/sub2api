@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/response"
@@ -40,8 +42,9 @@ func (h *ChannelHandler) SaveProfitURLRemark(c *gin.Context) {
 		response.ErrorFrom(c, err)
 		return
 	}
+	identityHash := sha256.Sum256([]byte(m.Upstream))
 	middleware.SetAuditAction(c, "admin.profit_url_remark.update")
-	middleware.SetAuditExtra(c, map[string]any{"source": "profit_url_remark", "config_version": *m.Revision})
+	middleware.SetAuditExtra(c, map[string]any{"source": "profit_url_remark", "config_version": *m.Revision, "filter_hash": hex.EncodeToString(identityHash[:])})
 	out, err := h.channelService.SaveUpstreamURLRemark(c.Request.Context(), m)
 	if err != nil {
 		profitURLRemarkError(c, err)
