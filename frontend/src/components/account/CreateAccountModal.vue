@@ -5673,6 +5673,14 @@ function importWithUpstream(payload: UpstreamImportRequest) {
  })
 }
 function createPATWithUpstream(payload: UpstreamPATRequest) { return runChannelCreation('pat', payload, () => adminAPI.accounts.createOpenAICodexPAT(payload), a => [a.id]) }
+function createGrokWithUpstream(payload: Parameters<typeof adminAPI.grok.createFromSSO>[0]) {
+ return runChannelCreation('grok', payload, () => adminAPI.grok.createFromSSO(payload), result => result.created.map(item => {
+  const id = (item.account as { id?: number } | undefined)?.id
+  if (!id) throw new Error(t('upstreamEntities.createReadbackFailed'))
+  return id
+ }))
+}
+
 
 const submitCreateAccount = async (payload: CreateAccountRequest) => {
   submitting.value = true
@@ -6648,7 +6656,7 @@ const handleGrokImportSSO = async (ssoInput: string) => {
   }
 
   try {
-    const result = await adminAPI.grok.createFromSSO({
+    const result = await createGrokWithUpstream({
       sso_tokens: ssoTokens,
       name: form.name || undefined,
       notes: form.notes || undefined,
