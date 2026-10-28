@@ -22,7 +22,7 @@
       <p v-if="error" role="alert" class="text-red-600">{{ error }}</p><p v-if="loading" role="status">{{ t('profitOps.loading') }}</p>
       <template v-if="snapshot && !error">
         <p class="break-words text-xs text-gray-500" data-testid="applied-scope">{{ snapshot.scope.from }} ≤ t &lt; {{ snapshot.scope.until }} · {{ snapshot.currency }} · {{ t('profitOps.queried') }} {{ snapshot.queried_at }}</p>
-        <section class="card space-y-3 p-4"><h2 class="font-semibold">{{ t('profitOps.discovery') }}</h2><p class="text-xs text-gray-500">{{ t('profitOps.discoveryNote') }}</p><div class="flex flex-wrap gap-2"><button v-for="c in snapshot.usage.catalog" :key="c.key" class="btn btn-secondary max-w-full break-all" @click="selectUpstream(c.key)">{{ c.name }} · {{ c.accounts }}</button></div><p class="text-xs">{{ applied.page }} · {{ snapshot.usage.catalog_total }}</p></section>
+        <section class="card space-y-3 p-4"><h2 class="font-semibold">{{ t('profitOps.discovery') }}</h2><p class="text-xs text-gray-500">{{ t('profitOps.discoveryNote') }}</p><div class="flex flex-wrap gap-2"><button v-for="c in snapshot.usage.catalog" :key="c.key" class="btn btn-secondary max-w-full break-all" @click="selectUpstream(c.key,c.channel_id || 0)">{{ c.name }} · {{ c.accounts }}</button></div><p class="text-xs">{{ applied.page }} · {{ snapshot.usage.catalog_total }}</p></section>
         <section v-if="snapshot.url_remarks && Object.keys(snapshot.url_remarks).length" class="card space-y-3 p-4" data-testid="profit-url-remarks">
           <h2 class="font-semibold">{{ t('profitOps.urlRemarks') }}</h2>
           <p class="text-sm text-gray-500">{{ t('profitOps.urlRemarksNote') }}</p>
@@ -65,7 +65,7 @@ const sortKeys = [...amountKeys, 'name']
 const at = new Date(), start = new Date(at.getTime()-86400000)
 const local = (d: Date) => new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)
 const from=ref(local(start)), until=ref(local(at))
-const initial: OperationsQuery = { from:start.toISOString(),until:at.toISOString(),upstream:'',account_id:0,group_id:0,model:'',model_scope:'public',dimension:'upstream',sort:'requests',direction:'desc',page:1,page_size:20 }
+const initial: OperationsQuery = { from:start.toISOString(),until:at.toISOString(),upstream:'',channel_id:0,account_id:0,group_id:0,model:'',model_scope:'public',dimension:'upstream',sort:'requests',direction:'desc',page:1,page_size:20 }
 const draft=ref<OperationsQuery>({...initial}), applied=ref<OperationsQuery>({...initial})
 const snapshot=ref<OperationsSnapshot|null>(null), loading=ref(false), error=ref('')
 let request=0, alive=true, controller: AbortController|undefined
@@ -81,10 +81,10 @@ async function load() {
 function apply() { const a=new Date(from.value), b=new Date(until.value); if(!Number.isFinite(a.getTime())||!Number.isFinite(b.getTime())||b<=a||b.getTime()-a.getTime()>31*86400000){error.value=t('profitOps.invalidRange');return} applied.value={...draft.value,from:a.toISOString(),until:b.toISOString(),page:1};void load() }
 function last24h(){const end=new Date();applied.value={...draft.value,from:new Date(end.getTime()-86400000).toISOString(),until:end.toISOString(),page:1};from.value=local(new Date(applied.value.from));until.value=local(end);void load()}
 function page(delta:number){applied.value={...applied.value,page:applied.value.page+delta};void load()}
-function drill(row:OperationsRow){if(applied.value.dimension==='upstream'){applied.value={...applied.value,upstream:row.key,account_id:0,dimension:'account',page:1}}else if(applied.value.dimension==='account'){applied.value={...applied.value,account_id:Number(row.key),dimension:'model',page:1}}draft.value={...applied.value};void load()}
-function selectUpstream(key:string){applied.value={...applied.value,upstream:key,account_id:0,dimension:'account',page:1};draft.value={...applied.value};void load()}
+function drill(row:OperationsRow){if(applied.value.dimension==='upstream'){const id=row.channel_id||0;applied.value={...applied.value,upstream:id?'':row.key,channel_id:id,account_id:0,dimension:'account',page:1}}else if(applied.value.dimension==='account'){applied.value={...applied.value,account_id:Number(row.key),dimension:'model',page:1}}draft.value={...applied.value};void load()}
+function selectUpstream(key:string,channelID=0){applied.value={...applied.value,upstream:channelID?'':key,channel_id:channelID,account_id:0,dimension:'account',page:1};draft.value={...applied.value};void load()}
 function selectAccount(id:number){applied.value={...applied.value,account_id:id,dimension:'model',page:1};draft.value={...applied.value};void load()}
-function overview(){applied.value={...applied.value,upstream:'',account_id:0,dimension:'upstream',page:1};draft.value={...applied.value};void load()}
+function overview(){applied.value={...applied.value,upstream:'',channel_id:0,account_id:0,dimension:'upstream',page:1};draft.value={...applied.value};void load()}
 onMounted(load)
 onBeforeUnmount(()=>{alive=false;request++;controller?.abort()})
 </script>

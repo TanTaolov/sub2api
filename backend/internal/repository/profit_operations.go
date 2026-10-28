@@ -107,7 +107,7 @@ func profitOperationsAccounts(ctx context.Context, tx *sql.Tx, f service.Upstrea
 const profitOperationsCohort = `accounts_config AS (
  SELECT * FROM jsonb_to_recordset($3::jsonb) AS c(id bigint,name text,key text,attribution text,updated_at timestamptz,deleted boolean,multiplier numeric,cost_basis text,schedulable boolean,concurrency integer,status text,url_key text,channel_id bigint,channel_name text,channel_code text,channel_remark text,channel_revision bigint,assignment text)
 ), cohort AS (
- SELECT * FROM accounts_config WHERE ($4='' OR key=$4) AND ($5::bigint=0 OR id=$5)
+ SELECT * FROM accounts_config WHERE ($4='' OR key=$4) AND ($5::bigint=0 OR id=$5) AND ($11::bigint=0 OR channel_id=$11)
 )`
 const profitOperationsBase = `WITH ` + profitOperationsCohort + `, scoped AS (
  SELECT u.*,COALESCE(c.key,'unknown:account_missing') AS upstream_key,
@@ -156,7 +156,7 @@ const profitOperationsAggregate = `count(*) AS requests,
  jsonb_agg(DISTINCT cost_basis) AS cost_bases`
 
 func (r *channelRepository) ReadProfitOperations(ctx context.Context, f service.UpstreamOperationsFilter) (*service.ProfitOperationsSnapshot, error) {
-	if err := service.ValidateProfitOperationsFilter(f); err != nil {
+	if err := service.NormalizeProfitOperationsFilter(&f); err != nil {
 		return nil, err
 	}
 	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true, Isolation: sql.LevelRepeatableRead})
@@ -168,7 +168,7 @@ func (r *channelRepository) ReadProfitOperations(ctx context.Context, f service.
 	if err != nil {
 		return nil, err
 	}
-	args := []any{f.From, f.Until, string(raw), f.Upstream, f.AccountID, f.GroupID, f.Model, f.ModelScope, f.PageSize, (f.Page - 1) * f.PageSize}
+	args := []any{f.From, f.Until, string(raw), f.Upstream, f.AccountID, f.GroupID, f.Model, f.ModelScope, f.PageSize, (f.Page - 1) * f.PageSize, f.ChannelID}
 	dimension, name := `upstream_key`, `COALESCE(NULLIF(max(channel_name),''),upstream_key)`
 	channelFields := `,COALESCE(max(explicit_channel_id),0) AS channel_id,max(channel_code) AS channel_code,max(channel_remark) AS channel_remark,max(channel_revision) AS channel_revision,COALESCE(max(assignment),'unbound_unknown') AS assignment`
 	switch f.Dimension {
@@ -205,7 +205,7 @@ func (r *channelRepository) ReadProfitOperations(ctx context.Context, f service.
 	if err != nil {
 		return nil, err
 	}
-	out.Errors = readUpstreamSection(ctx, tx, strings.Replace(upstreamOperationsErrors, upstreamOperationsCohort, profitOperationsCohort, 1), args[:8]...)
+	out.Errors = readUpstreamSection(ctx, tx, strings.Replace(upstreamOperationsErrors, upstreamOperationsCohort, profitOperationsCohort, 1), args...)
 	if f.Model != "" && f.ModelScope != "upstream" {
 		out.Quality = service.ChannelOperationsSection{Status: "unsupported_scope", Data: json.RawMessage("null"), Error: "Quality uses probe model identity; public/recorded aliases cannot be inferred", QueriedAt: out.QueriedAt}
 	} else {
