@@ -135,11 +135,16 @@ func TestIssue578ReviewCrossInstanceHeaderCASRedisSelection(t *testing.T) {
 	fresh, err := q.QueryUsage(ctx, f.account.ID)
 	require.NoError(t, err)
 	require.True(t, fresh.UsageCachePersisted)
+	var usageAfterQuery, versionAfterQuery string
+	require.NoError(t, f.db.QueryRowContext(ctx, `SELECT extra->>'codex_5h_used_percent',extra->>'codex_usage_observed_at_ns' FROM accounts WHERE id=$1`, f.account.ID).Scan(&usageAfterQuery, &versionAfterQuery))
+	t.Logf("synthetic query CAS persisted usage=%s version=%s", usageAfterQuery, versionAfterQuery)
+	require.Equal(t, "100", usageAfterQuery, "QueryUsage must persist the accepted 100 before the delayed header worker fires")
 	// The production 30-second throttle must actually expire; no test-only shortcut.
 	time.Sleep(31 * time.Second)
 	stored, err := f.repoA.GetByID(ctx, f.account.ID)
 	require.NoError(t, err)
 	require.Equal(t, 100.0, stored.Extra["codex_5h_used_percent"])
+	t.Logf("after delayed header DB updated_at=%v usage=%v version=%v", stored.Extra["codex_usage_updated_at"], stored.Extra["codex_5h_used_percent"], stored.Extra[service.CodexUsageObservationVersionKey])
 	cached, err := f.cache.GetAccount(ctx, f.account.ID)
 	require.NoError(t, err)
 	require.Equal(t, 100.0, cached.Extra["codex_5h_used_percent"])
