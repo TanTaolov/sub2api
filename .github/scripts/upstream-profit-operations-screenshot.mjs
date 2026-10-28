@@ -30,6 +30,9 @@ export async function readProfitOperations(query){
  errors:{status:'ready',data:{records:5,upstream_5xx:2,rows:[{error_type:'upstream',error_phase:'forward',status_code:502,records:5}]},queried_at:now}};
 }
 `
+const entityAPI = `export async function listUpstreamChannels(){return {items:[],total:0}}
+export async function getUpstreamChannel(){throw new Error('not used by legacy URL screenshot')}
+export const saveUpstreamChannel=getUpstreamChannel,deleteUpstreamChannel=getUpstreamChannel,getChannelMembers=getUpstreamChannel,readChannelBindings=getUpstreamChannel,bindChannelAccounts=getUpstreamChannel;`
 const settings = `export const useAdminSettingsStore=()=>({requestCaptureEnabled:false})`
 const shell = `import {h} from 'vue';export default {setup(_,ctx){return ()=>h('main',{class:'mx-auto max-w-7xl p-4 text-gray-900'},ctx.slots.default?.())}}`
 const html = `<!doctype html><html lang="zh"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><div id="app"></div><script type="module">
@@ -41,9 +44,9 @@ process.chdir(frontend)
 const server = await createServer({ root: frontend, configFile: false, plugins: [vue(), {
   name: 'channel-operations-offline',
   resolveId(id) { if (id.startsWith('virtual:channel-')) return '\0' + id },
-  load(id) { if (id === '\0virtual:channel-fixture') return fixture; if (id === '\0virtual:channel-shell') return shell; if (id === '\0virtual:channel-settings') return settings },
+  load(id) { if (id === '\0virtual:channel-fixture') return fixture; if (id === '\0virtual:channel-entities') return entityAPI; if (id === '\0virtual:channel-shell') return shell; if (id === '\0virtual:channel-settings') return settings },
   configureServer(vite) { vite.middlewares.use((req, res, next) => { if (['/admin/channel-operations','/admin/profit-operations'].includes(req.url?.split('?')[0])) { res.setHeader('Content-Type', 'text/html'); void vite.transformIndexHtml('/admin/channel-operations', html).then(value => res.end(value)); return } next() }) }
-}], resolve: { alias: [{ find: '@/api/admin/profitOperations', replacement: 'virtual:channel-fixture' }, { find: '@/components/layout/AppLayout.vue', replacement: 'virtual:channel-shell' }, { find: '@/stores/adminSettings', replacement: 'virtual:channel-settings' }, { find: '@', replacement: path.join(frontend, 'src') }] }, css: { postcss: { plugins: [tailwind({ config: path.join(frontend, 'tailwind.config.js') }), autoprefixer()] } }, server: { host: '127.0.0.1', port: 4183, strictPort: true }, optimizeDeps: { noDiscovery: true, include: ['vue', 'vue-i18n', 'pinia', 'vue-router'] } })
+}], resolve: { alias: [{ find: '@/api/admin/upstreamChannels', replacement: 'virtual:channel-entities' }, { find: '@/api/admin/profitOperations', replacement: 'virtual:channel-fixture' }, { find: '@/components/layout/AppLayout.vue', replacement: 'virtual:channel-shell' }, { find: '@/stores/adminSettings', replacement: 'virtual:channel-settings' }, { find: '@', replacement: path.join(frontend, 'src') }] }, css: { postcss: { plugins: [tailwind({ config: path.join(frontend, 'tailwind.config.js') }), autoprefixer()] } }, server: { host: '127.0.0.1', port: 4183, strictPort: true }, optimizeDeps: { noDiscovery: true, include: ['vue', 'vue-i18n', 'pinia', 'vue-router'] } })
 await server.listen()
 const browser=await chromium.launch({headless:true})
 try {
