@@ -23,5 +23,5 @@ it('drills into an explicit ID and shows current members without requiring a URL
  vi.mocked(readProfitOperations).mockResolvedValue(next)
  const w=mount(ProfitOperationsView);await flushPromises();await w.get('[data-testid="drill-row"]').trigger('click');await flushPromises()
  expect(readProfitOperations).toHaveBeenLastCalledWith(expect.objectContaining({channel_id:7,upstream:'',dimension:'account'}),expect.anything())
- expect(w.get('[data-testid="member-drill"]').text()).toContain('unknown endpoint');w.unmount()
+ expect(w.get('[data-testid="member-drill"]').text()).toContain('unknown endpoint');expect(w.get('[data-testid="profit-current-channel"]').text()).toContain('#7');w.unmount()
 })
