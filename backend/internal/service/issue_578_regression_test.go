@@ -144,8 +144,10 @@ func TestIssue578HeaderSerialAndRetry(t *testing.T) {
 		a := issue578Account()
 		r := &issue578Repo{accounts: map[int64]*Account{a.ID: a}, fail: 2}
 		s := &OpenAIGatewayService{accountRepo: r, codexSnapshotThrottle: newAccountWriteThrottle(40 * time.Millisecond)}
+		startedAt := time.Now()
 		s.UpdateCodexUsageSnapshotFromHeaders(context.Background(), a.ID, excelBPSQuotaHeaders("100", "20"))
 		issue578WaitUsage(t, r, a.ID, 100)
+		require.GreaterOrEqual(t, time.Since(startedAt), 80*time.Millisecond, "failures must consume the write interval")
 		r.mu.Lock()
 		defer r.mu.Unlock()
 		require.Equal(t, 3, r.writes, "failed writes must retry with the latest value at a bounded rate")

@@ -148,6 +148,9 @@ func TestIssue578OlderQueryCannotUndoLaterHeaders(t *testing.T) {
 	a := issue578Account()
 	r := &issue578Repo{accounts: map[int64]*Account{a.ID: a}}
 	entered, release := make(chan struct{}), make(chan struct{})
+	var releaseOnce sync.Once
+	unblock := func() { releaseOnce.Do(func() { close(release) }) }
+	t.Cleanup(unblock)
 	q := issue578Quota(t, r, func(w http.ResponseWriter, request *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if request.URL.Path == "/backend-api/wham/usage" {
@@ -160,12 +163,21 @@ func TestIssue578OlderQueryCannotUndoLaterHeaders(t *testing.T) {
 	})
 	done := make(chan error, 1)
 	go func() { _, err := q.QueryUsage(context.Background(), a.ID); done <- err }()
-	<-entered
+	select {
+	case <-entered:
+	case <-time.After(time.Second):
+		t.Fatal("quota query did not reach the local server")
+	}
 	s := &OpenAIGatewayService{accountRepo: r, codexSnapshotThrottle: newAccountWriteThrottle(40 * time.Millisecond)}
 	s.UpdateCodexUsageSnapshotFromHeaders(context.Background(), a.ID, excelBPSQuotaHeaders("100", "20"))
 	issue578WaitUsage(t, r, a.ID, 100)
-	close(release)
-	require.NoError(t, <-done)
+	unblock()
+	select {
+	case err := <-done:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		t.Fatal("quota query did not complete")
+	}
 	current, _ := r.GetByID(context.Background(), a.ID)
 	require.Equal(t, 100.0, current.Extra["codex_5h_used_percent"])
 }

@@ -419,7 +419,7 @@ type accountWriteThrottle struct {
 	minInterval time.Duration
 	mu          sync.Mutex
 	lastByID    map[int64]time.Time
-	pending     map[int64]*codexPendingWrite
+	pending     map[codexWriteKey]*codexPendingWrite
 }
 
 func newAccountWriteThrottle(minInterval time.Duration) *accountWriteThrottle {

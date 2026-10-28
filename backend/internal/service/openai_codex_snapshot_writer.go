@@ -15,14 +15,15 @@ type codexPendingWrite struct {
 // Submit keeps one latest snapshot per account, including after a failed write.
 // Only its worker writes that account. Both successes and failures consume the
 // interval, so bursts and unavailable storage cannot turn into unbounded writes.
-func (t *accountWriteThrottle) submitCodex(id int64, updates map[string]any, write func(map[string]any) error) {
+func (t *accountWriteThrottle) submitCodex(repo AccountRepository, id int64, updates map[string]any, write func(map[string]any) error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	if t.pending == nil {
-		t.pending = make(map[int64]*codexPendingWrite)
+		t.pending = make(map[codexWriteKey]*codexPendingWrite)
 	}
+	key := codexWriteKey{repo: repo, id: id}
 	observedAt := codexUpdatesTime(updates)
-	if pending := t.pending[id]; pending != nil {
+	if pending := t.pending[key]; pending != nil {
 		if !observedAt.Before(pending.observedAt) {
 			if pending.updates == nil {
 				pending.updates = make(map[string]any)
@@ -35,7 +36,7 @@ func (t *accountWriteThrottle) submitCodex(id int64, updates map[string]any, wri
 		return
 	}
 	pending := &codexPendingWrite{updates: updates, observedAt: observedAt}
-	t.pending[id] = pending
+	t.pending[key] = pending
 	go func() {
 		for {
 			t.mu.Lock()
@@ -46,7 +47,7 @@ func (t *accountWriteThrottle) submitCodex(id int64, updates map[string]any, wri
 			}
 			t.mu.Lock()
 			if len(pending.updates) == 0 {
-				delete(t.pending, id)
+				delete(t.pending, key)
 				t.mu.Unlock()
 				return
 			}
