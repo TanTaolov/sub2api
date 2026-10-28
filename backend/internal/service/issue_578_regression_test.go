@@ -40,7 +40,7 @@ func (r *issue578Repo) UpdateCodexUsageSnapshot(ctx context.Context, id int64, u
 	if observed.Before(current) {
 		display := make(map[string]any)
 		for key, value := range updates {
-			if key != "codex_usage_updated_at" && !strings.HasPrefix(key, "codex_5h_") && !strings.HasPrefix(key, "codex_7d_") && !strings.HasPrefix(key, "codex_primary_") && !strings.HasPrefix(key, "codex_secondary_") {
+			if key != "codex_usage_updated_at" && key != "codex_usage_field_versions" && !strings.HasPrefix(key, "codex_5h_") && !strings.HasPrefix(key, "codex_7d_") && !strings.HasPrefix(key, "codex_primary_") && !strings.HasPrefix(key, "codex_secondary_") {
 				display[key] = value
 			}
 		}
