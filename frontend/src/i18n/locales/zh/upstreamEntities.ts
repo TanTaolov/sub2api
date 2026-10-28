@@ -5,12 +5,6 @@ export default {
   "edit": "编辑渠道",
   "currentRemark": "当前已保存备注",
 
-  "save": "保存",
-  "cancel": "取消",
-  "noRemark": "未填写备注",
-  "edit": "编辑渠道",
-  "currentRemark": "当前已保存备注",
-
   "title": "上游渠道对象",
   "manage": "管理上游渠道",
   "accountChannel": "上游渠道归属",
