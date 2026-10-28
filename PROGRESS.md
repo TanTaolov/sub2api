@@ -2,7 +2,7 @@
 
 - Worktree / branch：`sub2api-profit-url-channel-remarks` / `feat/profit-url-channel-remarks`；base `production` @ `08d69a522c79a182fd681ead8fa4d848d9e1554e`。
 - Draft PR：https://github.com/ranxi2001/sub2api/pull/593；同一 PR 按用户更正完成完整实体需求。
-- 当前待做文档提交前的已验收代码 head：`bfb1f3804d030927757094e3c986c53a58a14c49`；待最终文档提交及其完整 CI 后冻结。
+- 当前冻结实现 head：`9b514750d105d1d6992fb3a61bef5ad403ee208b`；最终 filter=all 已完成（30 success / 3 既有条件 skipped），工作区与远端一致。
 - 已读取 DEV_GUIDE 和原 PR 八节模板。PR body 保留完整模板小节；按最新实际范围更新，不创建第二 PR。
 - Agent 披露：Codex / `gpt-6.1-sol` / `xhigh`；Hermes / `gpt-6.1-sol` / 推理档位未知（父级提供）。未启动子 agent。
 
