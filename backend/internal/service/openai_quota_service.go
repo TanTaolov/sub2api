@@ -50,6 +50,7 @@ type OpenAIRateLimitWindow struct {
 	decoded            bool
 	usedPresent        bool
 	resetAfterPresent  bool
+	observedAt         time.Time
 }
 
 func (w *OpenAIRateLimitWindow) UnmarshalJSON(data []byte) error {
@@ -64,6 +65,7 @@ func (w *OpenAIRateLimitWindow) UnmarshalJSON(data []byte) error {
 	}
 	*w = OpenAIRateLimitWindow(value)
 	w.decoded = true
+	w.observedAt = time.Now()
 	w.usedPresent = len(fields["used_percent"]) > 0 && string(fields["used_percent"]) != "null"
 	w.resetAfterPresent = len(fields["reset_after_seconds"]) > 0 && string(fields["reset_after_seconds"]) != "null"
 	return nil
@@ -129,18 +131,6 @@ type OpenAIQuotaUsage struct {
 	autoResetCandidates   []openAIAutoResetCreditCandidate
 	schedulingUpdates     map[string]any
 	schedulingObserved    bool
-	observedAt            time.Time
-}
-
-func (u *OpenAIQuotaUsage) UnmarshalJSON(data []byte) error {
-	type plain OpenAIQuotaUsage
-	var value plain
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*u = OpenAIQuotaUsage(value)
-	u.observedAt = time.Now()
-	return nil
 }
 
 // OpenAIQuotaResetCredit captures the redeemed credit metadata returned by the

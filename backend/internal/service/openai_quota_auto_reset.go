@@ -585,10 +585,14 @@ func buildOpenAIAutoResetUsageUpdates(usage *OpenAIQuotaUsage, now time.Time) ma
 	rateLimit := usage.RateLimit
 	// Programmatic callers explicitly construct their windows; decoded DTOs
 	// retain presence and their original receipt time, never a post-reset time.
-	if !usage.observedAt.IsZero() {
-		now = usage.observedAt
-	} else if usage.FetchedAt > 0 {
+	if usage.FetchedAt > 0 {
 		now = time.Unix(usage.FetchedAt, 0)
+	} else {
+		for _, window := range []*OpenAIRateLimitWindow{rateLimit.PrimaryWindow, rateLimit.SecondaryWindow} {
+			if window != nil && !window.observedAt.IsZero() && window.observedAt.Before(now) {
+				now = window.observedAt
+			}
+		}
 	}
 	snapshot := &OpenAICodexUsageSnapshot{UpdatedAt: now.UTC().Format(time.RFC3339Nano)}
 	applyWindow := func(window *OpenAIRateLimitWindow, primary bool) {
