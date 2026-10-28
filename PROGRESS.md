@@ -1,31 +1,29 @@
-# URL 渠道备注进度
+# 独立上游渠道实体与账号绑定（PR #593，完整范围）
 
-- 专属 worktree / branch：`sub2api-profit-url-channel-remarks` / `feat/profit-url-channel-remarks`；base `08d69a522c79a182fd681ead8fa4d848d9e1554e`，目标 `production`。
-- Draft PR：https://github.com/ranxi2001/sub2api/pull/593 。初步实现即提交 `008ca5059` / push / 创建 Draft，未等待全部 CI；后续持续同 branch 修复。
-- 已读 `DEV_GUIDE.md`；本 worktree 与父目录未发现 `AGENTS.md`。未操作邻居 #578 / #582 worktree 或原 profit worktree。
-- 精确页面：`/admin/profit-operations` → `ProfitOperationsView` → `ProfitAnalytics`，页面直接提供中文备注编辑、保存、取消和最新读回。
+- 唯一 writer：本 worktree `sub2api-profit-url-channel-remarks` / branch `feat/profit-url-channel-remarks`；base production `08d69a522c79a182fd681ead8fa4d848d9e1554e`。
+- 已逐条消费用户更正：**URL 备注方案不是完整交付**。独立渠道内部 ID 才是关联键；可读唯一标识/名称和备注不是外键，绑定不要求可识别/可获取 URL。
+- 同一 Draft PR：https://github.com/ranxi2001/sub2api/pull/593 。旧 head `e6d2022cf` 的验证保留为历史证据，不再等待或重复独立验收。当前任务恢复实现，旧冻结记录已失效。
+- 已重新读取 DEV_GUIDE 和 PR 当前正文。当前远端标题已是渠道实体，但读取到的正文仍含旧 URL 增量及“冻结”描述；后续保留现有模板小节，仅准确更新完整范围状态/head/证据/未完成清单，不退回简版。
+- 披露：Codex / gpt-6.1-sol / xhigh；Hermes / gpt-6.1-sol / 推理档位未知（父级提供的参与声明）。不另启 writer。
 
-## 实现边界
+## 设计与完整待办
 
-- 复用 `ResolveOperationsUpstream` 的规范化有效 URL identity；拒绝凭据、query、fragment / 未知桶，保留有意义的 port、path 大小写、转义边界及平台尾斜杠规则。仅显示实际快照发现的 identity；写入时再次验证投影归属。
-- 已检查账号 notes 与 channel description / channel operations：前者绑定账号，后者绑定模型定价 channel / 手工分组，均无法自然复用为 URL 共享备注，因此增加最小独立表 migration 312。
-- 同 URL 的多个 / 新增 / 改名账号共享备注；保存按 revision CAS，空白保存清空并保留版本防 ABA。首尾空白去除，最多 500 Unicode 字符。
-- 保存后独立 GET 确认；保存失败 / 409 / 读回失败均保留草稿，显式重新读取当前保存内容后再提交。
-- 复用管理员认证、observer 拒绝及审计队列；审计正文整体省略，记录操作者、结果、配置版本及安全 identity SHA-256（filter_hash），不复制 URL / 备注文本。
-- 仅分析元数据；不修改账号路由、凭据、定价倍率、利润公式、历史 usage、账本结算支付。未 merge / release / deploy，未访问生产 SSH / DB / Redis，未调用付费模型。
+- [ ] 独立 `upstream_channels` 对象：不可变内部 ID、不可变唯一可读 code、可编辑唯一名称、备注、revision CAS。
+- [ ] 独立账号关联：account FK + nullable channel FK + 每账号 binding revision；所有账号类型（包括未知/动态/不支持 URL）可绑定；一次最多 100 个明确账号，显式确认，多账号影响可见。
+- [ ] 管理员 CRUD / list / GET / binding preview+readback API、observer/普通用户拒绝、审计正文省略及目标摘要。
+- [ ] 删除仅允许无绑定渠道并要求版本与确认；有绑定返回冲突，先执行明确有界解绑；FK RESTRICT，不级联删账号/usage，不静默重归属。
+- [ ] 账户管理新建、编辑、批量选择器、当前归属展示与管理入口；失败保留选择/草稿，真实 API 保存后 GET 读回，避免账号已建却因绑定失败重复建账号。
+- [ ] 渠道管理入口可新建/编辑/删除、分页账号成员和明确有界解绑；利润页直接可管理备注/进入渠道管理。
+- [ ] 利润聚合优先显式 `channel:<内部ID>`，未绑定保留安全有效 URL / unknown fallback，清晰标注未绑定；同渠道不同 URL / 不同渠道相同 URL / 改名改 URL / 翻页关联稳定。
+- [ ] 归属明确为当前绑定统计，非历史路由；不回写 usage 或历史账本。利润公式保持 `usage.total_cost × 当前账号成本倍率`，不额外叠加模型成本。
+- [ ] 先 RED 再 GREEN：真实前端组件/实际 client；真实 HTTP→私有迁移 DB→GET→账户绑定→利润跨页/改名/解绑；CAS、删除、权限及隐私边界。
+- [ ] zh/en、精确页面与账号新建/编辑/批量交互截图；远端实体专属 CI，保留旧增量回归，不删 skip 弱化测试。
+- [ ] 尽快提交第一批实体实码并 push 同 branch，Draft body 明确未完成项；继续修复当前 push/PR filter=all 和 raw logs。
+- [ ] 完整实现/新验收全部完成才冻结交父级；父级审查不是缺失实现的阻塞。
 
-## 已获得的验证证据
+## 约束与证据
 
-- 本地先跑既有利润页 5/5 GREEN，再补新增组件测试得到 RED（4 失败），实现后合计 10/10 GREEN；没有删除 / skip / 弱化原测试。
-- 本地仅依赖安装、定向 Vitest、gofmt、diff 检查和脚本语法检查；未运行 Go 编译 / 动态测试、Docker、全量 frontend build / lint / typecheck。
-- `3dea0176a` 远端专属 PostgreSQL PR job `123003424834` 已通过：DTO / URL identity / 实际路由授权；丢弃持久化备注的变异 RED 确认命中 `API must persist the submitted note`；恢复后真实 HTTP → 私有迁移 PostgreSQL → GET / snapshot GREEN。涵盖同 URL、path / port / case / 转义边界、创建与更新并发、清空与旧版本、改名 / 新账号 / 分页、审计隐私及财务行不变。
-- `3dea0176a` 远端专属前端 push job `123003396360` 已通过组件 10/10、完整 build/typecheck 和精确页面浏览器；桌面 / 移动截图、0 browser errors / 0 live API / 0 paid requests。
-- 初始 head 专属后端失败 raw 日志确认 JWT fixture 缺失密码指纹，预期 403 实得 401；`3dea0176a` 改为 repository 完整用户签发，保留所有授权断言后通过。
-- `8c70a2521` 补上审计目标 identity 摘要及断言，push/PR 专属回归均通过。
-- 最终复核发现并修复前端 409 契约：apiClient 拦截器返回顶层 status；新增真实 API module + client interceptors + Vue editor 的 adapter 回归，先确认 2 项 RED，再兼容顶层 status / Axios response.status。原授权和冲突断言均保留，继续走同套 CI。
-
-## 最终验收与冻结
-
-- 专属 workflow：`.github/workflows/profit-url-remarks-regression.yml`，push + PR 均检查实际 head。Go / Docker / 完整前端动态检查仅远端执行，私有 database + 显式 Ent runtime，不清空共享 fixture。
-- 全部 push / PR 检查（`check-runs?filter=all`）、原始 logs、每个 head 的状态和最终验收记录持续保存在 `/data/development/artifacts/sub2api-profit-url-channel-remarks/`，以 `runs.json`、`checks-<head>.json` 与 `ACCEPTANCE.md` 为交接证据。
-- 最终必须等待所有检查完成并审核失败 raw 日志；保持 Draft，完成后冻结 branch 交父级审查，不 merge / release / deploy。CI 尚未完成时 PR body 保持 pending 清单；验收结果在最终交接记录列明。
+- 本机禁止 Go 编译/动态、Docker、全量 frontend build/lint/typecheck；允许 gofmt、静态检查、轻量定向 Vitest。完整动态仅远端 CI。
+- 不改模型定价 channel、账号路由/凭据/倍率、利润公式、usage、财务账本/支付。邻居和旧模板复用文件/工作树不动。
+- 不 merge/release/deploy，不访问生产 SSH/DB/Redis，不调用付费模型。
+- 产物：`/data/development/artifacts/sub2api-profit-url-channel-remarks/`；旧 ACCEPTANCE/freeze 仅证明旧 URL 增量，不代表完整需求验收。新实体证据使用 `entity-*` 文件。

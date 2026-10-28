@@ -4,6 +4,8 @@ import (
 	"context"
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 	"slices"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -20,6 +22,13 @@ type ProfitOperationsRepository interface {
 func ValidateProfitOperationsFilter(f UpstreamOperationsFilter) error {
 	if !slices.Contains([]string{"requests", "standard_charge", "request_income", "estimated_cost", "estimated_profit", "margin", "name"}, f.Sort) {
 		return ErrUpstreamOperationsValidation
+	}
+	if strings.HasPrefix(f.Upstream, "channel:") {
+		id, e := strconv.ParseInt(strings.TrimPrefix(f.Upstream, "channel:"), 10, 64)
+		if e != nil || id < 1 || f.Upstream != "channel:"+strconv.FormatInt(id, 10) {
+			return ErrUpstreamOperationsValidation
+		}
+		f.Upstream = ""
 	}
 	f.Sort = "requests"
 	return ValidateUpstreamOperationsFilter(f)
