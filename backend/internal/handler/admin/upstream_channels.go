@@ -13,6 +13,7 @@ import (
 	"strings"
 )
 
+func (h *ChannelHandler) UpstreamChannelService() *service.ChannelService { return h.channelService }
 func upstreamChannelError(c *gin.Context, e error) {
 	if errors.Is(e, service.ErrUpstreamChannelValidation) || errors.Is(e, service.ErrUpstreamChannelConflict) || errors.Is(e, service.ErrUpstreamChannelNotFound) {
 		response.ErrorFrom(c, e)

@@ -1011,6 +1011,9 @@ func registerPluginRoutes(admin *gin.RouterGroup, h *handler.Handlers, stepUpAut
 }
 
 func registerChannelRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
+	if h.Admin.Account != nil && h.Admin.Channel != nil {
+		h.Admin.Account.SetUpstreamChannelService(h.Admin.Channel.UpstreamChannelService())
+	}
 	admin.GET("/upstream-channels", h.Admin.Channel.ListUpstreamChannels)
 	admin.POST("/upstream-channels", h.Admin.Channel.MutateUpstreamChannel)
 	admin.GET("/upstream-channels/:id", h.Admin.Channel.GetUpstreamChannel)

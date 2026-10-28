@@ -111,7 +111,7 @@ const profitOperationsCohort = `accounts_config AS (
 )`
 const profitOperationsBase = `WITH ` + profitOperationsCohort + `, scoped AS (
  SELECT u.*,COALESCE(c.key,'unknown:account_missing') AS upstream_key,
- COALESCE(c.attribution,'account_missing') AS attribution,c.name AS account_name,c.updated_at AS config_updated_at,c.deleted,c.multiplier,c.channel_id,c.channel_name,c.channel_code,c.channel_remark,c.channel_revision,c.assignment,COALESCE(c.cost_basis,'account_missing') AS cost_basis,
+ COALESCE(c.attribution,'account_missing') AS attribution,c.name AS account_name,c.updated_at AS config_updated_at,c.deleted,c.multiplier,c.channel_id AS explicit_channel_id,c.channel_name,c.channel_code,c.channel_remark,c.channel_revision,c.assignment,COALESCE(c.cost_basis,'account_missing') AS cost_basis,
  COALESCE(NULLIF(u.requested_model,''),u.model) AS public_model,
  u.total_cost AS cost_base
  FROM usage_logs u LEFT JOIN accounts_config c ON c.id=u.account_id
@@ -170,7 +170,7 @@ func (r *channelRepository) ReadProfitOperations(ctx context.Context, f service.
 	}
 	args := []any{f.From, f.Until, string(raw), f.Upstream, f.AccountID, f.GroupID, f.Model, f.ModelScope, f.PageSize, (f.Page - 1) * f.PageSize}
 	dimension, name := `upstream_key`, `COALESCE(NULLIF(max(channel_name),''),upstream_key)`
-	channelFields := `,COALESCE(max(channel_id),0) AS channel_id,max(channel_code) AS channel_code,max(channel_remark) AS channel_remark,max(channel_revision) AS channel_revision,COALESCE(max(assignment),'unbound_unknown') AS assignment`
+	channelFields := `,COALESCE(max(explicit_channel_id),0) AS channel_id,max(channel_code) AS channel_code,max(channel_remark) AS channel_remark,max(channel_revision) AS channel_revision,COALESCE(max(assignment),'unbound_unknown') AS assignment`
 	switch f.Dimension {
 	case "account":
 		channelFields = ""

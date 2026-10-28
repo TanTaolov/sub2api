@@ -8,14 +8,14 @@
 
 ## 设计与完整待办
 
-- [ ] 独立 `upstream_channels` 对象：不可变内部 ID、不可变唯一可读 code、可编辑唯一名称、备注、revision CAS。
-- [ ] 独立账号关联：account FK + nullable channel FK + 每账号 binding revision；所有账号类型（包括未知/动态/不支持 URL）可绑定；一次最多 100 个明确账号，显式确认，多账号影响可见。
-- [ ] 管理员 CRUD / list / GET / binding preview+readback API、observer/普通用户拒绝、审计正文省略及目标摘要。
-- [ ] 删除仅允许无绑定渠道并要求版本与确认；有绑定返回冲突，先执行明确有界解绑；FK RESTRICT，不级联删账号/usage，不静默重归属。
-- [ ] 账户管理新建、编辑、批量选择器、当前归属展示与管理入口；失败保留选择/草稿，真实 API 保存后 GET 读回，避免账号已建却因绑定失败重复建账号。
-- [ ] 渠道管理入口可新建/编辑/删除、分页账号成员和明确有界解绑；利润页直接可管理备注/进入渠道管理。
-- [ ] 利润聚合优先显式 `channel:<内部ID>`，未绑定保留安全有效 URL / unknown fallback，清晰标注未绑定；同渠道不同 URL / 不同渠道相同 URL / 改名改 URL / 翻页关联稳定。
-- [ ] 归属明确为当前绑定统计，非历史路由；不回写 usage 或历史账本。利润公式保持 `usage.total_cost × 当前账号成本倍率`，不额外叠加模型成本。
+- [x] 独立 `upstream_channels` 对象：不可变内部 ID、不可变唯一可读 code、可编辑唯一名称、备注、revision CAS。
+- [x] 独立账号关联：account FK + nullable channel FK + 每账号 binding revision；所有账号类型（包括未知/动态/不支持 URL）可绑定；一次最多 100 个明确账号，显式确认，多账号影响可见。
+- [x] 管理员 CRUD / list / GET / binding preview+readback API、observer/普通用户拒绝、审计正文省略及目标摘要。
+- [x] 删除仅允许无绑定渠道并要求版本与确认；有绑定返回冲突，先执行明确有界解绑；FK RESTRICT，不级联删账号/usage，不静默重归属。
+- [x] 账户管理新建、编辑、批量选择器、当前归属展示与管理入口；失败保留选择/草稿，真实 API 保存后 GET 读回，避免账号已建却因绑定失败重复建账号。
+- [x] 渠道管理入口可新建/编辑/删除、分页账号成员和明确有界解绑；利润页直接可管理备注/进入渠道管理。
+- [x] 利润聚合优先显式 `channel:<内部ID>`，未绑定保留安全有效 URL / unknown fallback，清晰标注未绑定；同渠道不同 URL / 不同渠道相同 URL / 改名改 URL / 翻页关联稳定。
+- [x] 归属明确为当前绑定统计，非历史路由；不回写 usage 或历史账本。利润公式保持 `usage.total_cost × 当前账号成本倍率`，不额外叠加模型成本。
 - [ ] 先 RED 再 GREEN：真实前端组件/实际 client；真实 HTTP→私有迁移 DB→GET→账户绑定→利润跨页/改名/解绑；CAS、删除、权限及隐私边界。
 - [ ] zh/en、精确页面与账号新建/编辑/批量交互截图；远端实体专属 CI，保留旧增量回归，不删 skip 弱化测试。
 - [ ] 尽快提交第一批实体实码并 push 同 branch，Draft body 明确未完成项；继续修复当前 push/PR filter=all 和 raw logs。
@@ -27,3 +27,10 @@
 - 不改模型定价 channel、账号路由/凭据/倍率、利润公式、usage、财务账本/支付。邻居和旧模板复用文件/工作树不动。
 - 不 merge/release/deploy，不访问生产 SSH/DB/Redis，不调用付费模型。
 - 产物：`/data/development/artifacts/sub2api-profit-url-channel-remarks/`；旧 ACCEPTANCE/freeze 仅证明旧 URL 增量，不代表完整需求验收。新实体证据使用 `entity-*` 文件。
+
+## 当前实现与验证状态
+
+- 第一批实码 `0c3bf2d42` 已 push：对象/关联迁移、API、CAS/删除、普通账号创建事务绑定、利润优先聚合。
+- 第二批：账户新建/编辑/批量选择器、独立实体管理/分页解绑、利润页管理和显式来源、账号 GET/list DTO 归属。修改成员会递增实体 revision，影响确认可防并发变化。
+- 旧完整利润 CI 首批发现历史 usage 的模型定价 channel_id 与新投影重名，已改内部 explicit_channel_id，未改利润公式；修复待远端确认。
+- 新页面先 RED（实体入口缺失），实现后旧账号+利润7 spec 324/324通过；新增管理/绑定6项通过。真实 HTTP→私有DB→GET→账户创建/绑定→利润跨页/改名/解绑回归已写，专属CI保留旧回归并新增丢弃绑定变异RED→GREEN。后端/完整前端 pending远端；截图正在补。

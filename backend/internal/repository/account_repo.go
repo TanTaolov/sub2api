@@ -247,6 +247,9 @@ func createAccountRecord(ctx context.Context, client *dbent.Client, account *ser
 		if _, err = client.ExecContext(ctx, `INSERT INTO upstream_channel_bindings(account_id,channel_id,revision) VALUES($1,$2,1)`, created.ID, channelID); err != nil {
 			return err
 		}
+		if _, err = client.ExecContext(ctx, `UPDATE upstream_channels SET revision=revision+1,updated_at=CURRENT_TIMESTAMP WHERE id=$1`, channelID); err != nil {
+			return err
+		}
 	}
 	for _, p := range []*service.ScheduledTestPlan{account.InitialQualityPlan, account.InitialAdmissionPlan} {
 		if p == nil {

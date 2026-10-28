@@ -15,7 +15,7 @@ export interface ProfitMetrics {
  p50_ms: number | null; p90_ms: number | null; p95_ms: number | null; duration_p90_ms: number | null
  latest_config_updated_at: string | null; oldest_config_updated_at: string | null
 }
-export interface OperationsRow extends ProfitMetrics { key: string; name: string }
+export interface OperationsRow extends ProfitMetrics { key: string; name: string; assignment?: string; channel_id?: number; channel_code?: string; channel_remark?: string; channel_revision?: number }
 export interface AccountBasis { id: number; name: string; key: string; attribution: string; updated_at: string; deleted: boolean; multiplier: number | null; cost_basis: string }
 export interface OperationsSnapshot {
  url_remarks?: Record<string, UpstreamURLRemark>

@@ -49,6 +49,7 @@ func NewOAuthHandler(oauthService *service.OAuthService) *OAuthHandler {
 
 // AccountHandler handles admin account management
 type AccountHandler struct {
+	upstreamChannels        *service.ChannelService
 	adminService            service.AdminService
 	oauthService            *service.OAuthService
 	openaiOAuthService      *service.OpenAIOAuthService
@@ -458,6 +459,10 @@ func (h *AccountHandler) buildAccountResponseWithRuntime(ctx context.Context, ac
 		}
 	}
 
+	// Analytics enrichment is separate from the scheduler account domain.
+	if err := h.enrichUpstreamChannelBindings(ctx, []AccountWithConcurrency{item}); err != nil {
+		slog.Warn("upstream_channel_readback_failed")
+	}
 	h.enrichShadowParents(ctx, []AccountWithConcurrency{item})
 
 	return item
@@ -904,6 +909,10 @@ func (h *AccountHandler) List(c *gin.Context) {
 		result[i] = item
 	}
 
+	if err := h.enrichUpstreamChannelBindings(c.Request.Context(), result); err != nil {
+		response.InternalError(c, "Upstream channel readback failed")
+		return
+	}
 	h.enrichShadowParents(c.Request.Context(), result)
 
 	if lite {

@@ -207,6 +207,11 @@ func (r *channelRepository) BindUpstreamChannelAccounts(ctx context.Context, m s
 			}
 			ids = append(ids, b.AccountID)
 		}
+		for _, id := range ordered {
+			if _, e := tx.ExecContext(ctx, `UPDATE upstream_channels SET revision=revision+1,updated_at=CURRENT_TIMESTAMP WHERE id=$1`, id); e != nil {
+				return e
+			}
+		}
 		return nil
 	})
 	if e != nil {

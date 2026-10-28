@@ -1,6 +1,6 @@
 export default {
- "urlRemarks": "URL channel remarks",
- "urlRemarksNote": "Accounts with the same effective URL share a remark. For analytics only. Save empty text to clear.",
+ "urlRemarks": "Legacy URL remarks (unbound accounts only)",
+ "urlRemarksNote": "Create upstream channel entities and explicitly bind accounts for ownership. These legacy notes apply only to unbound URL groups. Save empty text to clear.",
  "remarkEmpty": "No remark",
  "remarkEdit": "Edit remark",
  "remarkLabel": "Channel remark (up to 500 characters)",
