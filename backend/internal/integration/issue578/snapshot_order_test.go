@@ -136,7 +136,7 @@ func TestIssue578ReviewCrossInstanceHeaderCASRedisSelection(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, fresh.UsageCachePersisted)
 	var usageAfterQuery, versionAfterQuery string
-	require.NoError(t, f.db.QueryRowContext(ctx, `SELECT extra->>'codex_5h_used_percent',extra->>'codex_usage_observed_at_ns' FROM accounts WHERE id=$1`, f.account.ID).Scan(&usageAfterQuery, &versionAfterQuery))
+	require.NoError(t, f.db.QueryRowContext(ctx, `SELECT extra->>'codex_5h_used_percent',COALESCE(extra->>'codex_usage_observed_at_ns','') FROM accounts WHERE id=$1`, f.account.ID).Scan(&usageAfterQuery, &versionAfterQuery))
 	t.Logf("synthetic query CAS persisted usage=%s version=%s", usageAfterQuery, versionAfterQuery)
 	require.Equal(t, "100", usageAfterQuery, "QueryUsage must persist the accepted 100 before the delayed header worker fires")
 	// The production 30-second throttle must actually expire; no test-only shortcut.
@@ -210,6 +210,15 @@ func TestIssue578ReviewCachePublicationCannotReorder(t *testing.T) {
 		x, e := f.repoB.GetByID(ctx, f.account.ID)
 		return e == nil && x.Extra["codex_5h_used_percent"] == 100.0
 	}, 2*time.Second, 5*time.Millisecond)
+	// On the rejected source, wait for 100 to reach Redis before releasing
+	// the stale publication. Under the shared lock that publisher must wait;
+	// releasing after the bounded wait lets it republish the latest row.
+	select {
+	case err := <-newer:
+		require.NoError(t, err)
+		newer <- nil
+	case <-time.After(150 * time.Millisecond):
+	}
 	unblock()
 	require.NoError(t, <-old)
 	require.NoError(t, <-newer)

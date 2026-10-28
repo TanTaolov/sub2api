@@ -31,7 +31,7 @@ set -e
 cat "$evidence/storage-red.log"
 printf '%s\n' "$red_status" > "$evidence/storage-red-exit.txt"
 test "$red_status" -ne 0
-if grep -Eq '\[build failed\]|\[setup failed\]|undefined:|syntax error:|no tests to run|panic:|--- SKIP:' "$evidence/storage-red.log"; then exit 1; fi
+if grep -Eq '\[build failed\]|\[setup failed\]|undefined:|syntax error:|sql: Scan error|no tests to run|panic:|--- SKIP:' "$evidence/storage-red.log"; then exit 1; fi
 if grep -q 'below-threshold control must actually select' "$evidence/storage-red.log"; then exit 1; fi
 grep -F -- '--- FAIL: TestIssue578ReviewCrossInstanceHeaderCASRedisSelection' "$evidence/storage-red.log"
 grep -F -- '--- FAIL: TestIssue578ReviewCachePublicationCannotReorder' "$evidence/storage-red.log"
@@ -42,7 +42,7 @@ set -e
 cat "$evidence/storage-review2-red.log"
 printf '%s\n' "$review2_status" > "$evidence/storage-review2-red-exit.txt"
 test "$review2_status" -ne 0
-if grep -Eq '\[build failed\]|\[setup failed\]|undefined:|syntax error:|no tests to run|panic:|--- SKIP:' "$evidence/storage-review2-red.log"; then exit 1; fi
+if grep -Eq '\[build failed\]|\[setup failed\]|undefined:|syntax error:|sql: Scan error|no tests to run|panic:|--- SKIP:' "$evidence/storage-review2-red.log"; then exit 1; fi
 if grep -q 'below-threshold control must actually select' "$evidence/storage-review2-red.log"; then exit 1; fi
 grep -F -- '--- FAIL: TestIssue578Review2GenericRepositoryPublicationCannotRegress' "$evidence/storage-review2-red.log"
 grep -F -- '--- FAIL: TestIssue578Review2PartialPendingCannotRestampOlderWindow' "$evidence/storage-review2-red.log"
