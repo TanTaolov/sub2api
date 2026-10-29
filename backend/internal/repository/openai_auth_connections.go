@@ -1,0 +1,119 @@
+package repository
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+
+	"github.com/Wei-Shaw/sub2api/internal/service"
+)
+
+const authConnectionColumns = `id::text,account_id,kind,label,status,issuer,client_id,subject,identity_verified,workspace,resource,audience,scopes,capabilities,host_id,credentials_ciphertext,revision,preferred,cooldown_until`
+
+func scanAuthConnection(row interface{ Scan(...any) error }) (*service.OpenAIAuthConnection, error) {
+	c := new(service.OpenAIAuthConnection)
+	var scopes, capabilities []byte
+	err := row.Scan(&c.ID, &c.AccountID, &c.Kind, &c.Label, &c.Status, &c.Issuer, &c.ClientID, &c.Subject, &c.IdentityVerified, &c.Workspace, &c.Resource, &c.Audience, &scopes, &capabilities, &c.HostID, &c.CredentialsCiphertext, &c.Revision, &c.Preferred, &c.CooldownUntil)
+	if err != nil {
+		return nil, err
+	}
+	if err = json.Unmarshal(scopes, &c.Scopes); err != nil {
+		return nil, err
+	}
+	if err = json.Unmarshal(capabilities, &c.Capabilities); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func (r *openAIOAuthReauthRepository) ListAuthConnections(ctx context.Context, id int64) ([]*service.OpenAIAuthConnection, error) {
+	rows, err := r.db.QueryContext(ctx, `SELECT `+authConnectionColumns+` FROM openai_auth_connections WHERE account_id=$1 ORDER BY created_at,id`, id)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+	result := []*service.OpenAIAuthConnection{}
+	for rows.Next() {
+		c, e := scanAuthConnection(rows)
+		if e != nil {
+			return nil, e
+		}
+		result = append(result, c)
+	}
+	return result, rows.Err()
+}
+
+func (r *openAIOAuthReauthRepository) CreateAuthConnection(ctx context.Context, c *service.OpenAIAuthConnection) error {
+	scopes, err := json.Marshal(c.Scopes)
+	if err != nil {
+		return err
+	}
+	caps, err := json.Marshal(c.Capabilities)
+	if err != nil {
+		return err
+	}
+	_, err = r.db.ExecContext(ctx, `INSERT INTO openai_auth_connections(id,account_id,kind,label,status,issuer,client_id,subject,identity_verified,workspace,resource,audience,scopes,capabilities,host_id,credentials_ciphertext)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`, c.ID, c.AccountID, c.Kind, c.Label, c.Status, c.Issuer, c.ClientID, c.Subject, c.IdentityVerified, c.Workspace, c.Resource, c.Audience, string(scopes), string(caps), c.HostID, c.CredentialsCiphertext)
+	return err
+}
+
+func (r *openAIOAuthReauthRepository) CASAuthConnection(ctx context.Context, c *service.OpenAIAuthConnection, revision int64) (bool, error) {
+	scopes, err := json.Marshal(c.Scopes)
+	if err != nil {
+		return false, err
+	}
+	caps, err := json.Marshal(c.Capabilities)
+	if err != nil {
+		return false, err
+	}
+	result, err := r.db.ExecContext(ctx, `UPDATE openai_auth_connections SET status=$4,issuer=$5,client_id=$6,subject=$7,identity_verified=$8,workspace=$9,resource=$10,audience=$11,scopes=$12,capabilities=$13,host_id=$14,credentials_ciphertext=$15,preferred=$16,cooldown_until=$17,revision=revision+1,updated_at=NOW()
+    WHERE account_id=$1 AND id=$2 AND revision=$3`, c.AccountID, c.ID, revision, c.Status, c.Issuer, c.ClientID, c.Subject, c.IdentityVerified, c.Workspace, c.Resource, c.Audience, string(scopes), string(caps), c.HostID, c.CredentialsCiphertext, c.Preferred, c.CooldownUntil)
+	if err != nil {
+		return false, err
+	}
+	n, err := result.RowsAffected()
+	return n == 1, err
+}
+
+func (r *openAIOAuthReauthRepository) SelectAuthConnection(ctx context.Context, accountID int64, id string, revision int64) (bool, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return false, err
+	}
+	defer func() { _ = tx.Rollback() }()
+	var locked int64
+	if err = tx.QueryRowContext(ctx, `SELECT id FROM accounts WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, accountID).Scan(&locked); err != nil {
+		return false, err
+	}
+	var valid bool
+	err = tx.QueryRowContext(ctx, `SELECT status='active' AND jsonb_array_length(capabilities)>0 FROM openai_auth_connections WHERE account_id=$1 AND id=$2 AND revision=$3 FOR UPDATE`, accountID, id, revision).Scan(&valid)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	if !valid {
+		return false, nil
+	}
+	if _, err = tx.ExecContext(ctx, `UPDATE openai_auth_connections SET preferred=false,revision=revision+1 WHERE account_id=$1 AND preferred AND id<>$2`, accountID, id); err != nil {
+		return false, err
+	}
+	if _, err = tx.ExecContext(ctx, `UPDATE openai_auth_connections SET preferred=true,revision=revision+1,updated_at=NOW() WHERE account_id=$1 AND id=$2`, accountID, id); err != nil {
+		return false, err
+	}
+	return true, tx.Commit()
+}
+
+func (r *openAIOAuthReauthRepository) AcquireAuthConnectionLease(ctx context.Context, accountID int64, id, owner string) (bool, error) {
+	result, err := r.db.ExecContext(ctx, `UPDATE openai_auth_connections SET lease_owner=$3,lease_until=NOW()+INTERVAL '60 seconds' WHERE account_id=$1 AND id=$2 AND (lease_until IS NULL OR lease_until<NOW())`, accountID, id, owner)
+	if err != nil {
+		return false, err
+	}
+	n, err := result.RowsAffected()
+	return n == 1, err
+}
+func (r *openAIOAuthReauthRepository) ReleaseAuthConnectionLease(ctx context.Context, accountID int64, id, owner string) error {
+	_, err := r.db.ExecContext(ctx, `UPDATE openai_auth_connections SET lease_owner='',lease_until=NULL WHERE account_id=$1 AND id=$2 AND lease_owner=$3`, accountID, id, owner)
+	return err
+}

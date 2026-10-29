@@ -37,3 +37,5 @@
 
 - Initial clean baseline confirmed. No local dynamic checks. Implementation/CI pending.
 - Draft PR/latest head/exact-head pass/fail/pending/skipped: pending first reviewable implementation.
+- Regression-first commit `cc30c542f` and dedicated original-baseline RED workflow `a3b1adf9a` pushed before implementation. Raw results pending.
+- First production slice: typed safe DTO, forward-only connection table, encrypted API-key creation/pending OAuth registrations, list/select/disable/enable/local-unlink HTTP→service→SQL, revision CAS, connection lease and unknown/identity-only dispatch rejection. OAuth callbacks, actual selected-connection inference, UI and integration acceptance remain incomplete.

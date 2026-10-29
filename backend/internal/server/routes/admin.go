@@ -432,6 +432,9 @@ func registerAccountRoutes(admin *gin.RouterGroup, h *handler.Handlers, stepUpAu
 		accounts.PUT("/opencode-go-usage/settings", h.Admin.Account.UpdateOpenCodeGoUsageSettings)
 		accounts.GET("/:id", h.Admin.Account.GetByID)
 		if h.Admin.OpenAIOAuthReauth != nil {
+			accounts.GET("/:id/auth-connections", h.Admin.OpenAIOAuthReauth.ListAuthConnections)
+			accounts.POST("/:id/auth-connections", h.Admin.OpenAIOAuthReauth.CreateAuthConnection)
+			accounts.PATCH("/:id/auth-connections/:connection_id", h.Admin.OpenAIOAuthReauth.UpdateAuthConnection)
 			accounts.GET("/:id/openai-reauth", h.Admin.OpenAIOAuthReauth.GetStatus)
 			accounts.GET("/:id/siwc", h.Admin.OpenAIOAuthReauth.SIWCStatus)
 			accounts.POST("/:id/siwc/authorize", h.Admin.OpenAIOAuthReauth.BeginSIWC)
