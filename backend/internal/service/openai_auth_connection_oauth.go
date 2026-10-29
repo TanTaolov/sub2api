@@ -278,7 +278,7 @@ func connectionCapabilities(kind, scope string) []string {
 	case "codex":
 		return []string{"responses", "chat_completions", "responses_compact"}
 	case "bps":
-		return []string{"responses", "chat_completions"}
+		return []string{"responses"}
 	}
 	return []string{}
 }

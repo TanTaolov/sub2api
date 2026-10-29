@@ -17,6 +17,9 @@
           <span v-if="connection.legacy">{{ t('openaiAuth.legacy') }}</span>
         </div>
         <p class="text-sm">{{ t('openaiAuth.capabilities') }}: {{ connection.capabilities.join(', ') || t('openaiAuth.identityOnly') }}</p>
+        <p v-if="connection.refresh_state && connection.refresh_state !== 'idle'" role="status" class="input-hint">{{ t('openaiAuth.refreshUncertain') }}</p>
+        <p v-if="connection.kind === 'bps'" class="input-hint">{{ t('openaiAuth.bpsResponsesOnly') }}</p>
+        <p v-if="connection.kind === 'codex' && !connection.legacy" class="input-hint">{{ t('openaiAuth.codexTicketBoundary') }}</p>
         <p v-if="connection.cooldown_until" class="text-sm">{{ t('openaiAuth.cooldown') }}: {{ connection.cooldown_until }}</p>
         <details class="text-sm">
           <summary>{{ t('openaiAuth.registration') }}</summary>
@@ -30,7 +33,8 @@
         </details>
         <p v-if="connection.legacy" class="input-hint">{{ t('openaiAuth.legacyHint') }}</p>
         <div v-else class="mt-2 flex flex-wrap gap-2">
-          <button type="button" class="btn btn-secondary btn-sm" :disabled="busy || connection.status !== 'active' || !connection.capabilities.length" data-testid="select-connection" @click="mutate(connection, 'select')">{{ t('openaiAuth.select') }}</button>
+          <button type="button" class="btn btn-secondary btn-sm" :disabled="busy || connection.status !== 'active' || !connection.capabilities.length || (!!connection.refresh_state && connection.refresh_state !== 'idle')" data-testid="select-connection" @click="mutate(connection, 'select')">{{ t('openaiAuth.select') }}</button>
+          <button v-if="connection.refresh_state && connection.refresh_state !== 'idle'" type="button" class="btn btn-secondary btn-sm" :disabled="busy" @click="mutate(connection, 'recover')">{{ t('openaiAuth.recoverRefresh') }}</button>
           <button v-if="connection.kind !== 'api_key'" type="button" class="btn btn-secondary btn-sm" :disabled="busy" @click="authorize(connection)">{{ t('openaiAuth.authorize') }}</button>
           <button v-else type="button" class="btn btn-secondary btn-sm" :disabled="busy" @click="rotation = connection; apiKey = ''">{{ t('openaiAuth.rotate') }}</button>
           <button v-if="connection.status === 'active'" type="button" class="btn btn-secondary btn-sm" :disabled="busy" @click="mutate(connection, 'disable')">{{ t('openaiAuth.disable') }}</button>
@@ -115,7 +119,7 @@ async function add() {
   apiKey.value = ''
   await run(async (id, current) => { await createAuthConnection(id, input); if (current === generation) { label.value = ''; await reload() } })
 }
-async function mutate(c: OpenAIAuthConnection, action: 'select' | 'disable' | 'enable') {
+async function mutate(c: OpenAIAuthConnection, action: 'select' | 'disable' | 'enable' | 'recover') {
   await run(async (id, current) => { await updateAuthConnection(id, c, action); if (current === generation) await reload() })
 }
 async function legacy() { await run(async (id, current) => { await useLegacyConnections(id); if (current === generation) await reload() }) }

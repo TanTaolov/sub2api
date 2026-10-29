@@ -1,4 +1,8 @@
 export default {
+  "refreshUncertain": "Refresh did not finish safely. Inference is paused. Recover a saved replacement or authorize this connection again; its old refresh token will not be retried.",
+  "recoverRefresh": "Recover saved refresh",
+  "bpsResponsesOnly": "BPS connections support Responses only. Chat Completions and Messages bridges are unavailable.",
+  "codexTicketBoundary": "This connection cannot use tickets or browser sessions saved on the parent account. Models requiring that session need separate supported authorization.",
   "title": "OpenAI authorization connections",
   "hint": "Keep each registration separate. Select a connection that supports the requested endpoint. Disabling or unlinking it stops that route until you explicitly select another.",
   "sharedLimits": "Connections share this account’s security rules, concurrency and quota limits. Adding a connection does not add a separate allowance.",

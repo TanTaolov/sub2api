@@ -176,6 +176,12 @@ func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin
 		out.Credentials[key] = value
 	}
 	out.Extra = shallowCopyMap(account.Extra)
+	for key := range out.Extra {
+		if IsOpenAICodexTicketPrivateExtraKey(key) || strings.HasPrefix(key, "codex_harvest") || key == OpenAICodexSkipHarvestExtraKey {
+			delete(out.Extra, key)
+		}
+	}
+
 	out.Extra["openai_connections_managed"] = true
 	out.Extra["openai_connection_kind"] = chosen.Kind
 	out.Extra[OpenAISIWCEnabledKey] = chosen.Kind == "siwc"

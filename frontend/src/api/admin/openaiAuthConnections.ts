@@ -7,6 +7,7 @@ export interface OpenAIAuthConnection {
   kind: ConnectionKind
   label: string
   legacy: boolean
+  refresh_state?: 'idle' | 'in_progress' | 'uncertain' | 'rejected'
   status: 'pending' | 'active' | 'disabled' | 'unlinked'
   issuer: string
   client_id: string
@@ -25,7 +26,7 @@ export interface OpenAIAuthConnection {
 const path = (id: number) => `/admin/accounts/${id}/auth-connections`
 export const listAuthConnections = async (id: number): Promise<OpenAIAuthConnection[]> => (await apiClient.get(path(id))).data
 export const createAuthConnection = async (id: number, input: { kind: ConnectionKind; label: string; api_key?: string }): Promise<OpenAIAuthConnection> => (await apiClient.post(path(id), input)).data
-export const updateAuthConnection = async (id: number, c: OpenAIAuthConnection, action: 'select' | 'disable' | 'enable' | 'unlink'): Promise<OpenAIAuthConnection> => (await apiClient.patch(`${path(id)}/${c.id}`, { revision: c.revision, action })).data
+export const updateAuthConnection = async (id: number, c: OpenAIAuthConnection, action: 'select' | 'disable' | 'enable' | 'unlink' | 'recover'): Promise<OpenAIAuthConnection> => (await apiClient.patch(`${path(id)}/${c.id}`, { revision: c.revision, action })).data
 export const authorizeConnection = async (id: number, connectionId: string): Promise<{ auth_url: string; session_id: string }> => (await apiClient.post(`${path(id)}/${connectionId}/authorize`)).data
 export const completeConnection = async (id: number, connectionId: string, sessionId: string, callbackUrl: string): Promise<void> => { await apiClient.post(`${path(id)}/${connectionId}/callback`, { session_id: sessionId, callback_url: callbackUrl }) }
 export const revokeConnection = async (id: number, c: OpenAIAuthConnection): Promise<{ remote_revocation_confirmed: boolean }> => (await apiClient.post(`${path(id)}/${c.id}/revoke`, { revision: c.revision })).data

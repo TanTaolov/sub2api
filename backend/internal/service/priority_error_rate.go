@@ -246,6 +246,9 @@ func (s *OpenAIGatewayService) doPriorityObservedHTTP(req *http.Request, proxy s
 		return nil, err
 	}
 	observe := s.observePriorityAttempt(req, account)
+	if err := s.fenceAuthConnectionEgress(req.Context(), req, account); err != nil {
+		return nil, err
+	}
 	resp, err := s.httpUpstream.Do(req, proxy, account.ID, account.Concurrency)
 	observe(resp, err)
 	return resp, err
