@@ -2229,6 +2229,9 @@ func (a *Account) openAIEndpointCapabilitySet() (map[string]bool, bool) {
 }
 
 func (a *Account) SupportsOpenAIImageCapability(capability OpenAIImagesCapability) bool {
+	if a.HasManagedOpenAIConnections() && capability != "" {
+		return false
+	}
 	if capability == "" {
 		return true
 	}
@@ -2492,6 +2495,9 @@ func (a *Account) IsCopilotSDKEnabled() bool {
 // 1. 按账号类型读取分类型字段
 // 2. 分类型字段缺失时，回退兼容字段
 func (a *Account) IsOpenAIResponsesWebSocketV2Enabled() bool {
+	if a.HasManagedOpenAIConnections() {
+		return false
+	}
 	if a.IsSIWCEnabled() {
 		return false
 	}
@@ -2566,6 +2572,9 @@ func normalizeOpenAIWSIngressDefaultMode(mode string) string {
 // 3. 兼容 enabled 旧字段（bool）
 // 4. defaultMode（非法时回退 ctx_pool）
 func (a *Account) ResolveOpenAIResponsesWebSocketV2Mode(defaultMode string) string {
+	if a.HasManagedOpenAIConnections() {
+		return OpenAIWSIngressModeOff
+	}
 	if a.IsSIWCEnabled() {
 		return OpenAIWSIngressModeOff
 	}

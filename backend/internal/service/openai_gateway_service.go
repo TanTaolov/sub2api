@@ -591,6 +591,12 @@ func WithOpenAIRPMCache(cache RPMCache) OpenAIGatewayOption {
 	return func(s *OpenAIGatewayService) { s.rpmCache = cache }
 }
 
+// WithOpenAIAuthConnections supplies the durable grant service to standalone
+// gateway embedders. Application Wire supplies it after resolving the cycle.
+func WithOpenAIAuthConnections(connections *OpenAIOAuthReauthService) OpenAIGatewayOption {
+	return func(s *OpenAIGatewayService) { s.excelOAuthReauth = connections }
+}
+
 // NewOpenAIGatewayService creates a new OpenAIGatewayService
 func NewOpenAIGatewayService(
 	accountRepo AccountRepository,

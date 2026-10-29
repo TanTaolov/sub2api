@@ -78,6 +78,9 @@ func connectionCapabilityForRequest(c *gin.Context) string {
 }
 
 func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin.Context, account, selected *Account) (*Account, error) {
+	if c != nil {
+		c.Set("openai_auth_connection_id", "")
+	}
 	if !account.HasManagedOpenAIConnections() {
 		return account, nil
 	}
@@ -103,6 +106,16 @@ func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin
 				pinned = candidate.ID
 				break
 			}
+		}
+	}
+	if pinned != "" && c != nil && c.GetString("openai_auth_connection_session_hash") != "" {
+		r, repoErr := s.excelOAuthReauth.connectionRepository()
+		if repoErr != nil {
+			return nil, repoErr
+		}
+		pinned, err = r.ResolveAuthConnectionAffinity(ctx, account.ID, getAPIKeyIDFromContext(c), c.GetString("openai_auth_connection_session_hash"), pinned)
+		if err != nil {
+			return nil, err
 		}
 	}
 	for _, candidate := range connections {
@@ -158,6 +171,14 @@ func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin
 	delete(out.Extra, "openai_excel_bps_models")
 	delete(out.Extra, ExcelBPSAuthorizationPendingKey)
 	out.Extra["openai_prism_browser"] = false
+	out.Extra["openai_copilot_sdk"] = false
+	out.Extra["openai_responses_supported"] = true
+	out.Extra["openai_oauth_responses_websockets_v2_mode"] = OpenAIWSIngressModeOff
+	out.Extra["openai_apikey_responses_websockets_v2_mode"] = OpenAIWSIngressModeOff
+	out.Extra["openai_apikey_responses_websockets_v2_enabled"] = false
+	for _, key := range []string{"base_url", "api_protocol", "auth_mode", "openai_auth_mode", "header_overrides", "user_agent"} {
+		delete(out.Credentials, key)
+	}
 	out.Extra["openai_oauth_responses_websockets_v2_enabled"] = false
 	if chosen.Kind == "api_key" {
 		out.Type = AccountTypeAPIKey

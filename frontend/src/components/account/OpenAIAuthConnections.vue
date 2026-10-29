@@ -4,7 +4,7 @@
     <p class="input-hint">{{ t('openaiAuth.hint') }}</p>
     <p class="input-hint">{{ t('openaiAuth.sharedLimits') }}</p>
     <div class="flex flex-wrap gap-2">
-      <button type="button" class="btn btn-secondary btn-sm" :disabled="busy" @click="reload">{{ t('openaiAuth.refresh') }}</button>
+      <button type="button" class="btn btn-secondary btn-sm" :disabled="busy" @click="refresh">{{ t('openaiAuth.refresh') }}</button>
       <button type="button" class="btn btn-secondary btn-sm" :disabled="busy" data-testid="use-legacy" @click="legacy">{{ t('openaiAuth.useLegacy') }}</button>
     </div>
     <ul class="space-y-3">
@@ -62,8 +62,8 @@
     </form>
     <form v-if="rotation" class="space-y-2" @submit.prevent="rotate">
       <label :for="`connection-rotate-${accountId}`" class="input-label">{{ t('openaiAuth.rotateLabel', { label: rotation.label }) }}</label>
-      <input :id="`connection-rotate-${accountId}`" v-model="apiKey" type="password" class="input" autocomplete="new-password" />
-      <button type="submit" class="btn btn-secondary btn-sm" :disabled="busy || !apiKey.trim()">{{ t('openaiAuth.rotate') }}</button>
+      <input :id="`connection-rotate-${accountId}`" v-model="rotationKey" type="password" class="input" autocomplete="new-password" />
+      <button type="submit" class="btn btn-secondary btn-sm" :disabled="busy || !rotationKey.trim()">{{ t('openaiAuth.rotate') }}</button>
     </form>
     <div v-if="revocation" class="space-y-2" role="alert">
       <p>{{ t('openaiAuth.unlinkConfirm', { label: revocation.label }) }}</p>
@@ -87,6 +87,7 @@ const kind = ref<ConnectionKind>('codex')
 const label = ref('')
 const apiKey = ref('')
 const callback = ref('')
+const rotationKey = ref('')
 const busy = ref(false)
 const error = ref('')
 const notice = ref('')
@@ -94,7 +95,7 @@ const authorization = ref<{ id: string; label: string; auth_url: string; session
 const rotation = ref<OpenAIAuthConnection | null>(null)
 const revocation = ref<OpenAIAuthConnection | null>(null)
 let generation = 0
-function clearSecrets() { apiKey.value = ''; callback.value = ''; authorization.value = null; rotation.value = null; revocation.value = null }
+function clearSecrets() { rotationKey.value = ''; apiKey.value = ''; callback.value = ''; authorization.value = null; rotation.value = null; revocation.value = null }
 async function reload() {
   const current = generation
   const next = await listAuthConnections(props.accountId)
@@ -108,6 +109,7 @@ async function run(action: (id: number, current: number) => Promise<void>) {
     if (current === generation) error.value = (cause as { message?: string })?.message || t('openaiAuth.failed')
   } finally { if (current === generation) busy.value = false }
 }
+async function refresh() { await run(async () => { await reload() }) }
 async function add() {
   const input = { kind: kind.value, label: label.value.trim(), ...(kind.value === 'api_key' ? { api_key: apiKey.value.trim() } : {}) }
   apiKey.value = ''
@@ -128,7 +130,7 @@ async function complete() {
 }
 async function rotate() {
   const selected = rotation.value; if (!selected) return
-  const key = apiKey.value.trim(); apiKey.value = ''
+  const key = rotationKey.value.trim(); rotationKey.value = ''
   await run(async (id, current) => { await rotateConnectionAPIKey(id, selected, key); if (current === generation) { clearSecrets(); await reload() } })
 }
 async function unlink() {

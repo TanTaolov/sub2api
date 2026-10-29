@@ -123,3 +123,33 @@ jobs:
           path: |
             ${{ runner.temp }}/issue594-*.png
             ${{ runner.temp }}/issue594-*.log
+  i18n-lock-candidate:
+    if: github.head_ref == 'feat/openai-multi-auth-connections' || github.ref_name == 'feat/openai-multi-auth-connections'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+      - name: Generate reviewable patched i18n lock in isolation
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/issue594-i18n-candidate"
+          cp frontend/package.json frontend/pnpm-lock.yaml "$RUNNER_TEMP/issue594-i18n-candidate/"
+          node - <<'JS'
+          const fs = require('fs'); const p = `${process.env.RUNNER_TEMP}/issue594-i18n-candidate/package.json`
+          const data = JSON.parse(fs.readFileSync(p)); data.dependencies['vue-i18n'] = '11.4.14'; data.devDependencies['@intlify/message-compiler'] = '11.4.14'; fs.writeFileSync(p, JSON.stringify(data, null, 2) + '\n')
+          JS
+          pnpm --dir "$RUNNER_TEMP/issue594-i18n-candidate" install --lockfile-only --ignore-scripts
+      - uses: actions/upload-artifact@v6
+        with:
+          name: issue594-i18n-candidate-${{ github.event_name }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/issue594-i18n-candidate/package.json
+            ${{ runner.temp }}/issue594-i18n-candidate/pnpm-lock.yaml
