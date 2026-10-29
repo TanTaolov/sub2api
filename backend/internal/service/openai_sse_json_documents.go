@@ -3,9 +3,12 @@ package service
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"strings"
+
+	"github.com/Wei-Shaw/sub2api/internal/pkg/requesttiming"
 )
 
 const (
@@ -52,6 +55,7 @@ func splitOpenAIConcatenatedJSONDocuments(payload []byte) ([][]byte, bool) {
 }
 
 type openAISSEJSONDocumentScanner struct {
+	ctx     context.Context
 	scanner *bufio.Scanner
 	pending []string
 	current string
@@ -61,7 +65,21 @@ func newOpenAISSEJSONDocumentScanner(scanner *bufio.Scanner) *openAISSEJSONDocum
 	return &openAISSEJSONDocumentScanner{scanner: scanner}
 }
 
-func (s *openAISSEJSONDocumentScanner) Scan() bool {
+func (s *openAISSEJSONDocumentScanner) Scan() (ok bool) {
+	defer func() {
+		if !ok || s.ctx == nil {
+			return
+		}
+		data, valid := extractOpenAISSEDataLine(s.current)
+		if !valid || !json.Valid([]byte(data)) {
+			return
+		}
+		requesttiming.Stage(s.ctx, "sse_parsed_first")
+		if openAIStreamDataStartsVisibleOutput(data, "") {
+			requesttiming.Stage(s.ctx, "sse_visible_first")
+		}
+	}()
+
 	if len(s.pending) > 0 {
 		s.current = s.pending[0]
 		s.pending = s.pending[1:]
