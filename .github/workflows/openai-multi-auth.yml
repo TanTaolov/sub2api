@@ -1,0 +1,73 @@
+name: OpenAI multi-connection contract
+
+on:
+  push:
+    branches: [feat/openai-multi-auth-connections]
+  pull_request:
+    branches: [production]
+    paths: ['backend/**', 'frontend/**', '.github/workflows/openai-multi-auth.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  red:
+    if: github.head_ref == 'feat/openai-multi-auth-connections' || github.ref_name == 'feat/openai-multi-auth-connections'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Original production dispatch must fail the regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp backend/internal/service/openai_auth_connections_regression_test.go "$RUNNER_TEMP/issue594-regression_test.go"
+          mkdir "$RUNNER_TEMP/issue594-baseline"
+          git archive 12a49ef4ef6a2f116389701ac8f1fe620f27bbf5 | tar -x -C "$RUNNER_TEMP/issue594-baseline"
+          cp "$RUNNER_TEMP/issue594-regression_test.go" "$RUNNER_TEMP/issue594-baseline/backend/internal/service/"
+          cd "$RUNNER_TEMP/issue594-baseline/backend"
+          set +e
+          go test -tags=unit ./internal/service -run '^TestIssue594UnknownConnectionCannotFallBackToCodex$' -count=1 -v > "$RUNNER_TEMP/issue594-red.log" 2>&1
+          result=$?
+          set -e
+          cat "$RUNNER_TEMP/issue594-red.log"
+          test "$result" -ne 0
+          grep -q -- '--- FAIL: TestIssue594UnknownConnectionCannotFallBackToCodex' "$RUNNER_TEMP/issue594-red.log"
+          grep -q 'unknown or identity-only connections must never inherit Codex authorization' "$RUNNER_TEMP/issue594-red.log"
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: issue594-red-${{ github.event_name }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/issue594-red.log
+  green:
+    needs: red
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Compile production adapters and run exact-head connection regressions
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
+          go test -race -tags=unit ./internal/service ./internal/repository ./internal/handler/admin ./internal/pkg/openai -run '^TestIssue594|^TestSIWC' -count=1 -v | tee "$RUNNER_TEMP/issue594-green.log"
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: issue594-green-${{ github.event_name }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/issue594-*.log
