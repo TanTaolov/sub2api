@@ -52,3 +52,55 @@ func (h *OpenAIOAuthReauthHandler) UpdateAuthConnection(c *gin.Context) {
 	}
 	response.Success(c, result)
 }
+
+func (h *OpenAIOAuthReauthHandler) BeginConnectionAuthorization(c *gin.Context) {
+	id, ok := parseReauthAccountID(c)
+	if !ok {
+		return
+	}
+	result, err := h.service.BeginConnectionAuthorization(c.Request.Context(), id, c.Param("connection_id"))
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, result)
+}
+func (h *OpenAIOAuthReauthHandler) CompleteConnectionAuthorization(c *gin.Context) {
+	id, ok := parseReauthAccountID(c)
+	if !ok {
+		return
+	}
+	var input struct {
+		SessionID   string `json:"session_id" binding:"required"`
+		CallbackURL string `json:"callback_url" binding:"required"`
+	}
+	if c.ShouldBindJSON(&input) != nil {
+		response.BadRequest(c, "Session and callback are required")
+		return
+	}
+	err := h.service.CompleteConnectionAuthorization(c.Request.Context(), id, c.Param("connection_id"), input.SessionID, input.CallbackURL)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, gin.H{"authorized": true})
+}
+func (h *OpenAIOAuthReauthHandler) RevokeAuthConnection(c *gin.Context) {
+	id, ok := parseReauthAccountID(c)
+	if !ok {
+		return
+	}
+	var input struct {
+		Revision int64 `json:"revision" binding:"required"`
+	}
+	if c.ShouldBindJSON(&input) != nil {
+		response.BadRequest(c, "Revision is required")
+		return
+	}
+	confirmed, err := h.service.RevokeAuthConnection(c.Request.Context(), id, c.Param("connection_id"), input.Revision)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, gin.H{"unlinked": true, "remote_revocation_confirmed": confirmed})
+}

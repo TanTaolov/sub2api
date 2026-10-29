@@ -176,7 +176,7 @@ func (s *OpenAIOAuthReauthService) CompleteSIWCAuthorization(ctx context.Context
 		return err
 	}
 	session, ok := s.readSIWCSession(ctx, sessionID, false)
-	if !ok || session.SIWCAccountID != id {
+	if !ok || session.SIWCAccountID != id || session.ConnectionID != "" {
 		return infraerrors.BadRequest("OPENAI_SIWC_SESSION_INVALID", "SIWC session expired or belongs to another account")
 	}
 	if len(callback) > maxOpenAIOAuthReauthURL {

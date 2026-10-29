@@ -1,0 +1,404 @@
+package service
+
+import (
+	"context"
+	"crypto/subtle"
+	"encoding/json"
+	"errors"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+
+	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/openai"
+	"github.com/google/uuid"
+)
+
+type openAIConnectionTokenClient interface {
+	ConnectionToken(context.Context, url.Values, string, string, string) (*openai.TokenResponse, *openai.SIWCIdentity, error)
+	RevokeConnectionToken(context.Context, string, string, string) error
+}
+
+func (s *OpenAIOAuthReauthService) readConnectionCredentials(c *OpenAIAuthConnection) (map[string]any, error) {
+	if c.CredentialsCiphertext == "" {
+		return map[string]any{}, nil
+	}
+	plain, err := s.encryptor.Decrypt(c.CredentialsCiphertext)
+	if err != nil {
+		return nil, errors.New("failed to decrypt connection credentials")
+	}
+	var creds map[string]any
+	if json.Unmarshal([]byte(plain), &creds) != nil || creds == nil {
+		return nil, errors.New("invalid connection credentials")
+	}
+	// The client/token association is authenticated by the encrypted record.
+	if c.Kind != "api_key" && c.ClientID != "" && creds["client_id"] != c.ClientID {
+		return nil, errors.New("connection client does not match its credentials")
+	}
+	return creds, nil
+}
+func (s *OpenAIOAuthReauthService) encryptConnectionCredentials(c *OpenAIAuthConnection, creds map[string]any) error {
+	raw, err := json.Marshal(creds)
+	if err != nil {
+		return err
+	}
+	c.CredentialsCiphertext, err = s.encryptor.Encrypt(string(raw))
+	if err != nil {
+		return errors.New("failed to encrypt connection credentials")
+	}
+	return nil
+}
+
+func (s *OpenAIOAuthReauthService) BeginConnectionAuthorization(ctx context.Context, accountID int64, id string) (*OpenAIAuthURLResult, error) {
+	c, err := s.authConnection(ctx, accountID, id)
+	if err != nil {
+		return nil, err
+	}
+	if c.Kind == "api_key" {
+		return nil, infraerrors.BadRequest("OPENAI_CONNECTION_NOT_OAUTH", "API keys do not use OAuth")
+	}
+	if err = s.ensureDurableEncryption(); err != nil {
+		return nil, err
+	}
+	account, err := s.connectionAccount(ctx, accountID)
+	if err != nil {
+		return nil, err
+	}
+	proxy, err := s.reauthProxyURL(ctx, account.ProxyID)
+	if err != nil {
+		return nil, err
+	}
+	creds, err := s.readConnectionCredentials(c)
+	if err != nil {
+		return nil, err
+	}
+	state, err := openai.GenerateState()
+	if err != nil {
+		return nil, err
+	}
+	verifier, err := openai.GenerateCodeVerifier()
+	if err != nil {
+		return nil, err
+	}
+	nonce, err := openai.GenerateState()
+	if err != nil {
+		return nil, err
+	}
+	sessionID, err := openai.GenerateSessionID()
+	if err != nil {
+		return nil, err
+	}
+	clientID, redirect := c.ClientID, openai.DefaultRedirectURI
+	switch c.Kind {
+	case "codex":
+		if clientID == "" {
+			clientID = openai.ClientID
+		}
+		if clientID != openai.ClientID {
+			return nil, errors.New("Codex client registration mismatch")
+		}
+	case "bps":
+		if clientID == "" {
+			clientID = openai.ExcelClientID
+		}
+		if clientID != openai.ExcelClientID {
+			return nil, errors.New("BPS client registration mismatch")
+		}
+		redirect = openai.ExcelRedirectURI
+	case "siwc":
+		redirect = openai.SIWCRedirectURI
+	default:
+		return nil, infraerrors.BadRequest("OPENAI_CONNECTION_KIND_INVALID", "Unknown connection kind")
+	}
+	session := &openai.OAuthSession{SIWCAccountID: accountID, ConnectionID: id, ConnectionRevision: c.Revision, ConnectionKind: c.Kind, SIWCNonce: nonce, SIWCHostID: c.HostID, State: state, CodeVerifier: verifier, ClientID: clientID, RedirectURI: redirect, ProxyURL: proxy, CreatedAt: time.Now()}
+	if err = s.setSIWCSession(ctx, sessionID, session); err != nil {
+		return nil, err
+	}
+	challenge := openai.GenerateCodeChallenge(verifier)
+	var authURL string
+	if c.Kind == "siwc" {
+		hint, _ := creds["id_token"].(string)
+		authURL = openai.BuildSIWCAuthorizationURL(state, challenge, nonce, c.HostID, clientID, hint, "")
+	} else {
+		authURL = openai.BuildAuthorizationURLForPlatform(state, challenge, redirect, PlatformOpenAI)
+		if c.Kind == "bps" {
+			authURL = openai.BuildExcelAuthorizationURL(state, challenge)
+		}
+		parsed, _ := url.Parse(authURL)
+		q := parsed.Query()
+		q.Set("nonce", nonce)
+		parsed.RawQuery = q.Encode()
+		authURL = parsed.String()
+	}
+	return &OpenAIAuthURLResult{SessionID: sessionID, AuthURL: authURL}, nil
+}
+
+func (s *OpenAIOAuthReauthService) CompleteConnectionAuthorization(ctx context.Context, accountID int64, id, sessionID, callback string) error {
+	c, err := s.authConnection(ctx, accountID, id)
+	if err != nil {
+		return err
+	}
+	session, ok := s.readSIWCSession(ctx, sessionID, false)
+	if !ok || session.SIWCAccountID != accountID || session.ConnectionID != id || session.ConnectionKind != c.Kind || session.ConnectionRevision != c.Revision {
+		return connectionChanged()
+	}
+	if len(callback) > maxOpenAIOAuthReauthURL {
+		return infraerrors.BadRequest("OPENAI_CONNECTION_CALLBACK_INVALID", "Invalid callback")
+	}
+	u, err := url.Parse(callback)
+	expected, _ := url.Parse(session.RedirectURI)
+	if err != nil || u.Scheme != expected.Scheme || u.Host != expected.Host || u.Path != expected.Path || u.RawPath != "" || u.User != nil || u.Fragment != "" {
+		return infraerrors.BadRequest("OPENAI_CONNECTION_CALLBACK_INVALID", "Callback does not match this connection")
+	}
+	q, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		return infraerrors.BadRequest("OPENAI_CONNECTION_CALLBACK_INVALID", "Invalid callback")
+	}
+	for _, key := range []string{"code", "state", "client_id", "error"} {
+		if len(q[key]) > 1 {
+			return infraerrors.BadRequest("OPENAI_CONNECTION_CALLBACK_INVALID", "Duplicate callback parameter")
+		}
+	}
+	if subtle.ConstantTimeCompare([]byte(q.Get("state")), []byte(session.State)) != 1 {
+		return infraerrors.BadRequest("OPENAI_CONNECTION_STATE_INVALID", "Invalid OAuth state")
+	}
+	if q.Get("error") != "" {
+		s.deleteSIWCSession(ctx, sessionID)
+		return infraerrors.BadRequest("OPENAI_CONNECTION_CONSENT_REQUIRED", "Authorization requires user consent")
+	}
+	clientID := session.ClientID
+	if clientID == "" {
+		clientID = q.Get("client_id")
+	} else if q.Get("client_id") != "" && q.Get("client_id") != clientID {
+		return infraerrors.BadRequest("OPENAI_CONNECTION_CLIENT_MISMATCH", "Connection client changed")
+	}
+	if clientID == "" || clientID == openai.SIWCDynamicClientID || q.Get("code") == "" {
+		return infraerrors.BadRequest("OPENAI_CONNECTION_CALLBACK_INVALID", "Callback requires code and issued client")
+	}
+	consumed, ok := s.readSIWCSession(ctx, sessionID, true)
+	if !ok || consumed.ConnectionID != id || consumed.State != session.State {
+		return connectionChanged()
+	}
+	client, ok := s.oauth.oauthClient.(openAIConnectionTokenClient)
+	if !ok {
+		return errors.New("connection OAuth adapter unavailable")
+	}
+	tokenCtx, cancel := context.WithTimeout(ctx, 45*time.Second)
+	defer cancel()
+	token, identity, err := client.ConnectionToken(tokenCtx, url.Values{"grant_type": {"authorization_code"}, "client_id": {clientID}, "code": {q.Get("code")}, "code_verifier": {session.CodeVerifier}, "redirect_uri": {session.RedirectURI}}, session.ProxyURL, session.SIWCNonce, c.Kind)
+	if err != nil {
+		return err
+	}
+	if identity == nil || token == nil || token.AccessToken == "" || token.RefreshToken == "" {
+		return errors.New("connection authorization is incomplete")
+	}
+	// Reauthorization may not switch subscriber or workspace. Email is never an
+	// identity key and cannot prove equivalence across separate registrations.
+	if c.Subject != "" && c.Subject != identity.Subject {
+		return infraerrors.Conflict("OPENAI_CONNECTION_SUBJECT_CHANGED", "Reauthorization changed the connection identity")
+	}
+	if c.ClientID != "" && c.ClientID != clientID {
+		return connectionChanged()
+	}
+	c.ClientID = clientID
+	c.Subject = identity.Subject
+	c.IdentityVerified = true
+	c.Audience = clientID
+	c.Issuer = "https://auth.openai.com"
+	c.Status = "active"
+	c.Scopes = strings.Fields(token.Scope)
+	c.Capabilities = connectionCapabilities(c.Kind, token.Scope)
+	creds := map[string]any{"access_token": token.AccessToken, "refresh_token": token.RefreshToken, "id_token": token.IDToken, "client_id": clientID, "expires_at": strconv.FormatInt(time.Now().Unix()+token.ExpiresIn, 10)}
+	if c.Kind != "siwc" {
+		claims, parseErr := openai.ParseIDToken(token.IDToken)
+		if parseErr != nil {
+			return errors.New("invalid authorized connection identity")
+		}
+		info := claims.GetUserInfo()
+		if info == nil {
+			return errors.New("authorized connection account is missing")
+		}
+		if c.Workspace != "" && c.Workspace != info.ChatGPTAccountID {
+			return infraerrors.Conflict("OPENAI_CONNECTION_WORKSPACE_CHANGED", "Reauthorization changed workspace")
+		}
+		c.Workspace = info.ChatGPTAccountID
+		creds["chatgpt_account_id"] = info.ChatGPTAccountID
+		creds["chatgpt_user_id"] = info.ChatGPTUserID
+		creds["email"] = info.Email
+	}
+	if err = s.encryptConnectionCredentials(c, creds); err != nil {
+		return err
+	}
+	r, err := s.connectionRepository()
+	if err != nil {
+		return err
+	}
+	changed, err := r.CASAuthConnection(ctx, c, session.ConnectionRevision)
+	if err != nil {
+		return err
+	}
+	if !changed {
+		return connectionChanged()
+	}
+	return nil
+}
+
+func connectionCapabilities(kind, scope string) []string {
+	switch kind {
+	case "siwc":
+		if openai.HasSIWCPermission(scope) {
+			return []string{"responses", "chat_completions"}
+		}
+	case "codex":
+		return []string{"responses", "chat_completions", "responses_compact"}
+	case "bps":
+		return []string{"responses", "chat_completions"}
+	}
+	return []string{}
+}
+
+func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, accountID int64, id string) (string, error) {
+	c, err := s.authConnection(ctx, accountID, id)
+	if err != nil {
+		return "", err
+	}
+	if c.Status != "active" || len(c.Capabilities) == 0 {
+		return "", infraerrors.BadRequest("OPENAI_CONNECTION_NOT_CAPABLE", "This connection does not authorize inference")
+	}
+	creds, err := s.readConnectionCredentials(c)
+	if err != nil {
+		return "", err
+	}
+	if c.Kind == "api_key" {
+		key, _ := creds["api_key"].(string)
+		if key == "" {
+			return "", errors.New("API key is unavailable")
+		}
+		return key, nil
+	}
+	expiry, _ := strconv.ParseInt(stringCredential(creds, "expires_at"), 10, 64)
+	if expiry > time.Now().Add(openAITokenRefreshSkew).Unix() {
+		return stringCredential(creds, "access_token"), nil
+	}
+	r, err := s.connectionRepository()
+	if err != nil {
+		return "", err
+	}
+	owner := uuid.NewString()
+	acquired, err := r.AcquireAuthConnectionLease(ctx, accountID, id, owner)
+	if err != nil || !acquired {
+		return "", infraerrors.Conflict("OPENAI_CONNECTION_REFRESH_BUSY", "Connection refresh is busy; retry later")
+	}
+	defer func() {
+		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Second)
+		defer cancel()
+		_ = r.ReleaseAuthConnectionLease(cleanup, accountID, id, owner)
+	}()
+	c, err = s.authConnection(ctx, accountID, id)
+	if err != nil {
+		return "", err
+	}
+	if c.Status != "active" || len(c.Capabilities) == 0 {
+		return "", connectionChanged()
+	}
+	creds, err = s.readConnectionCredentials(c)
+	if err != nil {
+		return "", err
+	}
+	expiry, _ = strconv.ParseInt(stringCredential(creds, "expires_at"), 10, 64)
+	if expiry > time.Now().Add(openAITokenRefreshSkew).Unix() {
+		return stringCredential(creds, "access_token"), nil
+	}
+	if !c.IdentityVerified || c.ClientID == "" || stringCredential(creds, "refresh_token") == "" {
+		return "", errors.New("connection reauthorization is required")
+	}
+	account, err := s.connectionAccount(ctx, accountID)
+	if err != nil {
+		return "", err
+	}
+	proxy, err := s.reauthProxyURL(ctx, account.ProxyID)
+	if err != nil {
+		return "", err
+	}
+	client, ok := s.oauth.oauthClient.(openAIConnectionTokenClient)
+	if !ok {
+		return "", errors.New("connection OAuth adapter unavailable")
+	}
+	refreshCtx, cancel := context.WithTimeout(ctx, 45*time.Second)
+	defer cancel()
+	token, identity, err := client.ConnectionToken(refreshCtx, url.Values{"grant_type": {"refresh_token"}, "client_id": {c.ClientID}, "refresh_token": {stringCredential(creds, "refresh_token")}}, proxy, "", c.Kind)
+	if err != nil {
+		return "", err
+	}
+	if identity != nil && identity.Subject != c.Subject {
+		return "", errors.New("connection refresh identity changed")
+	}
+	if token.Scope != "" {
+		c.Scopes = strings.Fields(token.Scope)
+		c.Capabilities = connectionCapabilities(c.Kind, token.Scope)
+	}
+	creds["access_token"] = token.AccessToken
+	creds["expires_at"] = strconv.FormatInt(time.Now().Unix()+token.ExpiresIn, 10)
+	if token.RefreshToken != "" {
+		creds["refresh_token"] = token.RefreshToken
+	}
+	if token.IDToken != "" {
+		creds["id_token"] = token.IDToken
+	}
+	if err = s.encryptConnectionCredentials(c, creds); err != nil {
+		return "", err
+	}
+	persist, cancelPersist := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer cancelPersist()
+	changed, err := r.CASAuthConnection(persist, c, c.Revision)
+	if err != nil {
+		return "", err
+	}
+	if !changed {
+		return "", connectionChanged()
+	}
+	if len(c.Capabilities) == 0 {
+		return "", infraerrors.BadRequest("OPENAI_CONNECTION_NOT_CAPABLE", "Connection no longer authorizes inference")
+	}
+	return token.AccessToken, nil
+}
+func stringCredential(creds map[string]any, key string) string { v, _ := creds[key].(string); return v }
+
+func (s *OpenAIOAuthReauthService) RevokeAuthConnection(ctx context.Context, accountID int64, id string, revision int64) (bool, error) {
+	c, err := s.authConnection(ctx, accountID, id)
+	if err != nil {
+		return false, err
+	}
+	if c.Revision != revision {
+		return false, connectionChanged()
+	}
+	creds, err := s.readConnectionCredentials(c)
+	if err != nil {
+		return false, err
+	}
+	// Stop locally first, fencing every in-flight rotation. Remote revocation
+	// is best effort and is explicitly reported; it cannot revoke peer grants.
+	_, err = s.UpdateAuthConnection(ctx, accountID, id, UpdateOpenAIAuthConnectionInput{Revision: revision, Action: "unlink"})
+	if err != nil {
+		return false, err
+	}
+	if c.Kind == "api_key" {
+		return false, nil
+	} // Platform keys require manual revocation.
+	account, err := s.connectionAccount(ctx, accountID)
+	if err != nil {
+		return false, nil
+	}
+	proxy, err := s.reauthProxyURL(ctx, account.ProxyID)
+	if err != nil {
+		return false, nil
+	}
+	client, ok := s.oauth.oauthClient.(openAIConnectionTokenClient)
+	if !ok {
+		return false, nil
+	}
+	revokeCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	return client.RevokeConnectionToken(revokeCtx, stringCredential(creds, "refresh_token"), c.ClientID, proxy) == nil, nil
+}
