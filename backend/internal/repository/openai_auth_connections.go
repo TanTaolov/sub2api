@@ -52,9 +52,21 @@ func (r *openAIOAuthReauthRepository) CreateAuthConnection(ctx context.Context, 
 	if err != nil {
 		return err
 	}
-	_, err = r.db.ExecContext(ctx, `INSERT INTO openai_auth_connections(id,account_id,kind,label,status,issuer,client_id,subject,identity_verified,workspace,resource,audience,scopes,capabilities,host_id,credentials_ciphertext)
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+	var locked int64
+	if err = tx.QueryRowContext(ctx, `SELECT id FROM accounts WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, c.AccountID).Scan(&locked); err != nil {
+		return err
+	}
+	_, err = tx.ExecContext(ctx, `INSERT INTO openai_auth_connections(id,account_id,kind,label,status,issuer,client_id,subject,identity_verified,workspace,resource,audience,scopes,capabilities,host_id,credentials_ciphertext)
     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`, c.ID, c.AccountID, c.Kind, c.Label, c.Status, c.Issuer, c.ClientID, c.Subject, c.IdentityVerified, c.Workspace, c.Resource, c.Audience, string(scopes), string(caps), c.HostID, c.CredentialsCiphertext)
-	return err
+	if err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 func (r *openAIOAuthReauthRepository) CASAuthConnection(ctx context.Context, c *service.OpenAIAuthConnection, revision int64) (bool, error) {
@@ -66,13 +78,28 @@ func (r *openAIOAuthReauthRepository) CASAuthConnection(ctx context.Context, c *
 	if err != nil {
 		return false, err
 	}
-	result, err := r.db.ExecContext(ctx, `UPDATE openai_auth_connections SET status=$4,issuer=$5,client_id=$6,subject=$7,identity_verified=$8,workspace=$9,resource=$10,audience=$11,scopes=$12,capabilities=$13,host_id=$14,credentials_ciphertext=$15,preferred=$16,cooldown_until=$17,revision=revision+1,updated_at=NOW()
-    WHERE account_id=$1 AND id=$2 AND revision=$3`, c.AccountID, c.ID, revision, c.Status, c.Issuer, c.ClientID, c.Subject, c.IdentityVerified, c.Workspace, c.Resource, c.Audience, string(scopes), string(caps), c.HostID, c.CredentialsCiphertext, c.Preferred, c.CooldownUntil)
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return false, err
+	}
+	defer func() { _ = tx.Rollback() }()
+	var locked int64
+	if err = tx.QueryRowContext(ctx, `SELECT id FROM accounts WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, c.AccountID).Scan(&locked); err != nil {
+		return false, err
+	}
+	result, err := tx.ExecContext(ctx, `UPDATE openai_auth_connections SET status=$4,issuer=$5,client_id=$6,subject=$7,identity_verified=$8,workspace=$9,resource=$10,audience=$11,scopes=$12,capabilities=$13,host_id=$14,credentials_ciphertext=$15,cooldown_until=$16,revision=revision+1,updated_at=NOW()
+    WHERE account_id=$1 AND id=$2 AND revision=$3`, c.AccountID, c.ID, revision, c.Status, c.Issuer, c.ClientID, c.Subject, c.IdentityVerified, c.Workspace, c.Resource, c.Audience, string(scopes), string(caps), c.HostID, c.CredentialsCiphertext, c.CooldownUntil)
 	if err != nil {
 		return false, err
 	}
 	n, err := result.RowsAffected()
-	return n == 1, err
+	if err != nil {
+		return false, err
+	}
+	if n != 1 {
+		return false, nil
+	}
+	return true, tx.Commit()
 }
 
 func (r *openAIOAuthReauthRepository) SelectAuthConnection(ctx context.Context, accountID int64, id string, revision int64) (bool, error) {
@@ -99,10 +126,10 @@ func (r *openAIOAuthReauthRepository) SelectAuthConnection(ctx context.Context, 
 	if _, err = tx.ExecContext(ctx, `INSERT INTO openai_auth_connection_policies(account_id,enabled) VALUES($1,true) ON CONFLICT(account_id) DO UPDATE SET enabled=true`, accountID); err != nil {
 		return false, err
 	}
-	if _, err = tx.ExecContext(ctx, `UPDATE openai_auth_connections SET preferred=false,revision=revision+1 WHERE account_id=$1 AND preferred AND id<>$2`, accountID, id); err != nil {
+	if _, err = tx.ExecContext(ctx, `UPDATE openai_auth_connections SET preferred=false WHERE account_id=$1 AND preferred AND id<>$2`, accountID, id); err != nil {
 		return false, err
 	}
-	if _, err = tx.ExecContext(ctx, `UPDATE openai_auth_connections SET preferred=true,revision=revision+1,updated_at=NOW() WHERE account_id=$1 AND id=$2`, accountID, id); err != nil {
+	if _, err = tx.ExecContext(ctx, `UPDATE openai_auth_connections SET preferred=true,updated_at=NOW() WHERE account_id=$1 AND id=$2`, accountID, id); err != nil {
 		return false, err
 	}
 	return true, tx.Commit()
@@ -134,7 +161,7 @@ func (r *openAIOAuthReauthRepository) UseLegacyAuthConnections(ctx context.Conte
 	if _, err = tx.ExecContext(ctx, `DELETE FROM openai_auth_connection_policies WHERE account_id=$1`, accountID); err != nil {
 		return err
 	}
-	if _, err = tx.ExecContext(ctx, `UPDATE openai_auth_connections SET preferred=false,revision=revision+1 WHERE account_id=$1`, accountID); err != nil {
+	if _, err = tx.ExecContext(ctx, `UPDATE openai_auth_connections SET preferred=false WHERE account_id=$1`, accountID); err != nil {
 		return err
 	}
 	return tx.Commit()

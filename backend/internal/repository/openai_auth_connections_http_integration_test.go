@@ -39,6 +39,9 @@ type connectionHTTPFixture struct {
 	repo      service.OpenAIAuthConnectionRepository
 	svc       *service.OpenAIOAuthReauthService
 	request   func(string, string, string) *httptest.ResponseRecorder
+	encryptor service.SecretEncryptor
+	accounts  service.AccountRepository
+	restart   func() *service.OpenAIOAuthReauthService
 }
 
 func newConnectionHTTPFixture(t *testing.T) *connectionHTTPFixture {
@@ -56,7 +59,7 @@ func newConnectionHTTPFixture(t *testing.T) *connectionHTTPFixture {
 	repo := repository.NewOpenAIOAuthReauthRepository(db)
 	updater, ok := accounts.(service.OpenAIOAuthReauthCredentialUpdater)
 	require.True(t, ok)
-	svc := service.NewOpenAIOAuthReauthService(repo, connectionDBReader{accounts}, updater, service.NewOpenAIOAuthService(nil, nil), encryptor, true, nil, nil)
+	svc := service.NewOpenAIOAuthReauthService(repo, connectionDBReader{accounts}, updater, service.NewOpenAIOAuthService(nil, repository.NewOpenAIOAuthClient()), encryptor, true, nil, nil)
 	h := admin.NewOpenAIOAuthReauthHandler(svc)
 	router := gin.New()
 	router.GET("/accounts/:id/auth-connections", h.ListAuthConnections)
@@ -64,7 +67,15 @@ func newConnectionHTTPFixture(t *testing.T) *connectionHTTPFixture {
 	router.PATCH("/accounts/:id/auth-connections/:connection_id", h.UpdateAuthConnection)
 	router.PUT("/accounts/:id/auth-connections/:connection_id/api-key", h.RotateConnectionAPIKey)
 	router.POST("/accounts/:id/auth-connections/use-legacy", h.SelectLegacyAuthConnection)
+	router.POST("/accounts/:id/auth-connections/:connection_id/authorize", h.BeginConnectionAuthorization)
+	router.POST("/accounts/:id/auth-connections/:connection_id/callback", h.CompleteConnectionAuthorization)
+	router.POST("/accounts/:id/auth-connections/:connection_id/revoke", h.RevokeAuthConnection)
 	f := &connectionHTTPFixture{db: db, accountID: a.ID, repo: repo.(service.OpenAIAuthConnectionRepository), svc: svc}
+	f.encryptor = encryptor
+	f.accounts = accounts
+	f.restart = func() *service.OpenAIOAuthReauthService {
+		return service.NewOpenAIOAuthReauthService(repository.NewOpenAIOAuthReauthRepository(db), connectionDBReader{accounts}, updater, service.NewOpenAIOAuthService(nil, repository.NewOpenAIOAuthClient()), encryptor, true, nil, nil)
+	}
 	f.request = func(method, path, body string) *httptest.ResponseRecorder {
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(method, fmt.Sprintf("/accounts/%d/auth-connections%s", a.ID, path), strings.NewReader(body))

@@ -231,6 +231,12 @@ func validateOpenAIConnectionKind(a *Account) error {
 		return nil
 	}
 	kind := a.GetExtraString("openai_connection_kind")
+	if kind != "" && a.AuthConnectionID == "" {
+		return infraerrors.BadRequest("OPENAI_CONNECTION_NOT_CAPABLE", "Explicit connections require a bound authorization record")
+	}
+	if kind == "codex" && a.GetCredential("client_id") != openai.ClientID || kind == "bps" && a.GetCredential("client_id") != openai.ExcelClientID || kind == "siwc" && (!a.IsSIWCEnabled() || a.GetCredential("client_id") == "" || a.GetCredential("client_id") == openai.SIWCDynamicClientID) || kind == "api_key" && a.Type != AccountTypeAPIKey {
+		return infraerrors.BadRequest("OPENAI_CONNECTION_CLIENT_MISMATCH", "Connection credentials do not match the authorization client")
+	}
 	switch kind {
 	case "", "codex", "bps", "siwc", "api_key":
 		return nil

@@ -140,6 +140,11 @@ func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin
 	out.Credentials = shallowCopyMap(account.Credentials)
 	// Keep model configuration, remove every legacy credential and registration
 	// before applying the chosen set. No cross-client token composition.
+	for key := range out.Credentials {
+		if IsSensitiveCredentialKey(key) {
+			delete(out.Credentials, key)
+		}
+	}
 	for _, key := range []string{"access_token", "refresh_token", "id_token", "api_key", "client_id", "expires_at", "chatgpt_account_id", "chatgpt_user_id", "email", "auth_mode", "openai_auth_mode", "agent_private_key", "task_id"} {
 		delete(out.Credentials, key)
 	}
@@ -205,4 +210,18 @@ func (s *OpenAIOAuthReauthService) recordConnectionUsage(ctx context.Context, ac
 	if err := repo.RecordAuthConnectionUsage(recordCtx, accountID, apiKeyID, id, requestID); err != nil {
 		slog.Warn("openai_connection_usage_attribution_failed", "account_id", accountID, "connection_id", id)
 	}
+}
+
+func (s *OpenAIOAuthReauthService) ValidateAuthConnectionSend(ctx context.Context, a *Account) error {
+	if a == nil || a.AuthConnectionID == "" {
+		return nil
+	}
+	c, err := s.authConnection(ctx, a.ID, a.AuthConnectionID)
+	if err != nil {
+		return err
+	}
+	if c.Revision != a.AuthConnectionRevision || c.Status != "active" || len(c.Capabilities) == 0 || c.CooldownUntil != nil && time.Now().Before(*c.CooldownUntil) {
+		return connectionChanged()
+	}
+	return nil
 }

@@ -237,7 +237,9 @@ func (s *OpenAIOAuthReauthService) CompleteConnectionAuthorization(ctx context.C
 	if err != nil {
 		return err
 	}
-	changed, err := r.CASAuthConnection(ctx, c, session.ConnectionRevision)
+	persistCtx, stop := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer stop()
+	changed, err := r.CASAuthConnection(persistCtx, c, session.ConnectionRevision)
 	if err != nil {
 		return err
 	}
@@ -301,6 +303,9 @@ func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, ac
 		defer cancel()
 		_ = r.ReleaseAuthConnectionLease(cleanup, accountID, id, owner)
 	}()
+	leaseCtx, stopLease := context.WithTimeout(ctx, 50*time.Second)
+	defer stopLease()
+	ctx = leaseCtx
 	c, err = s.authConnection(ctx, accountID, id)
 	if err != nil {
 		return "", err
@@ -339,6 +344,12 @@ func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, ac
 	}
 	if identity != nil && identity.Subject != c.Subject {
 		return "", errors.New("connection refresh identity changed")
+	}
+	if identity != nil && c.Kind != "siwc" && token.IDToken != "" {
+		claims, parseErr := openai.ParseIDToken(token.IDToken)
+		if parseErr != nil || claims.GetUserInfo() == nil || claims.GetUserInfo().ChatGPTAccountID != c.Workspace {
+			return "", errors.New("connection refresh workspace changed")
+		}
 	}
 	if token.Scope != "" {
 		c.Scopes = strings.Fields(token.Scope)

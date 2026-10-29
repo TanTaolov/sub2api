@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/openai"
@@ -93,6 +94,7 @@ func (s *OpenAIOAuthReauthService) SelectLegacyAuthConnection(ctx context.Contex
 }
 
 func (s *OpenAIOAuthReauthService) RotateConnectionAPIKey(ctx context.Context, accountID int64, id string, revision int64, key string) (*OpenAIAuthConnection, error) {
+	key = strings.TrimSpace(key)
 	c, err := s.authConnection(ctx, accountID, id)
 	if err != nil {
 		return nil, err
