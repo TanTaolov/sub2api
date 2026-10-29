@@ -81,6 +81,10 @@ func TestIssue594UpgradeRealLegacyDatabasePreservesEveryCredentialSlot(t *testin
 	}
 	// The new protection trigger must preserve legacy scalar/null JSON updates;
 	// this is also exercised by the full usage-billing statement-variant suite.
+	// Generic legacy quota rows permit scalar JSON. OpenAI rows already have
+	// a separate long-context trigger that requires an object; preserve it.
+	_, err = db.ExecContext(ctx, `UPDATE accounts SET platform='anthropic' WHERE id=$1`, id)
+	require.NoError(t, err)
 	for _, value := range []string{`null`, `"legacy scalar"`, `42`, `[]`} {
 		_, e := db.ExecContext(ctx, `UPDATE accounts SET extra=$2::jsonb WHERE id=$1`, id, value)
 		require.NoError(t, e)
@@ -89,6 +93,8 @@ func TestIssue594UpgradeRealLegacyDatabasePreservesEveryCredentialSlot(t *testin
 		require.JSONEq(t, value, got)
 	}
 
+	_, err = db.ExecContext(ctx, `UPDATE accounts SET extra='{}'::jsonb,platform='openai' WHERE id=$1`, id)
+	require.NoError(t, err)
 	// Publication itself normalizes old shapes, while the general trigger
 	// above leaves untouched legacy scalar writes usable by existing quota SQL.
 	connectionID := uuid.NewString()
