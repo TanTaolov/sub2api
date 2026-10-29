@@ -356,7 +356,7 @@ func (s *OpenAIGatewayService) admitOpenAITurn(ctx context.Context, c *gin.Conte
 	if err != nil {
 		return nil, err
 	}
-	return s.prepareAuthConnection(ctx, c, latest, selected)
+	return s.prepareAuthConnection(ctx, c, latest, selected, outboundModel)
 }
 
 // admitOpenAITurnForGroup is used by connection-pool callbacks, which run
@@ -422,7 +422,7 @@ func (s *OpenAIGatewayService) admitOpenAITurnWithGroup(
 			latest.isRateLimitActiveForKey(openAIImageGenerationRateLimitKey))) {
 		return nil, denyOpenAITurn("model_rate_limited")
 	}
-	if s.openAICodexTicketBlocksAccount(latest, outboundModel) {
+	if !latest.HasManagedOpenAIConnections() && s.openAICodexTicketBlocksAccount(latest, outboundModel) {
 		return nil, denyOpenAITicket()
 	}
 	return latest, nil

@@ -422,9 +422,19 @@ func (s *OpenAIOAuthReauthService) RevokeAuthConnection(ctx context.Context, acc
 	}
 	// Stop locally first, fencing every in-flight rotation. Remote revocation
 	// is best effort and is explicitly reported; it cannot revoke peer grants.
-	_, err = s.UpdateAuthConnection(ctx, accountID, id, UpdateOpenAIAuthConnectionInput{Revision: revision, Action: "unlink"})
+	c.Status = "unlinked"
+	c.CredentialsCiphertext = ""
+	c.Capabilities = []string{}
+	repo, err := s.connectionRepository()
 	if err != nil {
 		return false, err
+	}
+	changed, err := repo.CASAuthConnection(ctx, c, revision)
+	if err != nil {
+		return false, err
+	}
+	if !changed {
+		return false, connectionChanged()
 	}
 	if c.Kind == "api_key" {
 		return false, nil

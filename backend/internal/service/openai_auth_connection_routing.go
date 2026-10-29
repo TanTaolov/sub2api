@@ -77,7 +77,7 @@ func connectionCapabilityForRequest(c *gin.Context) string {
 	}
 }
 
-func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin.Context, account, selected *Account) (*Account, error) {
+func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin.Context, account, selected *Account, model string) (*Account, error) {
 	if c != nil {
 		c.Set("openai_auth_connection_id", "")
 	}
@@ -197,6 +197,9 @@ func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin
 		out.Credentials["base_url"] = "https://api.openai.com"
 	} else {
 		out.Type = AccountTypeOAuth
+	}
+	if s.openAICodexTicketBlocksAccount(&out, model) {
+		return nil, denyOpenAITicket()
 	}
 	if c != nil {
 		c.Set("openai_auth_connection_id", chosen.ID)
