@@ -148,6 +148,10 @@ func TestIssue594HTTPDatabaseCoexistenceRotationUnlinkAndLegacy(t *testing.T) {
 	require.Contains(t, list.Body.String(), `"legacy":true`)
 	legacy := f.request("POST", "/use-legacy", `{}`)
 	require.Equal(t, 200, legacy.Code, legacy.Body.String())
+	var managed bool
+	managed, err = f.repo.AuthConnectionsManaged(ctx, f.accountID)
+	require.NoError(t, err)
+	require.False(t, managed)
 	var primary string
 	require.NoError(t, f.db.QueryRow(`SELECT credentials->>'refresh_token' FROM accounts WHERE id=$1`, f.accountID).Scan(&primary))
 	require.Equal(t, "synthetic-legacy-refresh", primary)

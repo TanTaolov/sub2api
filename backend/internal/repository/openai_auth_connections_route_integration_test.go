@@ -70,6 +70,10 @@ func TestIssue594ProductionGatewayConnectionRouteAndAccountSafety(t *testing.T) 
 		gateway.GenerateSessionHash(c, body)
 		return gateway.Forward(ctx, c, a, body)
 	}
+	cachedLegacy := &service.Account{ID: f.accountID, Platform: service.PlatformOpenAI, Type: service.AccountTypeOAuth, Credentials: map[string]any{"access_token": "synthetic-legacy-token"}}
+	leaked, _, policyErr := gateway.GetAccessToken(ctx, cachedLegacy)
+	require.Error(t, policyErr)
+	require.Empty(t, leaked, "old account snapshots cannot return Codex tokens after managed selection")
 	result, err := forward("session-one")
 	require.NoError(t, err)
 	require.NotNil(t, result)
@@ -100,6 +104,14 @@ func TestIssue594ProductionGatewayConnectionRouteAndAccountSafety(t *testing.T) 
 	require.Error(t, err)
 	transport.mu.Lock()
 	require.Len(t, transport.calls, callsBefore, "account-wide security cannot be bypassed by another connection")
+	transport.mu.Unlock()
+	// Capability and security checks do not give a new allowance to a peer.
+	_, err = f.db.Exec(`UPDATE accounts SET status='active',rate_limited_at=NOW(),rate_limit_reset_at=NOW()+INTERVAL '5 minutes' WHERE id=$1`, f.accountID)
+	require.NoError(t, err)
+	_, err = forward("session-quota")
+	require.Error(t, err)
+	transport.mu.Lock()
+	require.Len(t, transport.calls, callsBefore)
 	transport.mu.Unlock()
 	usageRepo := repository.NewOpenAIOAuthReauthRepository(f.db).(interface {
 		RecordAuthConnectionUsage(context.Context, int64, int64, string, string) error
