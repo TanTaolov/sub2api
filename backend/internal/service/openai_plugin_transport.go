@@ -14,6 +14,11 @@ func (s *OpenAIGatewayService) SetPluginManager(manager *PluginManager) {
 // doOpenAIUpstream 只在 OpenAI OAuth 能力绑定已启用时把真实请求交给插件。
 // 插件返回标准 http.Response，响应解析、错误映射、SSE 和计费仍由现有核心链处理。
 func (s *OpenAIGatewayService) doOpenAIUpstream(request *http.Request, proxyURL string, account *Account) (result *http.Response, resultErr error) {
+	if s.excelOAuthReauth != nil {
+		if err := s.excelOAuthReauth.validateAuthConnectionPolicy(request.Context(), account); err != nil {
+			return nil, err
+		}
+	}
 	if account != nil && account.AuthConnectionID != "" {
 		if s.excelOAuthReauth == nil {
 			return nil, fmt.Errorf("authorization connection service unavailable")

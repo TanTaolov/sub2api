@@ -166,3 +166,9 @@ func (r *openAIOAuthReauthRepository) UseLegacyAuthConnections(ctx context.Conte
 	}
 	return tx.Commit()
 }
+
+func (r *openAIOAuthReauthRepository) AuthConnectionsManaged(ctx context.Context, accountID int64) (bool, error) {
+	var managed bool
+	err := r.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM openai_auth_connection_policies WHERE account_id=$1 AND enabled)`, accountID).Scan(&managed)
+	return managed, err
+}

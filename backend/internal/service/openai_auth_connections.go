@@ -39,6 +39,7 @@ type OpenAIAuthConnection struct {
 }
 
 type OpenAIAuthConnectionRepository interface {
+	AuthConnectionsManaged(context.Context, int64) (bool, error)
 	ResolveAuthConnectionAffinity(context.Context, int64, int64, string, string) (string, error)
 	UseLegacyAuthConnections(context.Context, int64) error
 	ListAuthConnections(context.Context, int64) ([]*OpenAIAuthConnection, error)

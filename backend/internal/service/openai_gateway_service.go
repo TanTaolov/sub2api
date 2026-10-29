@@ -1320,6 +1320,11 @@ func (s *OpenAIGatewayService) GetAccessToken(ctx context.Context, account *Acco
 	if err := validateOpenAIConnectionKind(account); err != nil {
 		return "", "", err
 	}
+	if s.excelOAuthReauth != nil {
+		if err := s.excelOAuthReauth.validateAuthConnectionPolicy(ctx, account); err != nil {
+			return "", "", err
+		}
+	}
 	if account != nil && account.AuthConnectionID != "" {
 		if s.excelOAuthReauth == nil {
 			return "", "", errors.New("authorization connection service unavailable")

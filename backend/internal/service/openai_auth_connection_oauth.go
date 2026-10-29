@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"crypto/subtle"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"net/url"
@@ -223,14 +224,11 @@ func (s *OpenAIOAuthReauthService) CompleteConnectionAuthorization(ctx context.C
 	c.Capabilities = connectionCapabilities(c.Kind, token.Scope)
 	creds := map[string]any{"access_token": token.AccessToken, "refresh_token": token.RefreshToken, "id_token": token.IDToken, "client_id": clientID, "expires_at": strconv.FormatInt(time.Now().Unix()+token.ExpiresIn, 10)}
 	if c.Kind != "siwc" {
-		claims, parseErr := openai.ParseIDToken(token.IDToken)
+		auth, parseErr := verifiedConnectionAuthMetadata(token.IDToken)
 		if parseErr != nil {
-			return errors.New("invalid authorized connection identity")
+			return parseErr
 		}
-		info := claims.GetUserInfo()
-		if info == nil {
-			return errors.New("authorized connection account is missing")
-		}
+		info := &openai.UserInfo{ChatGPTAccountID: auth.ChatGPTAccountID, ChatGPTUserID: auth.ChatGPTUserID, Email: identity.Email}
 		if c.Workspace != "" && c.Workspace != info.ChatGPTAccountID {
 			return infraerrors.Conflict("OPENAI_CONNECTION_WORKSPACE_CHANGED", "Reauthorization changed workspace")
 		}
@@ -355,8 +353,8 @@ func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, ac
 		return "", errors.New("connection refresh identity changed")
 	}
 	if identity != nil && c.Kind != "siwc" && token.IDToken != "" {
-		claims, parseErr := openai.ParseIDToken(token.IDToken)
-		if parseErr != nil || claims.GetUserInfo() == nil || claims.GetUserInfo().ChatGPTAccountID != c.Workspace {
+		auth, parseErr := verifiedConnectionAuthMetadata(token.IDToken)
+		if parseErr != nil || auth.ChatGPTAccountID != c.Workspace {
 			return "", errors.New("connection refresh workspace changed")
 		}
 	}
@@ -449,4 +447,25 @@ func (s *OpenAIOAuthReauthService) lockAuthConnection(ctx context.Context, accou
 		defer cancel()
 		_ = r.ReleaseAuthConnectionLease(cleanup, accountID, id, owner)
 	}, nil
+}
+
+// The adapter has already verified this exact ID token's signature, issuer,
+// audience, nonce and expiry. Read only its provider metadata here; audience may
+// legally be a string or array. A session ID is never a workspace identifier.
+func verifiedConnectionAuthMetadata(raw string) (*openai.OpenAIAuthClaims, error) {
+	parts := strings.Split(raw, ".")
+	if len(parts) != 3 {
+		return nil, errors.New("invalid authorized connection identity")
+	}
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return nil, errors.New("invalid authorized connection identity")
+	}
+	var claims struct {
+		Auth *openai.OpenAIAuthClaims `json:"https://api.openai.com/auth"`
+	}
+	if json.Unmarshal(payload, &claims) != nil || claims.Auth == nil || claims.Auth.ChatGPTAccountID == "" {
+		return nil, errors.New("authorized connection workspace is missing")
+	}
+	return claims.Auth, nil
 }

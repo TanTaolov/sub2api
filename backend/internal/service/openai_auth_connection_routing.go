@@ -81,9 +81,20 @@ func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin
 	if c != nil {
 		c.Set("openai_auth_connection_id", "")
 	}
-	if !account.HasManagedOpenAIConnections() {
+	managed := account.HasManagedOpenAIConnections()
+	if account != nil && account.Platform == PlatformOpenAI && s.excelOAuthReauth != nil {
+		if repo, ok := s.excelOAuthReauth.repo.(OpenAIAuthConnectionRepository); ok {
+			current, err := repo.AuthConnectionsManaged(ctx, account.ID)
+			if err != nil {
+				return nil, err
+			}
+			managed = current
+		}
+	}
+	if !managed {
 		return account, nil
 	}
+
 	if account.IsCredentialShadow() {
 		return nil, infraerrors.BadRequest("OPENAI_CONNECTION_SHADOW_UNSUPPORTED", "Managed connections require the parent account route")
 	}
@@ -165,6 +176,7 @@ func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin
 		out.Credentials[key] = value
 	}
 	out.Extra = shallowCopyMap(account.Extra)
+	out.Extra["openai_connections_managed"] = true
 	out.Extra["openai_connection_kind"] = chosen.Kind
 	out.Extra[OpenAISIWCEnabledKey] = chosen.Kind == "siwc"
 	out.Extra["openai_excel_bps"] = chosen.Kind == "bps"
@@ -243,6 +255,29 @@ func (s *OpenAIOAuthReauthService) ValidateAuthConnectionSend(ctx context.Contex
 	}
 	if c.Revision != a.AuthConnectionRevision || c.Status != "active" || len(c.Capabilities) == 0 || c.CooldownUntil != nil && time.Now().Before(*c.CooldownUntil) {
 		return connectionChanged()
+	}
+	return nil
+}
+
+// A cached pre-selection account must not send legacy credentials after an
+// administrator has activated managed routing on another replica.
+func (s *OpenAIOAuthReauthService) validateAuthConnectionPolicy(ctx context.Context, a *Account) error {
+	if a == nil || a.Platform != PlatformOpenAI {
+		return nil
+	}
+	repo, ok := s.repo.(OpenAIAuthConnectionRepository)
+	if !ok {
+		return nil
+	}
+	managed, err := repo.AuthConnectionsManaged(ctx, a.ID)
+	if err != nil {
+		return err
+	}
+	if managed && a.AuthConnectionID == "" {
+		return infraerrors.Conflict("OPENAI_CONNECTION_SELECTION_CHANGED", "Account authorization selection changed; retry with the current connection")
+	}
+	if !managed && a.AuthConnectionID != "" {
+		return infraerrors.Conflict("OPENAI_CONNECTION_SELECTION_CHANGED", "Managed routing was disabled; start a new request")
 	}
 	return nil
 }

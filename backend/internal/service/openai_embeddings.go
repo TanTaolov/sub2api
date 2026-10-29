@@ -24,7 +24,17 @@ func (s *OpenAIGatewayService) ForwardEmbeddings(
 	body []byte,
 	defaultMappedModel string,
 ) (*OpenAIForwardResult, error) {
-	if account.HasManagedOpenAIConnections() {
+	managed := account.HasManagedOpenAIConnections()
+	if account != nil && account.Platform == PlatformOpenAI && s.excelOAuthReauth != nil {
+		if repo, ok := s.excelOAuthReauth.repo.(OpenAIAuthConnectionRepository); ok {
+			var err error
+			managed, err = repo.AuthConnectionsManaged(ctx, account.ID)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	if managed {
 		latest, err := s.admitOpenAITurn(ctx, c, account, gjson.GetBytes(body, "model").String(), body)
 		if err != nil {
 			return nil, err
