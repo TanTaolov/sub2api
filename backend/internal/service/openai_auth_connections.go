@@ -16,6 +16,7 @@ import (
 // AccountID owns security, concurrency and billing; ID identifies only this grant.
 // A subject is meaningful only with its issuer/client and verification flag.
 type OpenAIAuthConnection struct {
+	Legacy                bool       `json:"legacy"`
 	ID                    string     `json:"id"`
 	AccountID             int64      `json:"account_id"`
 	Kind                  string     `json:"kind"`
@@ -38,6 +39,7 @@ type OpenAIAuthConnection struct {
 }
 
 type OpenAIAuthConnectionRepository interface {
+	UseLegacyAuthConnections(context.Context, int64) error
 	ListAuthConnections(context.Context, int64) ([]*OpenAIAuthConnection, error)
 	CreateAuthConnection(context.Context, *OpenAIAuthConnection) error
 	CASAuthConnection(context.Context, *OpenAIAuthConnection, int64) (bool, error)
@@ -87,7 +89,19 @@ func (s *OpenAIOAuthReauthService) ListAuthConnections(ctx context.Context, id i
 	if _, err = s.connectionAccount(ctx, id); err != nil {
 		return nil, err
 	}
-	return r.ListAuthConnections(ctx, id)
+	managed, err := r.ListAuthConnections(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	a, err := s.connectionAccount(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	legacy, err := s.legacyAuthConnections(ctx, a)
+	if err != nil {
+		return nil, err
+	}
+	return append(managed, legacy...), nil
 }
 
 func (s *OpenAIOAuthReauthService) CreateAuthConnection(ctx context.Context, id int64, input CreateOpenAIAuthConnectionInput) (*OpenAIAuthConnection, error) {
@@ -161,6 +175,9 @@ func (s *OpenAIOAuthReauthService) UpdateAuthConnection(ctx context.Context, acc
 	c, err := s.authConnection(ctx, accountID, id)
 	if err != nil {
 		return nil, err
+	}
+	if c.Legacy {
+		return nil, infraerrors.BadRequest("OPENAI_CONNECTION_LEGACY_READ_ONLY", "Use the existing account controls for a legacy registration")
 	}
 	if c.Revision != input.Revision {
 		return nil, connectionChanged()

@@ -104,3 +104,35 @@ func (h *OpenAIOAuthReauthHandler) RevokeAuthConnection(c *gin.Context) {
 	}
 	response.Success(c, gin.H{"unlinked": true, "remote_revocation_confirmed": confirmed})
 }
+
+func (h *OpenAIOAuthReauthHandler) SelectLegacyAuthConnection(c *gin.Context) {
+	id, ok := parseReauthAccountID(c)
+	if !ok {
+		return
+	}
+	if err := h.service.SelectLegacyAuthConnection(c.Request.Context(), id); err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, gin.H{"legacy": true})
+}
+func (h *OpenAIOAuthReauthHandler) RotateConnectionAPIKey(c *gin.Context) {
+	id, ok := parseReauthAccountID(c)
+	if !ok {
+		return
+	}
+	var input struct {
+		Revision int64  `json:"revision" binding:"required"`
+		APIKey   string `json:"api_key" binding:"required"`
+	}
+	if c.ShouldBindJSON(&input) != nil {
+		response.BadRequest(c, "Revision and API key are required")
+		return
+	}
+	result, err := h.service.RotateConnectionAPIKey(c.Request.Context(), id, c.Param("connection_id"), input.Revision, input.APIKey)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, result)
+}

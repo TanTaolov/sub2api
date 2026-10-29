@@ -55,6 +55,9 @@ func (s *OpenAIOAuthReauthService) BeginConnectionAuthorization(ctx context.Cont
 	if err != nil {
 		return nil, err
 	}
+	if c.Legacy {
+		return nil, infraerrors.BadRequest("OPENAI_CONNECTION_LEGACY_READ_ONLY", "Use existing authorization controls for legacy connections")
+	}
 	if c.Kind == "api_key" {
 		return nil, infraerrors.BadRequest("OPENAI_CONNECTION_NOT_OAUTH", "API keys do not use OAuth")
 	}
@@ -262,6 +265,9 @@ func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, ac
 	c, err := s.authConnection(ctx, accountID, id)
 	if err != nil {
 		return "", err
+	}
+	if c.Legacy {
+		return "", errors.New("legacy connections retain their existing credential provider")
 	}
 	if c.Status != "active" || len(c.Capabilities) == 0 {
 		return "", infraerrors.BadRequest("OPENAI_CONNECTION_NOT_CAPABLE", "This connection does not authorize inference")

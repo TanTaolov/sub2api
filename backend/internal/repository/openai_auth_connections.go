@@ -96,6 +96,9 @@ func (r *openAIOAuthReauthRepository) SelectAuthConnection(ctx context.Context, 
 	if !valid {
 		return false, nil
 	}
+	if _, err = tx.ExecContext(ctx, `INSERT INTO openai_auth_connection_policies(account_id,enabled) VALUES($1,true) ON CONFLICT(account_id) DO UPDATE SET enabled=true`, accountID); err != nil {
+		return false, err
+	}
 	if _, err = tx.ExecContext(ctx, `UPDATE openai_auth_connections SET preferred=false,revision=revision+1 WHERE account_id=$1 AND preferred AND id<>$2`, accountID, id); err != nil {
 		return false, err
 	}
@@ -116,4 +119,23 @@ func (r *openAIOAuthReauthRepository) AcquireAuthConnectionLease(ctx context.Con
 func (r *openAIOAuthReauthRepository) ReleaseAuthConnectionLease(ctx context.Context, accountID int64, id, owner string) error {
 	_, err := r.db.ExecContext(ctx, `UPDATE openai_auth_connections SET lease_owner='',lease_until=NULL WHERE account_id=$1 AND id=$2 AND lease_owner=$3`, accountID, id, owner)
 	return err
+}
+
+func (r *openAIOAuthReauthRepository) UseLegacyAuthConnections(ctx context.Context, accountID int64) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+	var id int64
+	if err = tx.QueryRowContext(ctx, `SELECT id FROM accounts WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, accountID).Scan(&id); err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, `DELETE FROM openai_auth_connection_policies WHERE account_id=$1`, accountID); err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, `UPDATE openai_auth_connections SET preferred=false,revision=revision+1 WHERE account_id=$1`, accountID); err != nil {
+		return err
+	}
+	return tx.Commit()
 }

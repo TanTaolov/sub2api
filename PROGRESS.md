@@ -39,3 +39,8 @@
 - Draft PR/latest head/exact-head pass/fail/pending/skipped: pending first reviewable implementation.
 - Regression-first commit `cc30c542f` and dedicated original-baseline RED workflow `a3b1adf9a` pushed before implementation. Raw results pending.
 - First production slice: typed safe DTO, forward-only connection table, encrypted API-key creation/pending OAuth registrations, list/select/disable/enable/local-unlink HTTP→service→SQL, revision CAS, connection lease and unknown/identity-only dispatch rejection. OAuth callbacks, actual selected-connection inference, UI and integration acceptance remain incomplete.
+- Draft PR: https://github.com/ranxi2001/sub2api/pull/595 (production, Refs #594), first implementation `1029ba36b`; OAuth lifecycle follow-up `6a38d2408`.
+- Original production RED raw job `123258743040` read and archived: all three unknown/swic/identity-only cases fail because legacy dispatch returns Codex credentials, as expected. Exact-head GREEN remains pending.
+- Audit correction: BPS ALSO already has an independent encrypted side-grant table (`OpenAIExcelOAuthRepository`), not only the primary credentials slot. Legacy mapping will preserve all original lifecycle owners instead of copying rotating tokens.
+- Current work adds explicit selection policies, metadata/outbox propagation, capability routing/projection, per-connection failure isolation and stable read-only legacy views. HTTP→actual service→SQL→GET/rotation/unlink/CAS/lease integration added for isolated CI. UI, full OAuth integration/usage attribution and final checks remain pending.
+- Existing baseline dependency security failure: GHSA-83rm-6c8r-g728 in vue-i18n/@intlify; raw failure read. No exception or false pass added.

@@ -32,6 +32,10 @@ var excelBPSCatalog basispoints.CatalogCache
 // Independently authorized Excel grants never quarantine the primary Codex
 // account. Legacy single-grant accounts retain their authentication policy.
 func (s *OpenAIGatewayService) handleExcelBPSUnauthorized(ctx context.Context, account *Account, status int, headers http.Header, raw []byte, tokens ...string) {
+	if account != nil && account.AuthConnectionID != "" {
+		s.handleOpenAIAccountUpstreamError(ctx, account, status, headers, raw)
+		return
+	}
 	if status != http.StatusUnauthorized || isQualityObservation(ctx) {
 		return
 	}

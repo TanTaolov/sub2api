@@ -1313,6 +1313,23 @@ func (s *OpenAIGatewayService) GetAccessToken(ctx context.Context, account *Acco
 	if err := validateOpenAIConnectionKind(account); err != nil {
 		return "", "", err
 	}
+	if account != nil && account.AuthConnectionID != "" {
+		if s.excelOAuthReauth == nil {
+			return "", "", errors.New("authorization connection service unavailable")
+		}
+		token, err := s.excelOAuthReauth.ConnectionAccessToken(ctx, account.ID, account.AuthConnectionID)
+		kind := account.GetExtraString("openai_connection_kind")
+		if kind == "siwc" {
+			return token, "siwc", err
+		}
+		if kind == "api_key" {
+			return token, "apikey", err
+		}
+		return token, "oauth", err
+	}
+	if account.HasManagedOpenAIConnections() {
+		return "", "", errors.New("select a capable authorization connection before requesting credentials")
+	}
 	selectedSIWC := account.IsSIWCEnabled()
 	if account.IsShadow() {
 		credAccount, err := resolveCredentialAccount(ctx, s.accountRepo, account)

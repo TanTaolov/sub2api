@@ -1,0 +1,180 @@
+package service
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"strings"
+	"time"
+
+	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
+	"github.com/gin-gonic/gin"
+)
+
+func (a *Account) HasManagedOpenAIConnections() bool {
+	return a != nil && a.Platform == PlatformOpenAI && a.Extra["openai_connections_managed"] == true
+}
+
+func (c *OpenAIAuthConnection) Supports(capability string) bool {
+	if c.Status != "active" || c.CooldownUntil != nil && time.Now().Before(*c.CooldownUntil) {
+		return false
+	}
+	switch c.Kind {
+	case "codex", "bps", "siwc", "api_key":
+	default:
+		return false
+	}
+	if capability == "" {
+		capability = "responses"
+	}
+	for _, v := range c.Capabilities {
+		if v == capability {
+			return true
+		}
+	}
+	return false
+}
+
+func (a *Account) managedConnectionSupports(capability string) bool {
+	raw, err := json.Marshal(a.Extra["openai_auth_connections"])
+	if err != nil {
+		return false
+	}
+	var connections []*OpenAIAuthConnection
+	if json.Unmarshal(raw, &connections) != nil {
+		return false
+	}
+	for _, c := range connections {
+		if c != nil && c.Supports(capability) {
+			return true
+		}
+	}
+	return false
+}
+
+func connectionCapabilityForRequest(c *gin.Context) string {
+	if c == nil || c.Request == nil || c.Request.URL == nil {
+		return "responses"
+	}
+	path := strings.TrimRight(c.Request.URL.Path, "/")
+	switch {
+	case strings.HasSuffix(path, "/responses/compact"):
+		return "responses_compact"
+	case strings.HasSuffix(path, "/chat/completions"), strings.HasSuffix(path, "/messages"):
+		return "chat_completions"
+	case strings.HasSuffix(path, "/embeddings"):
+		return "embeddings"
+	case strings.HasSuffix(path, "/responses"):
+		return "responses"
+	default:
+		return "unsupported"
+	}
+}
+
+func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin.Context, account, selected *Account) (*Account, error) {
+	if !account.HasManagedOpenAIConnections() {
+		return account, nil
+	}
+	if account.IsCredentialShadow() {
+		return nil, infraerrors.BadRequest("OPENAI_CONNECTION_SHADOW_UNSUPPORTED", "Managed connections require the parent account route")
+	}
+	if s.excelOAuthReauth == nil {
+		return nil, errors.New("authorization connection service unavailable")
+	}
+	connections, err := s.excelOAuthReauth.ListAuthConnections(ctx, account.ID)
+	if err != nil {
+		return nil, err
+	}
+	capability := connectionCapabilityForRequest(c)
+	pinned := ""
+	if selected != nil {
+		pinned = selected.AuthConnectionID
+	}
+	var chosen *OpenAIAuthConnection
+	for _, candidate := range connections {
+		if candidate.Legacy {
+			continue
+		}
+		if pinned != "" && candidate.ID != pinned {
+			continue
+		}
+		if candidate.Supports(capability) && (chosen == nil || candidate.Preferred) {
+			chosen = candidate
+		}
+	}
+	if chosen == nil {
+		return nil, infraerrors.BadRequest("OPENAI_CONNECTION_NOT_CAPABLE", "No authorized connection supports this endpoint; select or authorize an appropriate connection")
+	}
+	if _, err = s.excelOAuthReauth.ConnectionAccessToken(ctx, account.ID, chosen.ID); err != nil {
+		return nil, err
+	}
+	// Refresh may have rotated this record. Never project a stale token/client.
+	chosen, err = s.excelOAuthReauth.authConnection(ctx, account.ID, chosen.ID)
+	if err != nil {
+		return nil, err
+	}
+	if !chosen.Supports(capability) {
+		return nil, connectionChanged()
+	}
+	creds, err := s.excelOAuthReauth.readConnectionCredentials(chosen)
+	if err != nil {
+		return nil, err
+	}
+	out := *account
+	out.AuthConnectionID = chosen.ID
+	out.AuthConnectionRevision = chosen.Revision
+	out.Credentials = shallowCopyMap(account.Credentials)
+	// Keep model configuration, remove every legacy credential and registration
+	// before applying the chosen set. No cross-client token composition.
+	for _, key := range []string{"access_token", "refresh_token", "id_token", "api_key", "client_id", "expires_at", "chatgpt_account_id", "chatgpt_user_id", "email", "auth_mode", "openai_auth_mode", "agent_private_key", "task_id"} {
+		delete(out.Credentials, key)
+	}
+	for key, value := range creds {
+		out.Credentials[key] = value
+	}
+	out.Extra = shallowCopyMap(account.Extra)
+	out.Extra["openai_connection_kind"] = chosen.Kind
+	out.Extra[OpenAISIWCEnabledKey] = chosen.Kind == "siwc"
+	out.Extra["openai_excel_bps"] = chosen.Kind == "bps"
+	delete(out.Extra, "openai_excel_bps_models")
+	delete(out.Extra, ExcelBPSAuthorizationPendingKey)
+	out.Extra["openai_prism_browser"] = false
+	out.Extra["openai_oauth_responses_websockets_v2_enabled"] = false
+	if chosen.Kind == "api_key" {
+		out.Type = AccountTypeAPIKey
+		out.Credentials["base_url"] = "https://api.openai.com"
+	} else {
+		out.Type = AccountTypeOAuth
+	}
+	if c != nil {
+		c.Set("openai_auth_connection_id", chosen.ID)
+		c.Set(codexAccountIdentitySourceContextKey, &out)
+	}
+	return &out, nil
+}
+
+// Connection-only credential failures never mutate account-wide security. An
+// explicit account/workspace ban still follows the existing account policy;
+// 429 remains account-scoped because entitlement sharing is not independently
+// proven for these registrations.
+func (s *OpenAIOAuthReauthService) FailAuthConnection(ctx context.Context, account *Account, status int) error {
+	c, err := s.authConnection(ctx, account.ID, account.AuthConnectionID)
+	if err != nil {
+		return err
+	}
+	if c.Revision != account.AuthConnectionRevision {
+		return nil
+	}
+	if status == 401 {
+		c.Status = "pending"
+	} else {
+		until := time.Now().Add(time.Minute)
+		c.CooldownUntil = &until
+	}
+	r, err := s.connectionRepository()
+	if err != nil {
+		return err
+	}
+	_, err = r.CASAuthConnection(ctx, c, c.Revision)
+	return err
+}
