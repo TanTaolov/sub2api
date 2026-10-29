@@ -297,6 +297,10 @@ func (s *OpenAIGatewayService) forwardExcelBPS(ctx context.Context, c *gin.Conte
 		return fail(400, "basispoints_request_invalid", "Invalid model request")
 	}
 	identity, transient := resolveExcelBPSIdentity(c, body, getAPIKeyIDFromContext(c), account.IsExcelBPSMihomoEnabled())
+	if account.AuthConnectionID != "" && identity != "" {
+		identity = isolateOpenAIUpstreamSessionID(getAPIKeyIDFromContext(c), account, identity)
+	}
+
 	if identity != "" {
 		body, err = sjson.SetBytes(body, "prompt_cache_key", identity)
 		if err != nil {
@@ -325,6 +329,9 @@ func (s *OpenAIGatewayService) forwardExcelBPS(ctx context.Context, c *gin.Conte
 		}
 	}
 	scope := fmt.Sprintf("account:%d/key:%d/thread:%s", account.ID, getAPIKeyIDFromContext(c), identity)
+	if account.AuthConnectionID != "" {
+		scope += "/connection:" + account.AuthConnectionID
+	}
 	if transient {
 		scope = "transient:" + scope
 	}

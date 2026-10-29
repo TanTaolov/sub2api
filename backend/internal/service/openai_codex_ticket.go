@@ -555,7 +555,11 @@ func ticketIdentity(account *Account) string {
 	if account == nil {
 		return ""
 	}
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(account.GetCredential("chatgpt_account_id")+"\x00"+account.GetCredential("email"))))
+	identity := account.GetCredential("chatgpt_account_id") + "\x00" + account.GetCredential("email")
+	if account.AuthConnectionID != "" {
+		identity += "\x00connection:" + account.AuthConnectionID
+	}
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(identity)))
 }
 func ticketIdentityMatches(account *Account, ticket *openAICodexTicket) bool {
 	return ticket != nil && (ticket.Identity == "" || ticket.Identity == ticketIdentity(account))
