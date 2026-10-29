@@ -225,7 +225,8 @@ func TestQualityAccountProbeCooldownTargetsLifecycle(t *testing.T) {
 	require.Equal(t, 5, account.Concurrency)
 	apply("inconclusive", now.Add(time.Hour))
 	assertEligible(false)
-	limits := account.Extra["model_rate_limits"].(map[string]any)
+	limits, ok := account.Extra["model_rate_limits"].(map[string]any)
+	require.True(t, ok)
 	for _, model := range models {
 		require.Equal(t, now.Add(time.Hour), cooldownEntryUntil(limits[model]))
 	}
