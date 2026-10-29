@@ -104,6 +104,14 @@ func TestIssue594HTTPDatabaseCoexistenceRotationUnlinkAndLegacy(t *testing.T) {
 	var ciphertext string
 	require.NoError(t, f.db.QueryRow(`SELECT credentials_ciphertext FROM openai_auth_connections WHERE id=$1`, first.ID).Scan(&ciphertext))
 	require.NotContains(t, ciphertext, "synthetic-first-key")
+	var peerCipher string
+	require.NoError(t, f.db.QueryRow(`SELECT credentials_ciphertext FROM openai_auth_connections WHERE id=$1`, second.ID).Scan(&peerCipher))
+	_, errSwap := f.db.Exec(`UPDATE openai_auth_connections SET credentials_ciphertext=$2 WHERE id=$1`, first.ID, peerCipher)
+	require.NoError(t, errSwap)
+	_, errBound := f.svc.ConnectionAccessToken(ctx, f.accountID, first.ID)
+	require.Error(t, errBound, "ciphertexts cannot be transplanted between registrations")
+	_, errSwap = f.db.Exec(`UPDATE openai_auth_connections SET credentials_ciphertext=$2 WHERE id=$1`, first.ID, ciphertext)
+	require.NoError(t, errSwap)
 	selected := connectionResponse(t, f.request("PATCH", "/"+first.ID, `{"action":"select","revision":1}`))
 	require.True(t, selected.Preferred)
 	var extra map[string]any

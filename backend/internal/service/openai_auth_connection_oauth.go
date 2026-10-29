@@ -33,6 +33,9 @@ func (s *OpenAIOAuthReauthService) readConnectionCredentials(c *OpenAIAuthConnec
 	if json.Unmarshal([]byte(plain), &creds) != nil || creds == nil {
 		return nil, errors.New("invalid connection credentials")
 	}
+	if creds["_connection_id"] != c.ID || creds["_account_id"] != strconv.FormatInt(c.AccountID, 10) || creds["_connection_kind"] != c.Kind || creds["_connection_subject"] != c.Subject {
+		return nil, errors.New("connection credential binding changed")
+	}
 	// The client/token association is authenticated by the encrypted record.
 	if c.Kind != "api_key" && c.ClientID != "" && creds["client_id"] != c.ClientID {
 		return nil, errors.New("connection client does not match its credentials")
@@ -40,6 +43,11 @@ func (s *OpenAIOAuthReauthService) readConnectionCredentials(c *OpenAIAuthConnec
 	return creds, nil
 }
 func (s *OpenAIOAuthReauthService) encryptConnectionCredentials(c *OpenAIAuthConnection, creds map[string]any) error {
+	creds["_connection_id"] = c.ID
+	creds["_account_id"] = strconv.FormatInt(c.AccountID, 10)
+	creds["_connection_kind"] = c.Kind
+	creds["_connection_subject"] = c.Subject
+
 	raw, err := json.Marshal(creds)
 	if err != nil {
 		return err
@@ -181,6 +189,9 @@ func (s *OpenAIOAuthReauthService) CompleteConnectionAuthorization(ctx context.C
 		return err
 	}
 	defer unlock()
+	operationCtx, stopOperation := context.WithTimeout(ctx, 50*time.Second)
+	defer stopOperation()
+	ctx = operationCtx
 	current, err := s.authConnection(ctx, accountID, id)
 	if err != nil {
 		return err
@@ -395,6 +406,9 @@ func (s *OpenAIOAuthReauthService) RevokeAuthConnection(ctx context.Context, acc
 		return false, err
 	}
 	defer unlock()
+	operationCtx, stopOperation := context.WithTimeout(ctx, 50*time.Second)
+	defer stopOperation()
+	ctx = operationCtx
 	c, err := s.authConnection(ctx, accountID, id)
 	if err != nil {
 		return false, err

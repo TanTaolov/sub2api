@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"strings"
 	"time"
 
@@ -137,13 +135,8 @@ func (s *OpenAIOAuthReauthService) CreateAuthConnection(ctx context.Context, id 
 		if err = s.ensureDurableEncryption(); err != nil {
 			return nil, err
 		}
-		raw, marshalErr := json.Marshal(map[string]any{"api_key": key})
-		if marshalErr != nil {
-			return nil, marshalErr
-		}
-		c.CredentialsCiphertext, err = s.encryptor.Encrypt(string(raw))
-		if err != nil {
-			return nil, errors.New("failed to encrypt connection credentials")
+		if err = s.encryptConnectionCredentials(c, map[string]any{"api_key": key}); err != nil {
+			return nil, err
 		}
 		c.Status = "active"
 		c.Capabilities = []string{"responses", "chat_completions", "embeddings"}
