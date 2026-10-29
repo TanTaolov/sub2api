@@ -39,7 +39,7 @@
         </div>
       </li>
     </ul>
-    <form class="space-y-2" @submit.prevent="add">
+    <div class="space-y-2" data-testid="add-connection-fields">
       <label :for="`connection-kind-${accountId}`" class="input-label">{{ t('openaiAuth.kind') }}</label>
       <select :id="`connection-kind-${accountId}`" v-model="kind" class="input" :disabled="busy">
         <option value="codex">Codex</option><option value="bps">BPS</option><option value="siwc">SIWC</option><option value="api_key">{{ t('openaiAuth.apiKey') }}</option>
@@ -51,20 +51,20 @@
         <input :id="`connection-key-${accountId}`" v-model="apiKey" type="password" class="input" autocomplete="new-password" :disabled="busy" />
       </template>
       <p v-if="kind === 'siwc'" class="input-hint">{{ t('openaiAuth.siwcApproval') }}</p>
-      <button type="submit" class="btn btn-secondary btn-sm" :disabled="busy || !label.trim() || (kind === 'api_key' && !apiKey.trim())" data-testid="add-connection">{{ t('openaiAuth.add') }}</button>
-    </form>
-    <form v-if="authorization" class="space-y-2" data-testid="connection-authorization" @submit.prevent="complete">
+      <button type="button" class="btn btn-secondary btn-sm" @click="add" :disabled="busy || !label.trim() || (kind === 'api_key' && !apiKey.trim())" data-testid="add-connection">{{ t('openaiAuth.add') }}</button>
+    </div>
+    <div v-if="authorization" class="space-y-2" data-testid="connection-authorization">
       <p>{{ t('openaiAuth.authorizing', { label: authorization.label }) }}</p>
       <a :href="authorization.auth_url" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">{{ t('openaiAuth.open') }}</a>
       <label :for="`connection-callback-${accountId}`" class="input-label">{{ t('openaiAuth.callback') }}</label>
       <input :id="`connection-callback-${accountId}`" v-model="callback" class="input" autocomplete="off" spellcheck="false" />
-      <button type="submit" class="btn btn-secondary btn-sm" :disabled="busy || !callback.trim()">{{ t('openaiAuth.complete') }}</button>
-    </form>
-    <form v-if="rotation" class="space-y-2" @submit.prevent="rotate">
+      <button type="button" class="btn btn-secondary btn-sm" @click="complete" :disabled="busy || !callback.trim()">{{ t('openaiAuth.complete') }}</button>
+    </div>
+    <div v-if="rotation" class="space-y-2">
       <label :for="`connection-rotate-${accountId}`" class="input-label">{{ t('openaiAuth.rotateLabel', { label: rotation.label }) }}</label>
       <input :id="`connection-rotate-${accountId}`" v-model="rotationKey" type="password" class="input" autocomplete="new-password" />
-      <button type="submit" class="btn btn-secondary btn-sm" :disabled="busy || !rotationKey.trim()">{{ t('openaiAuth.rotate') }}</button>
-    </form>
+      <button type="button" class="btn btn-secondary btn-sm" @click="rotate" :disabled="busy || !rotationKey.trim()">{{ t('openaiAuth.rotate') }}</button>
+    </div>
     <div v-if="revocation" class="space-y-2" role="alert">
       <p>{{ t('openaiAuth.unlinkConfirm', { label: revocation.label }) }}</p>
       <button type="button" class="btn btn-secondary btn-sm" :disabled="busy" @click="unlink">{{ t('openaiAuth.confirm') }}</button>

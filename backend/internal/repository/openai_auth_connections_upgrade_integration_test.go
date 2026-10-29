@@ -79,4 +79,14 @@ func TestIssue594UpgradeRealLegacyDatabasePreservesEveryCredentialSlot(t *testin
 		require.NoError(t, e)
 		require.Empty(t, connections, "upgrade cannot duplicate a rotating token into a second lifecycle owner")
 	}
+	// The new protection trigger must preserve legacy scalar/null JSON updates;
+	// this is also exercised by the full usage-billing statement-variant suite.
+	for _, value := range []string{`null`, `"legacy scalar"`, `42`, `[]`} {
+		_, e := db.ExecContext(ctx, `UPDATE accounts SET extra=$2::jsonb WHERE id=$1`, id, value)
+		require.NoError(t, e)
+		var got string
+		require.NoError(t, db.QueryRowContext(ctx, `SELECT extra::text FROM accounts WHERE id=$1`, id).Scan(&got))
+		require.JSONEq(t, value, got)
+	}
+
 }

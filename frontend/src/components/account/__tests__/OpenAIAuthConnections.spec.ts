@@ -18,6 +18,16 @@ beforeEach(() => {
 afterEach(() => { apiClient.defaults.adapter = originalAdapter })
 
 describe('independent OpenAI connection management through actual API client', () => {
+  it('does not nest forms or submit the surrounding account editor', async () => {
+    const submit = vi.fn()
+    const w = mount({ components: { OpenAIAuthConnections }, template: '<form @submit.prevent="submit"><OpenAIAuthConnections :account-id="42" :active="true" /></form>', setup: () => ({ submit }) })
+    await flushPromises()
+    expect(w.findAll('form')).toHaveLength(1)
+    await w.get('[data-testid="connection-label"]').setValue('New registration')
+    await w.get('[data-testid="add-connection"]').trigger('click'); await flushPromises()
+    expect(submit).not.toHaveBeenCalled(); w.unmount()
+  })
+
   it('shows both registrations and refuses identity-only selection', async () => {
     const w = mount(OpenAIAuthConnections, { props: { accountId: 42, active: true } }); await flushPromises()
     expect(w.text()).toContain('Synthetic identity'); expect(w.text()).toContain('Synthetic responses')
@@ -31,7 +41,7 @@ describe('independent OpenAI connection management through actual API client', (
   it('creates a new registration without replacing existing ones', async () => {
     const w = mount(OpenAIAuthConnections, { props: { accountId: 42, active: true } }); await flushPromises()
     await w.get('[data-testid="connection-label"]').setValue('Second Codex')
-    await w.get('form').trigger('submit'); await flushPromises()
+    await w.get('[data-testid="add-connection"]').trigger('click'); await flushPromises()
     const request = adapter.mock.calls.map(([c]) => c).find(c => c.method === 'post')
     expect(JSON.parse(request.data)).toEqual({ kind: 'codex', label: 'Second Codex' })
     expect(w.text()).toContain('Synthetic identity'); w.unmount()
