@@ -400,7 +400,7 @@ func (s *OpenAIGatewayService) admitOpenAITurnWithGroup(
 	if !latest.IsOpenAI() {
 		return latest, nil
 	}
-	if openAITurnRouteFingerprint(latest) != openAITurnRouteFingerprint(selected) && !(latest.HasManagedOpenAIConnections() && selected.AuthConnectionID != "") {
+	if openAITurnRouteFingerprint(latest) != openAITurnRouteFingerprint(selected) && (!latest.HasManagedOpenAIConnections() || selected.AuthConnectionID == "") {
 		return nil, denyOpenAITurn("account_binding_changed")
 	}
 	// Preserve the cause of a model-not-found cooldown before the generic

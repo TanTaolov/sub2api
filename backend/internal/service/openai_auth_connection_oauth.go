@@ -104,7 +104,7 @@ func (s *OpenAIOAuthReauthService) BeginConnectionAuthorization(ctx context.Cont
 			clientID = openai.ClientID
 		}
 		if clientID != openai.ClientID {
-			return nil, errors.New("Codex client registration mismatch")
+			return nil, errors.New("codex client registration mismatch")
 		}
 	case "bps":
 		if clientID == "" {
