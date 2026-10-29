@@ -89,4 +89,13 @@ func TestIssue594UpgradeRealLegacyDatabasePreservesEveryCredentialSlot(t *testin
 		require.JSONEq(t, value, got)
 	}
 
+	// Publication itself normalizes old shapes, while the general trigger
+	// above leaves untouched legacy scalar writes usable by existing quota SQL.
+	connectionID := uuid.NewString()
+	_, err = db.ExecContext(ctx, `INSERT INTO openai_auth_connections(id,account_id,kind,label) VALUES($1,$2,'siwc','upgrade pending registration')`, connectionID, id)
+	require.NoError(t, err)
+	var objectType string
+	require.NoError(t, db.QueryRowContext(ctx, `SELECT jsonb_typeof(extra) FROM accounts WHERE id=$1`, id).Scan(&objectType))
+	require.Equal(t, "object", objectType)
+
 }

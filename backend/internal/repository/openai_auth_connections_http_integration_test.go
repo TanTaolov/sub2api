@@ -98,8 +98,6 @@ func connectionResponse(t *testing.T, w *httptest.ResponseRecorder) *service.Ope
 func TestIssue594HTTPDatabaseCoexistenceRotationUnlinkAndLegacy(t *testing.T) {
 	f := newConnectionHTTPFixture(t)
 	ctx := context.Background()
-	_, seedErr := f.db.Exec(`UPDATE accounts SET extra='"legacy scalar"'::jsonb WHERE id=$1`, f.accountID)
-	require.NoError(t, seedErr)
 
 	first := connectionResponse(t, f.request("POST", "", `{"kind":"api_key","label":"First key","api_key":"synthetic-first-key"}`))
 	second := connectionResponse(t, f.request("POST", "", `{"kind":"api_key","label":"Second key","api_key":"synthetic-second-key"}`))
