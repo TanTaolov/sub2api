@@ -194,3 +194,42 @@ func TestQualityModelActiveEntryDeletionStillConflicts(t *testing.T) {
 	require.Equal(t, "restore_conflict", action)
 	require.Contains(t, state.ModelRateLimits, "gpt-6-astra")
 }
+
+func TestQualityAccountProbeCooldownTargetsLifecycle(t *testing.T) {
+	now := time.Now().UTC().Truncate(time.Second)
+	models := []string{"gpt-6.1-terra", "gpt-5.6-terra", "gpt-6-luna", "gpt-6.1-sol", "gpt-6-astra", "gpt-5.6-sol"}
+	account := &service.Account{Platform: service.PlatformOpenAI, Type: service.AccountTypeOAuth, Status: "active", Schedulable: true, Concurrency: 10, Extra: map[string]any{}}
+	state := qualityState{RecoveryConcurrency: 5, NativeRecovery: true}
+	apply := func(outcome string, until time.Time) {
+		outcomes := map[string]string{}
+		for _, model := range models {
+			outcomes[model] = outcome
+		}
+		actions, _, err := transitionQualityModelRound(account, &state, 7, models, outcomes, until, true, now, false)
+		require.NoError(t, err)
+		require.Len(t, actions, len(models))
+	}
+	assertEligible := func(want bool) {
+		for _, model := range models {
+			require.Equal(t, want, account.IsSchedulableForModel(model), model)
+		}
+		require.True(t, account.IsSchedulableForModel("unrelated-model"))
+	}
+	apply("inconclusive", now.Add(time.Minute))
+	assertEligible(true)
+	require.Equal(t, 10, account.Concurrency)
+	apply("passed", now.Add(time.Minute))
+	assertEligible(true)
+	apply("failed", now.Add(time.Minute))
+	assertEligible(false)
+	require.Equal(t, 5, account.Concurrency)
+	apply("inconclusive", now.Add(time.Hour))
+	assertEligible(false)
+	limits := account.Extra["model_rate_limits"].(map[string]any)
+	for _, model := range models {
+		require.Equal(t, now.Add(time.Hour), cooldownEntryUntil(limits[model]))
+	}
+	apply("passed", now.Add(time.Hour))
+	assertEligible(true)
+	require.Empty(t, state.ModelRateLimits)
+}

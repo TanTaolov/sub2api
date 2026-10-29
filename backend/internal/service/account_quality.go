@@ -146,6 +146,25 @@ func validateQualityPolicy(plan *ScheduledTestPlan) error {
 // One completed wrong answer quarantines; restoration requires every probe to pass.
 // Transport errors alone are inconclusive, never evidence of degradation.
 // Multi-model rules pass only when every selected model/sample passed.
+func qualityPlanModelOutcomes(plan *ScheduledTestPlan, results []*ScheduledTestResult) map[string]string {
+	targets := QualityModels(plan)
+	if plan.PelicanConfig.Quality.Action != QualityActionRemoveModel || !isOpenAICodexStateProbePlan(plan.PelicanConfig) {
+		return qualityModelOutcomes(results, targets)
+	}
+	// A state probe measures the account, not the individual probe model. Apply
+	// its verdict to every configured cooldown target without running concurrent
+	// state probes. Unknown/partial rounds cannot restore existing restrictions.
+	outcome := "skipped"
+	if qualityRoundHasResults(results) {
+		outcome = qualityOutcome(results)
+	}
+	outcomes := make(map[string]string, len(targets))
+	for _, model := range targets {
+		outcomes[model] = outcome
+	}
+	return outcomes
+}
+
 func qualityModelOutcomes(results []*ScheduledTestResult, targets []string) map[string]string {
 	outcomes := make(map[string]string, len(targets))
 	for _, model := range targets {

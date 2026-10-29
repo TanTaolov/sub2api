@@ -65,7 +65,7 @@ export default {
   "modelRestored": "已恢复该模型",
   "modelUnchanged": "保持当前状态",
 
-  "cooldownPerModelHint": "冷却与恢复按每个模型自己的检测结果处理：仅冷却检测失败的模型；通过的模型不受其他模型影响，未检测或不支持的模型不新增冷却。5xx 先降低账号并发，等待检测结果后决定模型冷却。",
+  "cooldownPerModelHint": "账号状态探针的结论统一用于全部配置目标的冷却与恢复；其他检测按每个模型自己的检测结果处理：仅冷却检测失败的模型；通过的模型不受其他模型影响，未检测或不支持的模型不新增冷却。5xx 先降低账号并发，等待检测结果后决定模型冷却。",
 
   "skipped": "已跳过",
   "modelUnsupportedSkipped": "账号不支持，已跳过",
@@ -80,7 +80,7 @@ export default {
   "cooldownNotRecorded": "旧记录未提供",
   "cooldownUnconfirmed": "处理结果未确认",
   "cooldownTargets": "冷却适用模型",
-  "cooldownTargetsHint": "仅检测异常的模型会被冷却；未检测或跳过的模型不新增冷却。",
+  "cooldownTargetsHint": "账号状态探针的结论统一用于全部配置目标；其他检测仅冷却检测异常的模型，未检测或跳过的模型不新增冷却。",
   "catalogUnavailable": "模型列表读取失败，已跳过",
 
   "tooManyModelSamples": "最多选择 50 个模型，每轮最多 100 个样本；请减少模型或每模型并行数。",
