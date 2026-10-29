@@ -35,6 +35,9 @@ jobs:
           trap 'cp "$RUNNER_TEMP/upstream-current-service.go" "$target"' EXIT
           git fetch --no-tags --depth=1 origin ecf63af98587c151fe40893f3e3c322a777b17df
           git show ecf63af98587c151fe40893f3e3c322a777b17df:backend/internal/service/upstream_operations.go > "$target"
+          # This unchanged helper now lives in profit_operations.go. Remove the
+          # historical duplicate so RED verifies assertions, not a compile error.
+          sed -i '/^\/\/ OperationsCostMultiplier distinguishes/,$d' "$target"
           set +e
           go test -tags=unit ./internal/service -run '^TestUpstreamOperations(ExcelOAuthCannotMasqueradeAsNativeCodex|PinnedResponsesPreservesExplicitRelayBase)$' -count=1 -v > "$RUNNER_TEMP/upstream-excel-red.log" 2>&1
           result=$?
