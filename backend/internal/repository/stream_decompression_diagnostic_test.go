@@ -19,11 +19,11 @@ func TestStreamDecompressionBeforeEOF(t *testing.T) {
 	for _, encoding := range []string{"gzip", "zstd"} {
 		t.Run(encoding, func(t *testing.T) {
 			r, w := io.Pipe()
-			defer r.Close()
+			defer func() { _ = r.Close() }()
 			release := make(chan struct{})
 			defer close(release)
 			go func() {
-				defer w.Close()
+				defer func() { _ = w.Close() }()
 				var enc interface {
 					io.Writer
 					Flush() error
