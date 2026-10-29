@@ -195,7 +195,6 @@ func (s *OpenAIOAuthReauthService) UpdateAuthConnection(ctx context.Context, acc
 		changed, err = r.SelectAuthConnection(ctx, accountID, id, input.Revision)
 	case "disable":
 		c.Status = "disabled"
-		c.Preferred = false
 		changed, err = r.CASAuthConnection(ctx, c, input.Revision)
 	case "enable":
 		if c.Status != "disabled" || c.CredentialsCiphertext == "" {
@@ -207,7 +206,6 @@ func (s *OpenAIOAuthReauthService) UpdateAuthConnection(ctx context.Context, acc
 		// Local unbinding never claims remote revocation. Preserve registration
 		// metadata for reauthorization; erase only this connection's token set.
 		c.Status = "unlinked"
-		c.Preferred = false
 		c.CredentialsCiphertext = ""
 		c.Capabilities = []string{}
 		changed, err = r.CASAuthConnection(ctx, c, input.Revision)

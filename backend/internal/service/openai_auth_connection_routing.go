@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -43,6 +44,11 @@ func (a *Account) managedConnectionSupports(capability string) bool {
 	var connections []*OpenAIAuthConnection
 	if json.Unmarshal(raw, &connections) != nil {
 		return false
+	}
+	for _, c := range connections {
+		if c != nil && c.Preferred {
+			return c.Supports(capability)
+		}
 	}
 	for _, c := range connections {
 		if c != nil && c.Supports(capability) {
@@ -91,6 +97,14 @@ func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin
 		pinned = selected.AuthConnectionID
 	}
 	var chosen *OpenAIAuthConnection
+	if pinned == "" {
+		for _, candidate := range connections {
+			if candidate.Preferred && !candidate.Legacy {
+				pinned = candidate.ID
+				break
+			}
+		}
+	}
 	for _, candidate := range connections {
 		if candidate.Legacy {
 			continue
@@ -177,4 +191,18 @@ func (s *OpenAIOAuthReauthService) FailAuthConnection(ctx context.Context, accou
 	}
 	_, err = r.CASAuthConnection(ctx, c, c.Revision)
 	return err
+}
+
+func (s *OpenAIOAuthReauthService) recordConnectionUsage(ctx context.Context, accountID, apiKeyID int64, id, requestID string) {
+	repo, ok := s.repo.(interface {
+		RecordAuthConnectionUsage(context.Context, int64, int64, string, string) error
+	})
+	if !ok {
+		return
+	}
+	recordCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Second)
+	defer cancel()
+	if err := repo.RecordAuthConnectionUsage(recordCtx, accountID, apiKeyID, id, requestID); err != nil {
+		slog.Warn("openai_connection_usage_attribution_failed", "account_id", accountID, "connection_id", id)
+	}
 }

@@ -236,6 +236,7 @@ type OpenAIUsage struct {
 
 // OpenAIForwardResult represents the result of forwarding
 type OpenAIForwardResult struct {
+	AuthConnectionID string
 	// RegionalMetered prevents the legacy asynchronous path from double charging.
 	RegionalMetered bool
 	RequestID       string
