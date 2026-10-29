@@ -46,8 +46,45 @@ jobs:
         with:
           name: issue594-red-${{ github.event_name }}-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ runner.temp }}/issue594-red.log
+  review-red:
+    if: github.head_ref == 'feat/openai-multi-auth-connections' || github.ref_name == 'feat/openai-multi-auth-connections'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Review regression RED on writer checkpoint
+        env:
+          CI: 'true'
+        run: |
+          set -euo pipefail
+          red_tree="$RUNNER_TEMP/issue594-review-baseline"
+          mkdir "$red_tree"
+          git archive 19b4e6730351b48f208391b7a411117bfce1538b | tar -x -C "$red_tree"
+          cp backend/internal/repository/openai_auth_connections_review_regression_test.go "$red_tree/backend/internal/repository/"
+          set +e
+          (cd "$red_tree/backend" && go test -race -tags=integration ./internal/repository -run '^TestIssue594Review' -count=1 -v) > "$RUNNER_TEMP/issue594-review-red.log" 2>&1
+          result=$?
+          set -e
+          cat "$RUNNER_TEMP/issue594-review-red.log"
+          test "$result" -ne 0
+          ! grep -E 'build failed|setup failed|undefined:|syntax error:|no tests to run|panic:' "$RUNNER_TEMP/issue594-review-red.log"
+          grep -F -- '--- FAIL: TestIssue594ReviewUncertainRefreshNeverReplaysOldGrant' "$RUNNER_TEMP/issue594-review-red.log"
+          grep -F -- '--- FAIL: TestIssue594ReviewExpiredLeaseCannotCommitOldCredentials' "$RUNNER_TEMP/issue594-review-red.log"
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: issue594-review-red-${{ github.event_name }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/issue594-review-red.log
+
   green:
-    needs: red
+    needs: [red, review-red]
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
