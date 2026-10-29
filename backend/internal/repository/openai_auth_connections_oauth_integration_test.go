@@ -127,11 +127,21 @@ func TestIssue594ActualOAuthAdapterHTTPDatabaseRotationAndReauthorization(t *tes
 	bps := connectionResponse(t, f.request("POST", "", `{"kind":"bps","label":"BPS registration"}`))
 	authorize(codex, openai.ClientID, "codex-subject", "openid offline_access", "codex")
 	authorize(bps, openai.ExcelClientID, "bps-subject", "openid offline_access", "bps")
+	codexPeer := connectionResponse(t, f.request("POST", "", `{"kind":"codex","label":"Second Codex registration"}`))
+	bpsPeer := connectionResponse(t, f.request("POST", "", `{"kind":"bps","label":"Second BPS registration"}`))
+	authorize(codexPeer, openai.ClientID, "codex-subject", "openid offline_access", "codex-peer")
+	authorize(bpsPeer, openai.ExcelClientID, "bps-subject", "openid offline_access", "bps-peer")
+	for id, expected := range map[string]string{codex.ID: "synthetic-access-codex", codexPeer.ID: "synthetic-access-codex-peer", bps.ID: "synthetic-access-bps", bpsPeer.ID: "synthetic-access-bps-peer"} {
+		got, tokenErr := f.svc.ConnectionAccessToken(ctx, f.accountID, id)
+		require.NoError(t, tokenErr)
+		require.Equal(t, expected, got)
+	}
+
 	_, err = f.svc.ConnectionAccessToken(ctx, f.accountID, identity.ID)
 	require.Error(t, err)
 	rows, err := f.repo.ListAuthConnections(ctx, f.accountID)
 	require.NoError(t, err)
-	require.Len(t, rows, 5)
+	require.Len(t, rows, 7)
 	for _, row := range rows {
 		if row.ID != first.ID {
 			continue
