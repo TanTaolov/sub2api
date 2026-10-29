@@ -79,7 +79,9 @@ func (s *OpenAIGatewayService) ForwardAsChatCompletions(
 		result.AuthConnectionID = c.GetString("openai_auth_connection_id")
 	}
 	errorScope.finish(result)
-	return result, regionalMeterFinishForward(meterCtx, result, err, finish)
+	finalErr := regionalMeterFinishForward(meterCtx, result, err, finish)
+	s.attributeRegionalConnectionResult(meterCtx, c, account, result)
+	return result, finalErr
 }
 
 func (s *OpenAIGatewayService) forwardAsChatCompletions(

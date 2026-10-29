@@ -94,6 +94,7 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 	defer func() {
 		if result != nil && c != nil {
 			result.AuthConnectionID = c.GetString("openai_auth_connection_id")
+			s.attributeRegionalConnectionResult(ctx, c, account, result)
 		}
 	}()
 	admittedCtx, admissionErr := s.beginPriorityLatencyTurn(ctx, c, account, gjson.GetBytes(body, "model").String())

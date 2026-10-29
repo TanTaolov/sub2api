@@ -281,3 +281,10 @@ func (s *OpenAIOAuthReauthService) validateAuthConnectionPolicy(ctx context.Cont
 	}
 	return nil
 }
+
+func (s *OpenAIGatewayService) attributeRegionalConnectionResult(ctx context.Context, c *gin.Context, account *Account, result *OpenAIForwardResult) {
+	if result == nil || !result.RegionalMetered || result.AuthConnectionID == "" || s.excelOAuthReauth == nil || account == nil {
+		return
+	}
+	s.excelOAuthReauth.recordConnectionUsage(ctx, account.ID, getAPIKeyIDFromContext(c), result.AuthConnectionID, resolveUsageBillingRequestID(ctx, result.RequestID))
+}

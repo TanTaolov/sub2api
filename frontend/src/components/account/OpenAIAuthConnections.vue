@@ -10,7 +10,7 @@
     <ul class="space-y-3">
       <li v-for="connection in connections" :key="connection.id" class="rounded border border-gray-200 p-3 dark:border-dark-600" :data-connection-id="connection.id">
         <div class="flex flex-wrap items-center gap-2">
-          <strong>{{ connection.label }}</strong>
+          <strong>{{ connection.legacy ? t('openaiAuth.legacy') : connection.label }}</strong>
           <span>{{ connection.kind === 'bps' ? 'BPS' : connection.kind === 'siwc' ? 'SIWC' : connection.kind === 'codex' ? 'Codex' : t('openaiAuth.apiKey') }}</span>
           <span>{{ t(`openaiAuth.status.${connection.status}`) }}</span>
           <span v-if="connection.preferred" class="text-primary-600">{{ t('openaiAuth.selected') }}</span>

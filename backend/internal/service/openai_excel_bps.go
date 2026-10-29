@@ -72,6 +72,9 @@ func (s *OpenAIGatewayService) handleExcelBPSUnauthorized(ctx context.Context, a
 }
 
 func (s *OpenAIGatewayService) moveExcelBPSOn403(ctx context.Context, account *Account) bool {
+	if account != nil && account.AuthConnectionID != "" {
+		return false
+	}
 	target, enabled := account.ExcelBPS403GroupTarget()
 	if !enabled || isQualityObservation(ctx) {
 		return false
@@ -94,6 +97,9 @@ func (s *OpenAIGatewayService) moveExcelBPSOn403(ctx context.Context, account *A
 }
 
 func (s *OpenAIGatewayService) disableExcelBPSOn403(ctx context.Context, account *Account) bool {
+	if account != nil && account.AuthConnectionID != "" {
+		return false
+	}
 	if !account.IsExcelBPSAutoDisableOn403Enabled() || isQualityObservation(ctx) {
 		return false
 	}
@@ -627,6 +633,10 @@ func (s *OpenAIGatewayService) forwardExcelBPS(ctx context.Context, c *gin.Conte
 			lease.ReportUpstreamFailure()
 		}
 		raw, _ := io.ReadAll(io.LimitReader(resp.Body, 512<<10))
+		if account.AuthConnectionID != "" {
+			s.handleOpenAIAccountUpstreamError(ctx, account, resp.StatusCode, resp.Header, raw, model)
+		}
+
 		observeBPSTestResponse(ctx, resp, model, token, gjson.GetBytes(raw, "error.code").String())
 		// BPS throttles its own endpoint. A BPS 429 must not write Codex
 		// quota/cooldown state; it cools only the BPS route and fails over.
