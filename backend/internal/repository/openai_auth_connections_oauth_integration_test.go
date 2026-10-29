@@ -86,7 +86,7 @@ func TestIssue594ActualOAuthAdapterHTTPDatabaseRotationAndReauthorization(t *tes
 		}
 		return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(payload)), Request: r}, nil
 	})
-	authorize := func(c *service.OpenAIAuthConnection, client, subject, scope, code string) {
+	authorize := func(c *service.OpenAIAuthConnection, client, subject, scope, code string, want ...int) {
 		t.Helper()
 		w := f.request("POST", "/"+c.ID+"/authorize", `{}`)
 		require.Equal(t, 200, w.Code, w.Body.String())
@@ -109,7 +109,11 @@ func TestIssue594ActualOAuthAdapterHTTPDatabaseRotationAndReauthorization(t *tes
 		callback := redirect + "?" + url.Values{"code": {code}, "state": {q.Get("state")}, "client_id": {client}}.Encode()
 		input, _ := json.Marshal(map[string]string{"session_id": result.Data.SessionID, "callback_url": callback})
 		w = f.request("POST", "/"+c.ID+"/callback", string(input))
-		require.Equal(t, 200, w.Code, w.Body.String())
+		expected := 200
+		if len(want) > 0 {
+			expected = want[0]
+		}
+		require.Equal(t, expected, w.Code, w.Body.String())
 		replay := f.request("POST", "/"+c.ID+"/callback", string(input))
 		require.NotEqual(t, 200, replay.Code)
 	}
@@ -184,6 +188,15 @@ func TestIssue594ActualOAuthAdapterHTTPDatabaseRotationAndReauthorization(t *tes
 	}
 	// Re-login reuses registration/host, pins subject, and changes no peer token.
 	authorize(second, "issued-two", "pairwise-two", openai.SIWCScopes, "two-again")
+	rows, err = f.repo.ListAuthConnections(ctx, f.accountID)
+	require.NoError(t, err)
+	for _, row := range rows {
+		if row.ID == second.ID {
+			second = row
+		}
+	}
+	authorize(second, "issued-two", "different-subject", openai.SIWCScopes, "two-mismatch", 409)
+
 	rows, err = f.repo.ListAuthConnections(ctx, f.accountID)
 	require.NoError(t, err)
 	for _, row := range rows {

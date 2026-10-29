@@ -72,10 +72,6 @@ func (s *OpenAIOAuthReauthService) BeginConnectionAuthorization(ctx context.Cont
 	if err != nil {
 		return nil, err
 	}
-	creds, err := s.readConnectionCredentials(c)
-	if err != nil {
-		return nil, err
-	}
 	state, err := openai.GenerateState()
 	if err != nil {
 		return nil, err
@@ -121,8 +117,8 @@ func (s *OpenAIOAuthReauthService) BeginConnectionAuthorization(ctx context.Cont
 	challenge := openai.GenerateCodeChallenge(verifier)
 	var authURL string
 	if c.Kind == "siwc" {
-		hint, _ := creds["id_token"].(string)
-		authURL = openai.BuildSIWCAuthorizationURL(state, challenge, nonce, c.HostID, clientID, hint, "")
+		// Do not embed retained ID tokens in a URL returned to the browser.
+		authURL = openai.BuildSIWCAuthorizationURL(state, challenge, nonce, c.HostID, clientID, "", "")
 	} else {
 		authURL = openai.BuildAuthorizationURLForPlatform(state, challenge, redirect, PlatformOpenAI)
 		if c.Kind == "bps" {
@@ -179,6 +175,18 @@ func (s *OpenAIOAuthReauthService) CompleteConnectionAuthorization(ctx context.C
 	if clientID == "" || clientID == openai.SIWCDynamicClientID || q.Get("code") == "" {
 		return infraerrors.BadRequest("OPENAI_CONNECTION_CALLBACK_INVALID", "Callback requires code and issued client")
 	}
+	unlock, err := s.lockAuthConnection(ctx, accountID, id)
+	if err != nil {
+		return err
+	}
+	defer unlock()
+	current, err := s.authConnection(ctx, accountID, id)
+	if err != nil {
+		return err
+	}
+	if current.Revision != session.ConnectionRevision {
+		return connectionChanged()
+	}
 	consumed, ok := s.readSIWCSession(ctx, sessionID, true)
 	if !ok || consumed.ConnectionID != id || consumed.State != session.State {
 		return connectionChanged()
@@ -210,6 +218,7 @@ func (s *OpenAIOAuthReauthService) CompleteConnectionAuthorization(ctx context.C
 	c.Audience = clientID
 	c.Issuer = "https://auth.openai.com"
 	c.Status = "active"
+	c.CooldownUntil = nil
 	c.Scopes = strings.Fields(token.Scope)
 	c.Capabilities = connectionCapabilities(c.Kind, token.Scope)
 	creds := map[string]any{"access_token": token.AccessToken, "refresh_token": token.RefreshToken, "id_token": token.IDToken, "client_id": clientID, "expires_at": strconv.FormatInt(time.Now().Unix()+token.ExpiresIn, 10)}
@@ -383,6 +392,11 @@ func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, ac
 func stringCredential(creds map[string]any, key string) string { v, _ := creds[key].(string); return v }
 
 func (s *OpenAIOAuthReauthService) RevokeAuthConnection(ctx context.Context, accountID int64, id string, revision int64) (bool, error) {
+	unlock, err := s.lockAuthConnection(ctx, accountID, id)
+	if err != nil {
+		return false, err
+	}
+	defer unlock()
 	c, err := s.authConnection(ctx, accountID, id)
 	if err != nil {
 		return false, err
@@ -418,4 +432,21 @@ func (s *OpenAIOAuthReauthService) RevokeAuthConnection(ctx context.Context, acc
 	revokeCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 	return client.RevokeConnectionToken(revokeCtx, stringCredential(creds, "refresh_token"), c.ClientID, proxy) == nil, nil
+}
+
+func (s *OpenAIOAuthReauthService) lockAuthConnection(ctx context.Context, accountID int64, id string) (func(), error) {
+	r, err := s.connectionRepository()
+	if err != nil {
+		return nil, err
+	}
+	owner := uuid.NewString()
+	acquired, err := r.AcquireAuthConnectionLease(ctx, accountID, id, owner)
+	if err != nil || !acquired {
+		return nil, infraerrors.Conflict("OPENAI_CONNECTION_REFRESH_BUSY", "Connection lifecycle operation is busy; retry later")
+	}
+	return func() {
+		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Second)
+		defer cancel()
+		_ = r.ReleaseAuthConnectionLease(cleanup, accountID, id, owner)
+	}, nil
 }
