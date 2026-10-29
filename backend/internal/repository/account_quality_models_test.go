@@ -161,7 +161,7 @@ func TestQualityModelRecoveryAfterExpiredEntriesWereCleared(t *testing.T) {
 	}
 }
 
-func TestQualityModelRecoveryRemovesOnlyExpiredOwnedEntries(t *testing.T) {
+func TestQualityModelRecoveryRetainsUntestedExpiredQualityEntries(t *testing.T) {
 	now := time.Now().UTC().Truncate(time.Second)
 	a := &service.Account{Type: service.AccountTypeAPIKey, Extra: map[string]any{}}
 	state := qualityState{}
@@ -176,10 +176,56 @@ func TestQualityModelRecoveryRemovesOnlyExpiredOwnedEntries(t *testing.T) {
 	require.NotEqual(t, "restore_conflict", action)
 	require.NotContains(t, state.ModelRateLimits, "gpt-6-astra")
 	require.Contains(t, state.ModelRateLimits, "gpt-5.6-sol")
-	require.NotContains(t, state.ModelRateLimits, "gpt-6.1-sol")
+	require.Contains(t, state.ModelRateLimits, "gpt-6.1-sol")
 	require.Equal(t, manual, limits["gpt-5.6-sol"])
 	require.NotContains(t, limits, "gpt-6-astra")
-	require.NotContains(t, limits, "gpt-6.1-sol")
+	require.Contains(t, limits, "gpt-6.1-sol")
+}
+
+func TestQualityCooldownDeadlineWaitsForConfirmedRecovery(t *testing.T) {
+	for _, outcome := range []string{"failed", "inconclusive", "skipped", "passed"} {
+		t.Run(outcome, func(t *testing.T) {
+			now := time.Now().UTC().Truncate(time.Second)
+			models := []string{"gpt-6.1-terra", "gpt-5.6-terra", "gpt-6-luna", "gpt-6.1-sol", "gpt-6-astra", "gpt-5.6-sol"}
+			a := &service.Account{Platform: service.PlatformOpenAI, Status: "active", Schedulable: true, Type: service.AccountTypeOAuth, Concurrency: 10, Extra: map[string]any{}}
+			state := qualityState{RecoveryConcurrency: 5}
+			_, err := transitionQualityModels(a, &state, 7, models, now.Add(-time.Minute), "failed", true, now.Add(-2*time.Minute))
+			require.NoError(t, err)
+			// The cron deadline has elapsed, but the next probe has not completed.
+			for _, model := range models {
+				require.False(t, a.IsSchedulableForModel(model), model)
+			}
+			outcomes := map[string]string{}
+			for _, model := range models {
+				outcomes[model] = outcome
+			}
+			_, _, err = transitionQualityModelRound(a, &state, 7, models, outcomes, now.Add(time.Minute), true, now, false)
+			require.NoError(t, err)
+			for _, model := range models {
+				require.Equal(t, outcome == "passed", a.IsSchedulableForModel(model), model)
+			}
+			require.True(t, a.IsSchedulableForModel("unrelated-model"))
+			if outcome == "passed" {
+				require.Empty(t, state.ModelApplied)
+				require.Equal(t, 10, a.Concurrency)
+			} else {
+				require.Len(t, state.ModelApplied, len(models))
+				require.Equal(t, 5, a.Concurrency)
+			}
+		})
+	}
+}
+
+func TestQualityExpiredCooldownRequiresAutoRestore(t *testing.T) {
+	now := time.Now().UTC().Truncate(time.Second)
+	a := &service.Account{Status: "active", Schedulable: true, Extra: map[string]any{}}
+	state := qualityState{}
+	_, err := transitionQualityModels(a, &state, 7, []string{"model"}, now.Add(-time.Minute), "failed", false, now.Add(-time.Hour))
+	require.NoError(t, err)
+	_, err = transitionQualityModels(a, &state, 7, []string{"model"}, now.Add(time.Hour), "passed", false, now)
+	require.NoError(t, err)
+	require.False(t, a.IsSchedulableForModel("model"))
+	require.Len(t, state.ModelApplied, 1)
 }
 
 func TestQualityModelActiveEntryDeletionStillConflicts(t *testing.T) {

@@ -194,6 +194,8 @@ export default {
   "removeGroups": "移出指定分组（取消账户的分组勾选）",
   "removeModels": "保持调度，仅冷却指定模型",
   "removeModelsInput": "要冷却的模型（逗号分隔）",
+  "waitingForRecovery": "等待质量恢复",
+  "cooldownRecoveryHint": "质量冷却会保持到后续检测明确通过并允许自动恢复，或由管理员手动解除；到达下次检测时间、超时、限流或跳过不会自动放行。",
   "recoveryConcurrency": "OAuth 恢复并发上限（默认 5）",
   "invalidRecoveryConcurrency": "恢复并发必须是 1 到 10000 的整数",
   "selectModels": "请填写至少一个模型",

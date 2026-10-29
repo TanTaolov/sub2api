@@ -44,8 +44,8 @@ func qualityModelStorage(state *qualityState) string {
 	return "model_rate_limits"
 }
 
-// Native/manual expiry cleanup can remove the live entry before a probe runs.
-// Relinquish only expired snapshots that are absent or still exactly ours.
+// Quality-owned entries survive the next check's deadline until a confirmed
+// recovery. Explicit removals and legacy non-quality snapshots can still expire.
 func pruneExpiredQualityModels(account *service.Account, state *qualityState, now time.Time) {
 	if state.PersistentModels {
 		return
@@ -61,6 +61,9 @@ func pruneExpiredQualityModels(account *service.Account, state *qualityState, no
 			continue
 		}
 		current := limits[model]
+		if current != nil && service.IsQualityModelCooldown(entry) {
+			continue
+		}
 		if current != nil && !cooldownEntryEqual(current, applied) {
 			continue
 		}
@@ -208,7 +211,7 @@ func transitionQualityModelsScoped(account *service.Account, state *qualityState
 		if err := json.Unmarshal(previous, &original); err != nil {
 			return "", err
 		}
-		if (state.PersistentModels && original != nil) || cooldownEntryUntil(original).After(now) {
+		if (state.PersistentModels && original != nil) || service.IsQualityModelCooldown(original) || cooldownEntryUntil(original).After(now) {
 			limits[key] = original
 		} else {
 			delete(limits, key)

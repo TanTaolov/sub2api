@@ -194,6 +194,8 @@ export default {
   "removeGroups": "Remove selected group memberships",
   "removeModels": "Keep scheduling, cool down selected models",
   "removeModelsInput": "Models to cool down (comma separated)",
+  "waitingForRecovery": "Awaiting quality recovery",
+  "cooldownRecoveryHint": "Quality cooldown remains until a later check explicitly passes with automatic recovery enabled, or an administrator clears it. The next check time, timeouts, rate limits and skipped checks do not release it.",
   "recoveryConcurrency": "OAuth recovery concurrency cap (default 5)",
   "invalidRecoveryConcurrency": "Recovery concurrency must be an integer from 1 to 10000",
   "selectModels": "Enter at least one model",
