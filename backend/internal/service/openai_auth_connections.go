@@ -14,29 +14,39 @@ import (
 // AccountID owns security, concurrency and billing; ID identifies only this grant.
 // A subject is meaningful only with its issuer/client and verification flag.
 type OpenAIAuthConnection struct {
-	Legacy                bool       `json:"legacy"`
-	ID                    string     `json:"id"`
-	AccountID             int64      `json:"account_id"`
-	Kind                  string     `json:"kind"`
-	Label                 string     `json:"label"`
-	Status                string     `json:"status"`
-	Issuer                string     `json:"issuer"`
-	ClientID              string     `json:"client_id"`
-	Subject               string     `json:"subject,omitempty"`
-	IdentityVerified      bool       `json:"identity_verified"`
-	Workspace             string     `json:"workspace,omitempty"`
-	Resource              string     `json:"resource,omitempty"`
-	Audience              string     `json:"audience,omitempty"`
-	Scopes                []string   `json:"scopes"`
-	Capabilities          []string   `json:"capabilities"`
-	HostID                string     `json:"host_id,omitempty"`
-	Revision              int64      `json:"revision"`
-	Preferred             bool       `json:"preferred"`
-	CooldownUntil         *time.Time `json:"cooldown_until,omitempty"`
-	CredentialsCiphertext string     `json:"-"`
+	RefreshState               string     `json:"refresh_state"`
+	RefreshAttemptID           string     `json:"-"`
+	RefreshCandidateCiphertext string     `json:"-"`
+	LeaseOwner                 string     `json:"-"`
+	LeaseEpoch                 int64      `json:"-"`
+	ResetRefresh               bool       `json:"-"`
+	Legacy                     bool       `json:"legacy"`
+	ID                         string     `json:"id"`
+	AccountID                  int64      `json:"account_id"`
+	Kind                       string     `json:"kind"`
+	Label                      string     `json:"label"`
+	Status                     string     `json:"status"`
+	Issuer                     string     `json:"issuer"`
+	ClientID                   string     `json:"client_id"`
+	Subject                    string     `json:"subject,omitempty"`
+	IdentityVerified           bool       `json:"identity_verified"`
+	Workspace                  string     `json:"workspace,omitempty"`
+	Resource                   string     `json:"resource,omitempty"`
+	Audience                   string     `json:"audience,omitempty"`
+	Scopes                     []string   `json:"scopes"`
+	Capabilities               []string   `json:"capabilities"`
+	HostID                     string     `json:"host_id,omitempty"`
+	Revision                   int64      `json:"revision"`
+	Preferred                  bool       `json:"preferred"`
+	CooldownUntil              *time.Time `json:"cooldown_until,omitempty"`
+	CredentialsCiphertext      string     `json:"-"`
 }
 
 type OpenAIAuthConnectionRepository interface {
+	BeginAuthConnectionRefresh(context.Context, *OpenAIAuthConnection, string) (bool, error)
+	MarkAuthConnectionRefresh(context.Context, *OpenAIAuthConnection, string) (bool, error)
+	StageAuthConnectionRefresh(context.Context, *OpenAIAuthConnection, string) (bool, error)
+	FinishAuthConnectionRefresh(context.Context, *OpenAIAuthConnection, string, string, string) (bool, error)
 	AuthConnectionsManaged(context.Context, int64) (bool, error)
 	ResolveAuthConnectionAffinity(context.Context, int64, int64, string, string) (string, error)
 	UseLegacyAuthConnections(context.Context, int64) error
@@ -116,7 +126,7 @@ func (s *OpenAIOAuthReauthService) CreateAuthConnection(ctx context.Context, id 
 	if input.Label == "" || len(input.Label) > 120 {
 		return nil, infraerrors.BadRequest("OPENAI_CONNECTION_LABEL_INVALID", "Use a connection label of 1–120 bytes")
 	}
-	c := &OpenAIAuthConnection{ID: uuid.NewString(), AccountID: id, Kind: input.Kind, Label: input.Label, Status: "pending", Revision: 1, Scopes: []string{}, Capabilities: []string{}}
+	c := &OpenAIAuthConnection{ID: uuid.NewString(), AccountID: id, Kind: input.Kind, Label: input.Label, Status: "pending", RefreshState: "idle", Revision: 1, Scopes: []string{}, Capabilities: []string{}}
 	switch input.Kind {
 	case "codex", "bps", "siwc":
 		if input.APIKey != "" {
@@ -197,6 +207,11 @@ func (s *OpenAIOAuthReauthService) UpdateAuthConnection(ctx context.Context, acc
 	}
 	var changed bool
 	switch input.Action {
+	case "recover":
+		if _, err = s.ConnectionAccessToken(ctx, accountID, id); err != nil {
+			return nil, err
+		}
+		return s.authConnection(ctx, accountID, id)
 	case "select":
 		if c.Status != "active" || len(c.Capabilities) == 0 {
 			return nil, infraerrors.BadRequest("OPENAI_CONNECTION_NOT_CAPABLE", "This connection does not authorize inference")
@@ -206,7 +221,7 @@ func (s *OpenAIOAuthReauthService) UpdateAuthConnection(ctx context.Context, acc
 		c.Status = "disabled"
 		changed, err = r.CASAuthConnection(ctx, c, input.Revision)
 	case "enable":
-		if c.Status != "disabled" || c.CredentialsCiphertext == "" {
+		if c.Status != "disabled" || c.CredentialsCiphertext == "" || c.RefreshState != "idle" {
 			return nil, infraerrors.BadRequest("OPENAI_CONNECTION_NOT_AUTHORIZED", "Authorize this connection first")
 		}
 		c.Status = "active"
@@ -216,6 +231,7 @@ func (s *OpenAIOAuthReauthService) UpdateAuthConnection(ctx context.Context, acc
 		// metadata for reauthorization; erase only this connection's token set.
 		c.Status = "unlinked"
 		c.CredentialsCiphertext = ""
+		c.ResetRefresh = true
 		c.Capabilities = []string{}
 		changed, err = r.CASAuthConnection(ctx, c, input.Revision)
 	default:

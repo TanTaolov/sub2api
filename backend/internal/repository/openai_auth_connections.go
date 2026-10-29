@@ -8,12 +8,12 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/service"
 )
 
-const authConnectionColumns = `id::text,account_id,kind,label,status,issuer,client_id,subject,identity_verified,workspace,resource,audience,scopes,capabilities,host_id,credentials_ciphertext,revision,preferred,cooldown_until`
+const authConnectionColumns = `id::text,account_id,kind,label,status,issuer,client_id,subject,identity_verified,workspace,resource,audience,scopes,capabilities,host_id,credentials_ciphertext,revision,preferred,cooldown_until,refresh_state,refresh_attempt_id,refresh_candidate_ciphertext,lease_owner,lease_epoch`
 
 func scanAuthConnection(row interface{ Scan(...any) error }) (*service.OpenAIAuthConnection, error) {
 	c := new(service.OpenAIAuthConnection)
 	var scopes, capabilities []byte
-	err := row.Scan(&c.ID, &c.AccountID, &c.Kind, &c.Label, &c.Status, &c.Issuer, &c.ClientID, &c.Subject, &c.IdentityVerified, &c.Workspace, &c.Resource, &c.Audience, &scopes, &capabilities, &c.HostID, &c.CredentialsCiphertext, &c.Revision, &c.Preferred, &c.CooldownUntil)
+	err := row.Scan(&c.ID, &c.AccountID, &c.Kind, &c.Label, &c.Status, &c.Issuer, &c.ClientID, &c.Subject, &c.IdentityVerified, &c.Workspace, &c.Resource, &c.Audience, &scopes, &capabilities, &c.HostID, &c.CredentialsCiphertext, &c.Revision, &c.Preferred, &c.CooldownUntil, &c.RefreshState, &c.RefreshAttemptID, &c.RefreshCandidateCiphertext, &c.LeaseOwner, &c.LeaseEpoch)
 	if err != nil {
 		return nil, err
 	}
@@ -87,8 +87,11 @@ func (r *openAIOAuthReauthRepository) CASAuthConnection(ctx context.Context, c *
 	if err = tx.QueryRowContext(ctx, `SELECT id FROM accounts WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, c.AccountID).Scan(&locked); err != nil {
 		return false, err
 	}
-	result, err := tx.ExecContext(ctx, `UPDATE openai_auth_connections SET status=$4,issuer=$5,client_id=$6,subject=$7,identity_verified=$8,workspace=$9,resource=$10,audience=$11,scopes=$12,capabilities=$13,host_id=$14,credentials_ciphertext=$15,cooldown_until=$16,revision=revision+1,updated_at=NOW()
-    WHERE account_id=$1 AND id=$2 AND revision=$3`, c.AccountID, c.ID, revision, c.Status, c.Issuer, c.ClientID, c.Subject, c.IdentityVerified, c.Workspace, c.Resource, c.Audience, string(scopes), string(caps), c.HostID, c.CredentialsCiphertext, c.CooldownUntil)
+	result, err := tx.ExecContext(ctx, `UPDATE openai_auth_connections SET status=$4,issuer=$5,client_id=$6,subject=$7,identity_verified=$8,workspace=$9,resource=$10,audience=$11,scopes=$12,capabilities=$13,host_id=$14,credentials_ciphertext=$15,cooldown_until=$16,refresh_state=CASE WHEN $17 THEN 'idle' ELSE refresh_state END,
+    refresh_attempt_id=CASE WHEN $17 THEN '' ELSE refresh_attempt_id END,
+    refresh_candidate_ciphertext=CASE WHEN $17 THEN '' ELSE refresh_candidate_ciphertext END,revision=revision+1,updated_at=NOW()
+    WHERE account_id=$1 AND id=$2 AND revision=$3 AND lease_epoch=$19
+    AND (($18='' AND (lease_owner='' OR lease_until<=clock_timestamp())) OR ($18<>'' AND lease_owner=$18 AND lease_until>clock_timestamp()))`, c.AccountID, c.ID, revision, c.Status, c.Issuer, c.ClientID, c.Subject, c.IdentityVerified, c.Workspace, c.Resource, c.Audience, string(scopes), string(caps), c.HostID, c.CredentialsCiphertext, c.CooldownUntil, c.ResetRefresh, c.LeaseOwner, c.LeaseEpoch)
 	if err != nil {
 		return false, err
 	}
@@ -136,7 +139,7 @@ func (r *openAIOAuthReauthRepository) SelectAuthConnection(ctx context.Context, 
 }
 
 func (r *openAIOAuthReauthRepository) AcquireAuthConnectionLease(ctx context.Context, accountID int64, id, owner string) (bool, error) {
-	result, err := r.db.ExecContext(ctx, `UPDATE openai_auth_connections SET lease_owner=$3,lease_until=NOW()+INTERVAL '60 seconds' WHERE account_id=$1 AND id=$2 AND (lease_until IS NULL OR lease_until<NOW())`, accountID, id, owner)
+	result, err := r.db.ExecContext(ctx, `UPDATE openai_auth_connections SET lease_owner=$3,lease_epoch=lease_epoch+1,lease_until=clock_timestamp()+INTERVAL '60 seconds' WHERE account_id=$1 AND id=$2 AND (lease_until IS NULL OR lease_until<clock_timestamp())`, accountID, id, owner)
 	if err != nil {
 		return false, err
 	}

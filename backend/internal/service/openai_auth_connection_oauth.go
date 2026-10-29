@@ -199,6 +199,7 @@ func (s *OpenAIOAuthReauthService) CompleteConnectionAuthorization(ctx context.C
 	if current.Revision != session.ConnectionRevision {
 		return connectionChanged()
 	}
+	c = current
 	consumed, ok := s.readSIWCSession(ctx, sessionID, true)
 	if !ok || consumed.ConnectionID != id || consumed.State != session.State {
 		return connectionChanged()
@@ -230,6 +231,7 @@ func (s *OpenAIOAuthReauthService) CompleteConnectionAuthorization(ctx context.C
 	c.Audience = clientID
 	c.Issuer = "https://auth.openai.com"
 	c.Status = "active"
+	c.ResetRefresh = true
 	c.CooldownUntil = nil
 	c.Scopes = strings.Fields(token.Scope)
 	c.Capabilities = connectionCapabilities(c.Kind, token.Scope)
@@ -286,50 +288,47 @@ func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, ac
 	if err != nil {
 		return "", err
 	}
-	if c.Legacy {
-		return "", errors.New("legacy connections retain their existing credential provider")
+	if c.Legacy || c.Status != "active" || len(c.Capabilities) == 0 {
+		return "", connectionRefreshUnavailable()
 	}
-	if c.Status != "active" || len(c.Capabilities) == 0 {
-		return "", infraerrors.BadRequest("OPENAI_CONNECTION_NOT_CAPABLE", "This connection does not authorize inference")
+	if c.RefreshState != "idle" && c.RefreshState != "" && c.RefreshCandidateCiphertext == "" {
+		return "", connectionRefreshUnavailable()
 	}
 	creds, err := s.readConnectionCredentials(c)
 	if err != nil {
 		return "", err
 	}
 	if c.Kind == "api_key" {
-		key, _ := creds["api_key"].(string)
-		if key == "" {
-			return "", errors.New("API key is unavailable")
-		}
-		return key, nil
+		return stringCredential(creds, "api_key"), nil
 	}
 	expiry, _ := strconv.ParseInt(stringCredential(creds, "expires_at"), 10, 64)
-	if expiry > time.Now().Add(openAITokenRefreshSkew).Unix() {
+	if c.RefreshCandidateCiphertext == "" && expiry > time.Now().Add(openAITokenRefreshSkew).Unix() {
 		return stringCredential(creds, "access_token"), nil
 	}
-	r, err := s.connectionRepository()
+	unlock, err := s.lockAuthConnection(ctx, accountID, id)
 	if err != nil {
 		return "", err
 	}
-	owner := uuid.NewString()
-	acquired, err := r.AcquireAuthConnectionLease(ctx, accountID, id, owner)
-	if err != nil || !acquired {
-		return "", infraerrors.Conflict("OPENAI_CONNECTION_REFRESH_BUSY", "Connection refresh is busy; retry later")
-	}
-	defer func() {
-		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Second)
-		defer cancel()
-		_ = r.ReleaseAuthConnectionLease(cleanup, accountID, id, owner)
-	}()
-	leaseCtx, stopLease := context.WithTimeout(ctx, 50*time.Second)
-	defer stopLease()
+	defer unlock()
+	leaseCtx, stop := context.WithTimeout(ctx, 50*time.Second)
+	defer stop()
 	ctx = leaseCtx
 	c, err = s.authConnection(ctx, accountID, id)
 	if err != nil {
 		return "", err
 	}
-	if c.Status != "active" || len(c.Capabilities) == 0 {
-		return "", connectionChanged()
+	if c.Status != "active" {
+		return "", connectionRefreshUnavailable()
+	}
+	r, err := s.connectionRepository()
+	if err != nil {
+		return "", err
+	}
+	if c.RefreshCandidateCiphertext != "" {
+		return s.finishConnectionRefresh(ctx, r, c)
+	}
+	if c.RefreshState != "idle" {
+		return "", connectionRefreshUnavailable()
 	}
 	creds, err = s.readConnectionCredentials(c)
 	if err != nil {
@@ -340,7 +339,7 @@ func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, ac
 		return stringCredential(creds, "access_token"), nil
 	}
 	if !c.IdentityVerified || c.ClientID == "" || stringCredential(creds, "refresh_token") == "" {
-		return "", errors.New("connection reauthorization is required")
+		return "", connectionRefreshUnavailable()
 	}
 	account, err := s.connectionAccount(ctx, accountID)
 	if err != nil {
@@ -354,19 +353,46 @@ func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, ac
 	if !ok {
 		return "", errors.New("connection OAuth adapter unavailable")
 	}
-	refreshCtx, cancel := context.WithTimeout(ctx, 45*time.Second)
-	defer cancel()
-	token, identity, err := client.ConnectionToken(refreshCtx, url.Values{"grant_type": {"refresh_token"}, "client_id": {c.ClientID}, "refresh_token": {stringCredential(creds, "refresh_token")}}, proxy, "", c.Kind)
+	c.RefreshAttemptID = uuid.NewString()
+	begun, err := r.BeginAuthConnectionRefresh(ctx, c, c.RefreshAttemptID)
 	if err != nil {
 		return "", err
 	}
-	if identity != nil && identity.Subject != c.Subject {
-		return "", errors.New("connection refresh identity changed")
+	if !begun {
+		return "", connectionChanged()
+	}
+	defer func() {
+		markCtx, cancelMark := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Second)
+		defer cancelMark()
+		_, _ = r.MarkAuthConnectionRefresh(markCtx, c, "uncertain")
+	}()
+	// Intent commits BEFORE a potentially rotating POST. Process death, timeout,
+	// validation/encryption/storage failure all leave a durable closed gate.
+	refreshCtx, cancel := context.WithTimeout(ctx, 40*time.Second)
+	defer cancel()
+	token, identity, err := client.ConnectionToken(refreshCtx, url.Values{"grant_type": {"refresh_token"}, "client_id": {c.ClientID}, "refresh_token": {stringCredential(creds, "refresh_token")}}, proxy, "", c.Kind)
+	if err != nil {
+		state := "uncertain"
+		var outcome *OpenAIConnectionTokenError
+		if errors.As(err, &outcome) {
+			if outcome.Outcome == "not_sent" {
+				state = "idle"
+			} else if outcome.Outcome == "rejected" {
+				state = "rejected"
+			}
+		}
+		persist, stopPersist := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer stopPersist()
+		_, _ = r.MarkAuthConnectionRefresh(persist, c, state)
+		return "", err
+	}
+	if token == nil || token.AccessToken == "" || token.ExpiresIn <= 0 || identity != nil && identity.Subject != c.Subject {
+		return "", connectionRefreshUnavailable()
 	}
 	if identity != nil && c.Kind != "siwc" && token.IDToken != "" {
-		auth, parseErr := verifiedConnectionAuthMetadata(token.IDToken)
-		if parseErr != nil || auth.ChatGPTAccountID != c.Workspace {
-			return "", errors.New("connection refresh workspace changed")
+		auth, e := verifiedConnectionAuthMetadata(token.IDToken)
+		if e != nil || auth.ChatGPTAccountID != c.Workspace {
+			return "", connectionRefreshUnavailable()
 		}
 	}
 	if token.Scope != "" {
@@ -382,22 +408,25 @@ func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, ac
 		creds["id_token"] = token.IDToken
 	}
 	if err = s.encryptConnectionCredentials(c, creds); err != nil {
-		return "", err
+		return "", connectionRefreshUnavailable()
 	}
-	persist, cancelPersist := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
-	defer cancelPersist()
-	changed, err := r.CASAuthConnection(persist, c, c.Revision)
+	candidate, err := s.encryptRefreshCandidate(c)
 	if err != nil {
-		return "", err
+		return "", connectionRefreshUnavailable()
 	}
-	if !changed {
+	persist, stopPersist := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer stopPersist()
+	staged, err := r.StageAuthConnectionRefresh(persist, c, candidate)
+	if err != nil {
+		return "", connectionRefreshUnavailable()
+	}
+	if !staged {
 		return "", connectionChanged()
 	}
-	if len(c.Capabilities) == 0 {
-		return "", infraerrors.BadRequest("OPENAI_CONNECTION_NOT_CAPABLE", "Connection no longer authorizes inference")
-	}
-	return token.AccessToken, nil
+	c.RefreshCandidateCiphertext = candidate
+	return s.finishConnectionRefresh(persist, r, c)
 }
+
 func stringCredential(creds map[string]any, key string) string { v, _ := creds[key].(string); return v }
 
 func (s *OpenAIOAuthReauthService) RevokeAuthConnection(ctx context.Context, accountID int64, id string, revision int64) (bool, error) {
@@ -423,6 +452,7 @@ func (s *OpenAIOAuthReauthService) RevokeAuthConnection(ctx context.Context, acc
 	// Stop locally first, fencing every in-flight rotation. Remote revocation
 	// is best effort and is explicitly reported; it cannot revoke peer grants.
 	c.Status = "unlinked"
+	c.ResetRefresh = true
 	c.CredentialsCiphertext = ""
 	c.Capabilities = []string{}
 	repo, err := s.connectionRepository()

@@ -186,6 +186,10 @@ func TestIssue594DatabaseCASAndCrossInstanceLease(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, acquired)
 	require.NoError(t, other.ReleaseAuthConnectionLease(ctx, f.accountID, c.ID, "worker-two"))
+	// Re-read the current lease epoch; pre-lease snapshots are now fenced.
+	currentRows, readErr := f.repo.ListAuthConnections(ctx, f.accountID)
+	require.NoError(t, readErr)
+	c = currentRows[0]
 	// Parallel replacements at one revision have exactly one winner.
 	var wg sync.WaitGroup
 	outcomes := make(chan bool, 2)

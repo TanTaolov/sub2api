@@ -17,7 +17,7 @@ func (a *Account) HasManagedOpenAIConnections() bool {
 }
 
 func (c *OpenAIAuthConnection) Supports(capability string) bool {
-	if c.Status != "active" || c.CooldownUntil != nil && time.Now().Before(*c.CooldownUntil) {
+	if c.Status != "active" || (c.RefreshState != "" && c.RefreshState != "idle") || c.CooldownUntil != nil && time.Now().Before(*c.CooldownUntil) {
 		return false
 	}
 	switch c.Kind {
@@ -271,7 +271,7 @@ func (s *OpenAIOAuthReauthService) ValidateAuthConnectionSend(ctx context.Contex
 	if err != nil {
 		return err
 	}
-	if c.Revision != a.AuthConnectionRevision || c.Status != "active" || len(c.Capabilities) == 0 || c.CooldownUntil != nil && time.Now().Before(*c.CooldownUntil) {
+	if c.Revision != a.AuthConnectionRevision || c.Status != "active" || (c.RefreshState != "" && c.RefreshState != "idle") || len(c.Capabilities) == 0 || c.CooldownUntil != nil && time.Now().Before(*c.CooldownUntil) {
 		return connectionChanged()
 	}
 	return nil
