@@ -174,6 +174,8 @@ func TestIssue594DatabaseCASAndCrossInstanceLease(t *testing.T) {
 	acquired, err = other.AcquireAuthConnectionLease(ctx, f.accountID, c.ID, "worker-two")
 	require.NoError(t, err)
 	require.False(t, acquired)
+	_, disableErr := f.svc.UpdateAuthConnection(ctx, f.accountID, c.ID, service.UpdateOpenAIAuthConnectionInput{Revision: c.Revision, Action: "disable"})
+	require.Error(t, disableErr, "disable must not discard a concurrently rotating grant")
 	require.NoError(t, other.ReleaseAuthConnectionLease(ctx, f.accountID, c.ID, "worker-two"))
 	acquired, err = other.AcquireAuthConnectionLease(ctx, f.accountID, c.ID, "worker-two")
 	require.NoError(t, err)

@@ -210,6 +210,12 @@ func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin
 // 429 remains account-scoped because entitlement sharing is not independently
 // proven for these registrations.
 func (s *OpenAIOAuthReauthService) FailAuthConnection(ctx context.Context, account *Account, status int) error {
+	unlock, lockErr := s.lockAuthConnection(ctx, account.ID, account.AuthConnectionID)
+	if lockErr != nil {
+		return nil
+	} // A live refresh may already be healing the rejected access token.
+	defer unlock()
+
 	c, err := s.authConnection(ctx, account.ID, account.AuthConnectionID)
 	if err != nil {
 		return err
@@ -217,7 +223,16 @@ func (s *OpenAIOAuthReauthService) FailAuthConnection(ctx context.Context, accou
 	if c.Revision != account.AuthConnectionRevision {
 		return nil
 	}
-	if status == 401 {
+	if status == 401 && c.Kind != "api_key" {
+		creds, readErr := s.readConnectionCredentials(c)
+		if readErr != nil {
+			return readErr
+		}
+		creds["expires_at"] = "0"
+		if err = s.encryptConnectionCredentials(c, creds); err != nil {
+			return err
+		}
+	} else if status == 401 {
 		c.Status = "pending"
 	} else {
 		until := time.Now().Add(time.Minute)

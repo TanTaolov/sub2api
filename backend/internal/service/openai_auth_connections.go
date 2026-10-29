@@ -174,6 +174,20 @@ func (s *OpenAIOAuthReauthService) UpdateAuthConnection(ctx context.Context, acc
 	if c.Legacy {
 		return nil, infraerrors.BadRequest("OPENAI_CONNECTION_LEGACY_READ_ONLY", "Use the existing account controls for a legacy registration")
 	}
+	if input.Action == "disable" || input.Action == "enable" {
+		unlock, lockErr := s.lockAuthConnection(ctx, accountID, id)
+		if lockErr != nil {
+			return nil, lockErr
+		}
+		defer unlock()
+		operationCtx, stopOperation := context.WithTimeout(ctx, 50*time.Second)
+		defer stopOperation()
+		ctx = operationCtx
+		c, err = s.authConnection(ctx, accountID, id)
+		if err != nil {
+			return nil, err
+		}
+	}
 	if c.Revision != input.Revision {
 		return nil, connectionChanged()
 	}

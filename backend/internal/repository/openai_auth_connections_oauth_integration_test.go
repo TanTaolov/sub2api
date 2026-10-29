@@ -206,6 +206,10 @@ func TestIssue594ActualOAuthAdapterHTTPDatabaseRotationAndReauthorization(t *tes
 		}
 	}
 	authorize(second, "issued-two", "different-subject", openai.SIWCScopes, "two-mismatch", 409)
+	require.NoError(t, f.svc.FailAuthConnection(ctx, &service.Account{ID: f.accountID, AuthConnectionID: second.ID, AuthConnectionRevision: second.Revision}, 401))
+	healed, healErr := peer.ConnectionAccessToken(ctx, f.accountID, second.ID)
+	require.NoError(t, healErr)
+	require.Equal(t, "synthetic-access-rotated-issued-two", healed, "resource 401 expires only this access token and keeps the rotating refresh grant")
 
 	rows, err = f.repo.ListAuthConnections(ctx, f.accountID)
 	require.NoError(t, err)
@@ -222,7 +226,7 @@ func TestIssue594ActualOAuthAdapterHTTPDatabaseRotationAndReauthorization(t *tes
 	mu.Unlock()
 	token, err = peer.ConnectionAccessToken(ctx, f.accountID, second.ID)
 	require.NoError(t, err)
-	require.Equal(t, "synthetic-access-two-again", token)
+	require.Equal(t, "synthetic-access-rotated-issued-two", token)
 	_, err = peer.ConnectionAccessToken(ctx, f.accountID, first.ID)
 	require.Error(t, err)
 	var legacy string
