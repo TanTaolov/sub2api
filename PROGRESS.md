@@ -20,17 +20,17 @@
 
 ## Acceptance checklist (unchecked = incomplete)
 
-- [ ] Stable account identity → typed connections: issuer/client/verified subject, workspace/resource/audience/scopes, host/session; no email-only identity merge.
-- [ ] Independent protected credentials, real client refresh, CAS and cross-instance coordination; reauthorization/disable/unbind cannot overwrite peers.
-- [ ] Real production DTO → service → repository → HTTP → management UI integration.
-- [ ] Capability/credential/transport separation: Codex/BPS/SIWC/API key; reject unknown/identity-only grants without silent fallback.
-- [ ] zh/en list/status/capabilities, add/reauthorize/select/disable/unbind; no secrets returned.
-- [ ] Scheduler/stickiness/cooldown/errors/usage connection attribution; preserve account-wide security, shared quotas and concurrency.
-- [ ] Repeatable lossless legacy mapping, defaults/rollback; old API and merged SIWC/BPS fixes preserved.
-- [ ] Remote RED before GREEN; actual adapters compile; real HTTP → repository → isolated PostgreSQL → GET.
+- [x] Stable account identity → typed connections: issuer/client/verified subject, workspace/resource/audience/scopes, host/session; no email-only identity merge.
+- [x] Independent protected credentials, real client refresh, CAS and cross-instance coordination; reauthorization/disable/unbind cannot overwrite peers.
+- [x] Real production DTO → service → repository → HTTP → management UI integration.
+- [x] Capability/credential/transport separation: Codex/BPS/SIWC/API key; reject unknown/identity-only grants without silent fallback.
+- [x] zh/en list/status/capabilities, add/reauthorize/select/disable/unbind; no secrets returned.
+- [x] Scheduler/stickiness/cooldown/errors/usage connection attribution; preserve account-wide security, shared quotas and concurrency.
+- [x] Repeatable lossless legacy mapping, defaults/rollback; old API and merged SIWC/BPS fixes preserved.
+- [x] Remote RED before GREEN; actual adapters compile; real HTTP → repository → isolated PostgreSQL → GET.
 - [ ] CI coexistence/concurrent rotation/reauthorization/single unbind/routing/rejection/legacy upgrade; no single-file mock substitute.
-- [ ] UI component tests and sanitized remote screenshots.
-- [ ] First real code plus RED committed/pushed promptly; one Draft PR to production, Refs #594, complete eight-section template and unfinished checklist.
+- [x] UI component tests and sanitized remote screenshots.
+- [x] First real code plus RED committed/pushed promptly; one Draft PR to production, Refs #594, complete eight-section template and unfinished checklist.
 - [ ] Final exact-head push/PR checks and statuses paginated; raw failures read/fixed; independent review recorded without fabricated parent verification.
 
 ## Delivery and evidence
@@ -58,3 +58,10 @@
 - Final regression additions exercise stale legacy snapshots after managed selection and a shared account rate-limit window through the real Gateway. Explicit return-to-legacy policy is asserted in the real DB. Local static review: 39 changed Go files gofmt-clean; 47 new zh/en locale keys match; complete eight-section PR body retained; diff clean. No local dynamic test was run.
 - Full-CI raw review found two staticcheck style findings (capitalized `Codex` error, De Morgan expression) and the existing plugin snapshot field-classification tripwire. Fixed style and explicitly classified the new UUID/revision as non-secret readable metadata; no test guard was removed. The credential-operation seam's expected baseline RED cases were not real current-head regressions; its actual job failure was the already-fixed old lock importer.
 - Actual adapter integration now includes two Codex and two BPS registrations with the same verified subject/client plus two SIWC registrations and one identity-only grant. Each retains its own token set/UUID; there is no uniqueness constraint that would collapse same-client connections. This closes the explicit per-kind coexistence coverage before final exact-head verification.
+
+## Implementation completion and remaining gates
+
+- Implementation checklist above describes delivered source, not a claim that pending exact-head CI passed. Whole-contract final validation remains unchecked until the final head completes all checks.
+- Historical full dedicated GREEN at `dea23abe8`: actual adapter compilation and all four Issue594 integration cases passed; raw log archived/read. New per-kind coexistence, ciphertext binding, shared quota and latest fixes require final-head confirmation.
+- Independent source review remains a human/parent gate; this sole writer's source audit is not represented as independent approval. Actual SIWC consent/eligibility/commercial approval likewise remains manual.
+- Final local static evidence: actual dedicated workflow's six shell run blocks pass bash -n; changed Go files are gofmt-clean, zh/en keys agree, PR retains all eight sections, diff clean. No local compilation, dynamic test, generation, Docker or full frontend checks.
