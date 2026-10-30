@@ -134,7 +134,7 @@
           <h2 class="text-lg font-semibold">{{ t('priorityScheduling.sticky.title') }}</h2>
           <div class="flex flex-wrap items-center gap-2">
             <label class="flex items-center gap-2 text-sm">{{ t('priorityScheduling.sticky.group') }}<input v-model.number="stickyGroupID" type="number" min="1" class="input w-24" data-testid="sticky-group" /></label>
-            <button class="btn btn-secondary" :disabled="stickyLoading" data-testid="sticky-refresh" @click="loadSticky">{{ t('priorityScheduling.sticky.refresh') }}</button>
+            <button class="btn btn-secondary" :disabled="stickyLoading" data-testid="sticky-refresh" @click="loadSticky()">{{ t('priorityScheduling.sticky.refresh') }}</button>
             <button class="btn btn-secondary" :disabled="stickyLoading || !stickyVisible?.total" data-testid="sticky-clear-all" @click="clearDisplayedSticky">{{ t('priorityScheduling.sticky.clearAll') }}</button>
           </div>
         </header>
