@@ -203,3 +203,24 @@ func TestQualityCooldownMappingChangeCannotStrandOwnedTarget(t *testing.T) {
 	require.Equal(t, "restored", f.apply("passed"))
 	require.NotContains(t, f.extra(), "model_rate_limits")
 }
+
+func TestQualityCooldownChangedActionOutcomeRetainsOwnership(t *testing.T) {
+	// Old binaries could already have saved these incompatible policies. A new
+	// probe must fail closed rather than delete ownership or invent a recovery.
+	for _, action := range []string{service.QualityActionObserveOnly, "disable_scheduling", service.QualityActionEnableBPS, service.QualityActionIsolateModels} {
+		t.Run(action, func(t *testing.T) {
+			f := newQualityCooldownScopeFixture(t)
+			beforeState, beforeExtra := cooldownScopeState(t, f), f.extra()
+			f.exec(`UPDATE scheduled_test_plans SET pelican_config=jsonb_set(pelican_config,'{quality,action}',to_jsonb($2::text)),running_until=NULL,updated_at=clock_timestamp() WHERE account_id=$1`, action)
+			f.claim()
+			for _, verdict := range []string{"failed", "passed", "inconclusive"} {
+				f.plan.QualityModelOutcomes = map[string]string{"sol": verdict, "astra": "passed"}
+				require.Equal(t, "action_conflict", f.apply(verdict))
+				require.JSONEq(t, beforeState, cooldownScopeState(t, f))
+				require.Equal(t, beforeExtra, f.extra())
+				requireCooldownScopeBlocked(t, f)
+			}
+			require.Zero(t, f.events())
+		})
+	}
+}

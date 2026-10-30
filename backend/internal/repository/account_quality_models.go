@@ -12,6 +12,40 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+// A completed model recovery may still own the shared concurrency ramp. Neither
+// an ordinary edit nor an observation action may discard any of these snapshots.
+func hasQualityCooldownOwnership(state *qualityState) bool {
+	return state.Action == service.QualityActionRemoveModel || len(state.ModelApplied) > 0 || len(state.ModelRateLimits) > 0 ||
+		state.PreviousConcurrency != nil || state.AppliedConcurrency != nil || state.RecoveryTarget != nil
+}
+
+// Both plan edits and outcome application hold the plan -> account locks. Resolve
+// current aliases there: raw target names alone cannot protect an owned upstream
+// after account model mappings change. Unowned targets remain freely editable.
+func checkQualityCooldownTargets(plan *service.ScheduledTestPlan, account *service.Account, state *qualityState) error {
+	if !hasQualityCooldownOwnership(state) {
+		return nil
+	}
+	if err := checkQualityIsolationScope(plan, state); err != nil {
+		return err
+	}
+	targets := map[string]bool{}
+	for _, model := range plan.PelicanConfig.Quality.RemoveModels {
+		targets[account.GetMappedModel(model)] = true
+	}
+	for key := range state.ModelApplied {
+		if !targets[key] {
+			return service.QualityScopeConflict("restore this rule's cooled models before removing their targets")
+		}
+	}
+	for key := range state.ModelRateLimits {
+		if !targets[key] {
+			return service.QualityScopeConflict("restore this rule's cooled models before removing their targets")
+		}
+	}
+	return nil
+}
+
 func cooldownEntryEqual(current any, applied json.RawMessage) bool {
 	raw, err := json.Marshal(current)
 	if err != nil {
@@ -345,6 +379,9 @@ func applyQualityModelOutcome(ctx context.Context, tx *sql.Tx, plan *service.Sch
 	}
 	if err := json.Unmarshal(extra, &account.Extra); err != nil {
 		return "", err
+	}
+	if err := checkQualityCooldownTargets(plan, account, &state); err != nil {
+		return "action_conflict", nil
 	}
 	now := time.Now()
 	schedule, err := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow).Parse(plan.CronExpression)

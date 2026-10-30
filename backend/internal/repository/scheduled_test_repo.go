@@ -109,6 +109,24 @@ func (r *scheduledTestPlanRepository) Update(ctx context.Context, plan *service.
 	if err = checkQualityIsolationScope(updated, &state); err != nil {
 		return nil, err
 	}
+	if hasQualityCooldownOwnership(&state) {
+		account := &service.Account{}
+		var credentials, extra []byte
+		// Use the persisted account ID, never the caller's copy. This follows
+		// detection's plan -> account lock order and fences concurrent remapping.
+		if err = tx.QueryRowContext(ctx, `SELECT platform,type,COALESCE(credentials,'{}'::jsonb),COALESCE(extra,'{}'::jsonb) FROM accounts WHERE id=$1 FOR UPDATE`, updated.AccountID).Scan(&account.Platform, &account.Type, &credentials, &extra); err != nil {
+			return nil, err
+		}
+		if err = json.Unmarshal(credentials, &account.Credentials); err != nil {
+			return nil, err
+		}
+		if err = json.Unmarshal(extra, &account.Extra); err != nil {
+			return nil, err
+		}
+		if err = checkQualityCooldownTargets(updated, account, &state); err != nil {
+			return nil, err
+		}
+	}
 	if err = validateQualityGroupReferences(ctx, tx, updated.PelicanConfig); err != nil {
 		return nil, err
 	}
