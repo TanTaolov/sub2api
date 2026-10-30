@@ -17,8 +17,6 @@ func TestPriorityLatencySeriesErrorsOnlyBucket(t *testing.T) {
 	tx := testEntTx(t)
 	client := tx.Client()
 	repo := newUsageLogRepositoryWithSQL(client, tx)
-	user := mustCreateUser(t, client, &service.User{Email: "latency-errors-only@test.invalid"})
-	key := mustCreateApiKey(t, client, &service.APIKey{UserID: user.ID, Key: "sk-errors-only-fixture", Name: "test"})
 	account := mustCreateAccount(t, client, &service.Account{Name: "errors-only", Platform: service.PlatformOpenAI})
 	groupID := int64(918273)
 	createdAt := time.Now().UTC().Truncate(time.Second).Add(-time.Minute)
