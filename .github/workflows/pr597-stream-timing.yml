@@ -17,6 +17,7 @@ jobs:
   regression:
     if: >-
       (github.event_name == 'pull_request' && github.event.pull_request.number == 597 && github.head_ref == 'codex/stream-stage-timing') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'ranxi2001/sub2api' && github.head_ref == 'fix/pr597-stream-stage-timing-replacement') ||
       (github.event_name == 'push' && github.ref == 'refs/heads/ci/pr597-stream-timing-evidence')
     runs-on: ubuntu-latest
     timeout-minutes: 30
