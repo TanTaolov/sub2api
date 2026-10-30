@@ -215,7 +215,9 @@ func TestOpenAIConnectionManagementRejectsUnsupportedParents(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			s, r := connectionTypeService(tc.kind)
-			a := s.accounts.(*reauthTestAccountReader).account
+			reader, ok := s.accounts.(*reauthTestAccountReader)
+			require.True(t, ok)
+			a := reader.account
 			a.Platform = tc.platform
 			if tc.parentID != 0 {
 				a.ParentAccountID = &tc.parentID
