@@ -84,3 +84,51 @@ func TestPriorityRecomputeDoesNotTreatHistoryErrorAsSuccess(t *testing.T) {
 	require.Error(t, err, "a history error is not a successful recomputation")
 	require.Nil(t, result)
 }
+
+type priorityRecomputeScopeRegressionReader struct {
+	UsageLogRepository
+	once    sync.Once
+	service *OpenAIGatewayService
+}
+
+func (r *priorityRecomputeScopeRegressionReader) ReadPrioritySchedulingSignals(_ context.Context, query PrioritySchedulingQuery) (map[int64]PrioritySchedulingSignal, error) {
+	r.once.Do(func() {
+		time.Sleep(25 * time.Millisecond)
+		group := int64(22)
+		next := newPrioritySnapshotInput(
+			OpenAIAccountScheduleRequest{RequestedModel: "fixture-model", GroupID: &group},
+			DefaultPrioritySchedulingConfig(),
+			[]openAIAccountCandidateScore{priorityCandidate(88, 1, 1)},
+			time.Now().Add(time.Second),
+		)
+		r.service.priorityScheduling.mu.Lock()
+		r.service.priorityScheduling.latestInput = next
+		r.service.priorityScheduling.mu.Unlock()
+	})
+	result := make(map[int64]PrioritySchedulingSignal, len(query.AccountIDs))
+	for _, id := range query.AccountIDs {
+		result[id] = PrioritySchedulingSignal{Samples: 10, P90TTFTMs: float64(id)}
+	}
+	return result, nil
+}
+
+func TestPriorityRecomputeKeepsCapturedScopeAcrossNewSelection(t *testing.T) {
+	reader := &priorityRecomputeScopeRegressionReader{}
+	svc := &OpenAIGatewayService{usageLogRepo: reader}
+	reader.service = svc
+	cfg := DefaultPrioritySchedulingConfig()
+	group := int64(11)
+	svc.priorityScheduling.latestInput = newPrioritySnapshotInput(
+		OpenAIAccountScheduleRequest{RequestedModel: "fixture-model", GroupID: &group}, cfg,
+		[]openAIAccountCandidateScore{priorityCandidate(77, 1, 1)},
+		time.Now(),
+	)
+
+	result, err := svc.RecomputePriorityScheduling(context.Background())
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	require.NotNil(t, result.Before.GroupID)
+	require.NotNil(t, result.After.GroupID)
+	require.Equal(t, int64(11), *result.Before.GroupID)
+	require.Equal(t, int64(11), *result.After.GroupID, "a newer selection must not move an in-flight recompute to another group")
+}
