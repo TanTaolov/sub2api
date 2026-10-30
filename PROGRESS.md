@@ -89,3 +89,13 @@
 - Remote review RED `review-red-2decf9910.log` read: inherited empty-identity ticket, client/revision-insensitive identity, advertised broken BPS bridge and unfenced attachment all fail on checkpoint.
 - Managed ticket/harvest lookup/storage/eligibility now explicitly rejects account-owned sessions; old Extra ticket/harvest data is removed from projections, outgoing managed requests strip Cookie/ticket and bypass legacy plugin restoration. Existing gated models remain fail-closed rather than borrowing a parent ticket. Ticket identity includes UUID/client/revision.
 - BPS attachment and model catalog now call a live egress fence immediately before every HTTP send; proxy fallback attempts fence again. Managed BPS capability is Responses only, including a forward migration removing old persisted claims. UI/docs disclose this boundary and uncertain refresh/recovery.
+
+## Resume after dd0a7fb5a blocking review (2026-10-30)
+
+- Read visible conclusions in `/root/.hermes/cache/delegation/live/deleg_33afb668/task-1.log`, CONTRIBUTING.md, eight-section PR template and `/root/.hermes/skills/openai-multi-auth-contract/SKILL.md`. Review remains blocking; former green CI does not supersede it.
+- Sole writer Codex: gpt-6.1-sol, explicit xhigh; independent Hermes review runtime gpt-6.1-sol, reasoning and exact provider mapping unknown. No new delegation or parent verification claimed.
+- [ ] Bind the actual acquired owner/epoch to every lifecycle operation; reject A after expiry/B takeover even if A rereads B's snapshot.
+- [ ] Real encrypted candidate stage→finish failure→restart recovery; disabled/unlinked cannot be revived.
+- [ ] Fix actual HTTP fixture balance/settlement root cause without weakening assertions; execute shared quota/slot checks.
+- [ ] Fix QF1003 and unify final SIWC fresh fence, with disable/revision regressions.
+- Merge origin/production `76b54ea02` normally to incorporate parent-merged #591; only conflict is PROGRESS.md, retaining this task's checklist. No edits to other PR/worktrees; no rebase/force/PR merge/release/deploy. All dynamic work stays remote CI.
