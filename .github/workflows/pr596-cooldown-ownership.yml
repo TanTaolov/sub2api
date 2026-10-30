@@ -79,6 +79,8 @@ jobs:
           from pathlib import Path
           events = [json.loads(line) for line in Path('evidence/green.jsonl').read_text().splitlines() if line.startswith('{')]
           assert not any(e.get('Action') in ('fail', 'skip') for e in events)
+          top_level_passes = {e['Test'] for e in events if e.get('Action') == 'pass' and 'Test' in e and '/' not in e['Test']}
+          assert len(top_level_passes) == 39, sorted(top_level_passes)
           for name in ('TestQualityCooldownOwnedScopeRejectsEdits', 'TestQualityCooldownOrdinaryEditRetainsOwnershipUntilPassingRecovery', 'TestQualityCooldownExternalOwnerSurvivesEditsAndRecovery', 'TestQualityCooldownMappingChangeCannotStrandOwnedTarget', 'TestQualityCooldownChangedActionOutcomeRetainsOwnership', 'TestQualityCooldownActionGuardRetainsAllOwnershipLayouts', 'TestQualityCooldownDeadlinePersistedRecovery', 'TestQualityCooldownDeletePreservesOwnedState', 'TestQualityCooldownDeleteChecksLiveMarkersWithoutSnapshot', 'TestQualityCooldownDeleteAfterRecoveryPreservesExternalRestrictions', 'TestQualityIsolationScopeAndDeleteGuard', 'TestQualityIsolationGroupsFollowIndependentModelRecovery'):
               assert any(e.get('Action') == 'pass' and e.get('Test') == name for e in events), name
           PY
