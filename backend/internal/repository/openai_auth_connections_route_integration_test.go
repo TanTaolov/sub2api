@@ -85,6 +85,18 @@ func TestIssue594ProductionGatewayConnectionRouteAndAccountSafety(t *testing.T) 
 	result, err = forward("session-two")
 	require.NoError(t, err)
 	require.Equal(t, second.ID, result.AuthConnectionID)
+	// A persisted API key parent remains an inference route after management is
+	// closed. Exercise the actual repository and gateway, then resume OAuth
+	// lifecycle checks below without any automatic production data conversion.
+	_, err = f.db.Exec(`UPDATE accounts SET type='apikey' WHERE id=$1`, f.accountID)
+	require.NoError(t, err)
+	deniedManagement := f.request("GET", "", "")
+	require.Equal(t, 400, deniedManagement.Code, deniedManagement.Body.String())
+	result, err = forward("historical-apikey-parent")
+	require.NoError(t, err)
+	require.Equal(t, second.ID, result.AuthConnectionID)
+	_, err = f.db.Exec(`UPDATE accounts SET type='oauth' WHERE id=$1`, f.accountID)
+	require.NoError(t, err)
 	rows, err := f.repo.ListAuthConnections(ctx, f.accountID)
 	require.NoError(t, err)
 	for _, c := range rows {

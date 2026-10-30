@@ -197,6 +197,10 @@ func TestOpenAIConnectionOrdinaryAPIKeyRouteUnchanged(t *testing.T) {
 	require.Same(t, a, out)
 	require.Empty(t, out.AuthConnectionID)
 	require.Equal(t, "synthetic-primary", out.GetCredential("api_key"))
+	token, kind, err := gateway.GetAccessToken(context.Background(), out)
+	require.NoError(t, err)
+	require.Equal(t, "apikey", kind)
+	require.Equal(t, "synthetic-primary", token)
 }
 
 func TestOpenAIConnectionManagementRejectsUnsupportedParents(t *testing.T) {

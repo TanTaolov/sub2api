@@ -2,6 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { InternalAxiosRequestConfig } from 'axios'
 import { apiClient } from '@/api/client'
+import { createAuthConnection } from '@/api/admin/openaiAuthConnections'
 import OpenAIAuthConnections from '../OpenAIAuthConnections.vue'
 
 vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key: string) => key }) }))
@@ -39,6 +40,18 @@ describe('independent OpenAI connection management through actual API client', (
     expect(w.findAll('option').map(o => o.attributes('value'))).toEqual(['codex', 'bps', 'siwc'])
     expect(w.find('input[type="password"]').exists()).toBe(false)
     w.unmount()
+  })
+
+  it('rejects API key and mixed OAuth create inputs before making a request', async () => {
+    for (const input of [
+      { kind: 'api_key', label: 'Synthetic', api_key: 'synthetic' },
+      { kind: 'codex', label: 'Synthetic', api_key: 'synthetic' },
+      { kind: 'bps', label: 'Synthetic', api_key: 'synthetic' },
+      { kind: 'siwc', label: 'Synthetic', api_key: 'synthetic' },
+    ]) {
+      await expect(createAuthConnection(42, input as Parameters<typeof createAuthConnection>[1])).rejects.toThrow('OAuth connections cannot register API keys')
+    }
+    expect(adapter).not.toHaveBeenCalled()
   })
 
   it('does not nest forms or submit the surrounding account editor', async () => {
