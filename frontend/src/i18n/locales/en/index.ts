@@ -1,3 +1,4 @@
+import openaiAuth from './openaiAuth'
 import upstreamEntities from './upstreamEntities'
 import profitOps from './profitOps'
 import upstreamOps from './upstreamOps'
@@ -31,6 +32,7 @@ import requestTiming from './requestTiming'
 import autoConfig from './autoConfig'
 
 export default {
+  openaiAuth,
   upstreamEntities,
   traffic,
   ipAudit,
