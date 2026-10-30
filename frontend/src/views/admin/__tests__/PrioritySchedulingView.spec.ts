@@ -174,6 +174,7 @@ describe('priority scheduling', () => {
 
   it('renders latency analysis and clears sticky bindings', async () => {
     vi.mocked(getPriorityConfig).mockResolvedValue({ ...config, group_ids: [11] })
+    vi.mocked(getPrioritySnapshot).mockResolvedValue({ at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_status: 'ready', history_ready: true, candidates: [] })
     vi.mocked(getPriorityLatency).mockResolvedValue({
       at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, bucket_minutes: 5,
       accounts: [{ account_id: 1, account_name: 'Mock OAuth', samples: 10, p50_ttft_ms: 500, p90_ttft_ms: 1500, p99_ttft_ms: 4000, selected_ttft_ms: 500, latency_percentile: 50, slow_samples: 1, error_samples: 2, error_rate: 0.1667, buckets: [{ account_id: 1, bucket: '2026-10-30T00:00:00Z', samples: 10, p50_ttft_ms: 500, p90_ttft_ms: 1500, p99_ttft_ms: 4000, selected_ttft_ms: 500, slow_samples: 1, error_samples: 0 }] }],
@@ -191,12 +192,14 @@ describe('priority scheduling', () => {
 
   it('uses the configured percentile in every heatmap bucket', async () => {
     vi.mocked(getPriorityConfig).mockResolvedValue({ ...config, latency_percentile: 50 })
+    vi.mocked(getPrioritySnapshot).mockResolvedValue({ at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_status: 'ready', history_ready: true, candidates: [] })
     vi.mocked(getPriorityLatency).mockResolvedValue({
       at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, bucket_minutes: 5,
       accounts: [{ account_id: 1, account_name: 'Mock OAuth', samples: 10, p50_ttft_ms: 500, p90_ttft_ms: 1500, p99_ttft_ms: 4000, slow_samples: 1, error_samples: 2, error_rate: 0.1667, buckets: [{ account_id: 1, bucket: '2026-10-30T00:00:00Z', samples: 10, p50_ttft_ms: 500, p90_ttft_ms: 1500, p99_ttft_ms: 4000, slow_samples: 1, error_samples: 0 }] }],
     })
     const wrapper = mount(PrioritySchedulingView); await flushPromises()
-    const heatmap = wrapper.get('[data-testid="latency-panel"]').findAll('tbody tr')[1]
+    const rows = wrapper.get('[data-testid="latency-panel"]').findAll('tbody tr')
+    const heatmap = rows.at(-1)!
     expect(heatmap.findAll('td')[1].text()).toBe('500')
     wrapper.unmount()
   })
