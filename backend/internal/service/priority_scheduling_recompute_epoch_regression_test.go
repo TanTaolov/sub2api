@@ -20,6 +20,7 @@ type priorityRecomputeBarrierReader struct {
 	releaseOnce []sync.Once
 	results     []PrioritySchedulingSignal
 	errors      []error
+	rows        []map[int64]PrioritySchedulingSignal
 }
 
 func newPriorityRecomputeBarrierReader(results []PrioritySchedulingSignal, errs []error) *priorityRecomputeBarrierReader {
@@ -57,6 +58,9 @@ func (r *priorityRecomputeBarrierReader) ReadPrioritySchedulingSignals(ctx conte
 	if index < len(r.errors) && r.errors[index] != nil {
 		return nil, r.errors[index]
 	}
+	if index < len(r.rows) {
+		return r.rows[index], nil
+	}
 	result := make(map[int64]PrioritySchedulingSignal, len(query.AccountIDs))
 	for _, accountID := range query.AccountIDs {
 		result[accountID] = r.results[index]
@@ -66,15 +70,19 @@ func (r *priorityRecomputeBarrierReader) ReadPrioritySchedulingSignals(ctx conte
 
 func priorityRecomputeEpochFixture(reader *priorityRecomputeBarrierReader) (*OpenAIGatewayService, PrioritySchedulingConfig, OpenAIAccountScheduleRequest, []openAIAccountCandidateScore, PrioritySchedulingSignal) {
 	cfg := DefaultPrioritySchedulingConfig()
+	cfg.Enabled = true
 	cfg.MinSamples = 1
 	cfg.MinQualityPercent = 90
 	cfg.TargetTTFTMs = 1000
-	request := OpenAIAccountScheduleRequest{RequestedModel: "recompute-epoch-model"}
+	request := OpenAIAccountScheduleRequest{Platform: PlatformOpenAI, RequestedModel: "recompute-epoch-model", UseUpstreamTokenCost: true}
 	candidates := []openAIAccountCandidateScore{priorityCandidate(8871, 1, 1)}
-	old := PrioritySchedulingSignal{Samples: 20, P90TTFTMs: 6000, QualityPassed: 2, QualitySamples: 10}
+	old := PrioritySchedulingSignal{Samples: 20, P90TTFTMs: 6000, QualityPassed: 2, QualitySamples: 10, ProfitSamples: 20, Revenue: 1, BaseCost: 2}
 	now := time.Now()
 	key := priorityHistoryKey(request, cfg)
-	svc := &OpenAIGatewayService{usageLogRepo: reader}
+	settings := &SettingService{settingRepo: &prioritySettingStub{}}
+	settings.prioritySchedulingConfig.config = cfg
+	settings.prioritySchedulingConfig.expires = now.Add(time.Hour)
+	svc := &OpenAIGatewayService{usageLogRepo: reader, settingService: settings}
 	svc.priorityScheduling.entries = map[string]*prioritySignalEntry{
 		key: {
 			signals:   map[int64]PrioritySchedulingSignal{8871: old},
@@ -99,6 +107,18 @@ func assertPriorityRiskEvidence(t *testing.T, snapshot *PrioritySchedulingSnapsh
 	require.Equal(t, "degraded", score.Tier)
 	require.Contains(t, score.Reasons, "latency_above_target")
 	require.Contains(t, score.Reasons, "quality_below_target")
+	require.Contains(t, score.Reasons, "historical_loss")
+}
+
+func assertPrioritySchedulerKeepsRisk(t *testing.T, svc *OpenAIGatewayService, cfg PrioritySchedulingConfig, request OpenAIAccountScheduleRequest, candidates []openAIAccountCandidateScore, old PrioritySchedulingSignal) {
+	t.Helper()
+	history := svc.cachedPriorityHistory(request, cfg, candidates)
+	require.Equal(t, old, history.signals[candidates[0].account.ID], "sticky scheduling must keep the complete prior observation")
+	plan := openAIAccountLoadPlan{candidates: append([]openAIAccountCandidateScore(nil), candidates...)}
+	scheduler := &defaultOpenAIAccountScheduler{service: svc}
+	require.True(t, scheduler.applyPriorityScheduling(request, &plan))
+	require.True(t, plan.candidates[0].priorityUnhealthy, "live scheduler must keep the quality and loss risk penalty")
+	require.Less(t, plan.candidates[0].priorityLatencyFactor, 1.0, "live scheduler must keep its latency penalty")
 }
 
 func TestPriorityRecomputeRefreshFailurePreservesCachedRiskForScheduler(t *testing.T) {
@@ -106,7 +126,8 @@ func TestPriorityRecomputeRefreshFailurePreservesCachedRiskForScheduler(t *testi
 		[]PrioritySchedulingSignal{{}},
 		[]error{errors.New("fixture reader failure")},
 	)
-	svc, _, _, candidates, old := priorityRecomputeEpochFixture(reader)
+	svc, cfg, request, candidates, old := priorityRecomputeEpochFixture(reader)
+	before := svc.PrioritySchedulingSnapshot()
 	type recomputeResponse struct {
 		result *PrioritySchedulingRecomputeResult
 		err    error
@@ -129,6 +150,8 @@ func TestPriorityRecomputeRefreshFailurePreservesCachedRiskForScheduler(t *testi
 	// evidence while the diagnostic refresh is blocked.
 	during := svc.PrioritySchedulingSnapshot()
 	assertPriorityRiskEvidence(t, during, candidates[0], old)
+	require.Equal(t, before.HistoryObservedAt, during.HistoryObservedAt)
+	assertPrioritySchedulerKeepsRisk(t, svc, cfg, request, candidates, old)
 
 	reader.releaseRead(0)
 	select {
@@ -141,6 +164,55 @@ func TestPriorityRecomputeRefreshFailurePreservesCachedRiskForScheduler(t *testi
 
 	after := svc.PrioritySchedulingSnapshot()
 	assertPriorityRiskEvidence(t, after, candidates[0], old)
+	require.Equal(t, before.HistoryObservedAt, after.HistoryObservedAt)
+	require.Equal(t, before.HistoryWindowEnd, after.HistoryWindowEnd)
+	assertPrioritySchedulerKeepsRisk(t, svc, cfg, request, candidates, old)
+}
+
+func TestPriorityRecomputeIncompleteReadPreservesWholeObservation(t *testing.T) {
+	reader := newPriorityRecomputeBarrierReader([]PrioritySchedulingSignal{{}}, nil)
+	// One returned account looks healthy, but a second queried account is omitted.
+	// No part of this incomplete result may replace the previous observation.
+	reader.rows = []map[int64]PrioritySchedulingSignal{{8871: {Samples: 30, P90TTFTMs: 100, QualityPassed: 30, QualitySamples: 30}}}
+	svc, cfg, request, candidates, old := priorityRecomputeEpochFixture(reader)
+	peer := priorityCandidate(8872, 1, 1)
+	candidates = append(candidates, peer)
+	key := priorityHistoryKey(request, cfg)
+	entry := svc.priorityScheduling.entries[key]
+	entry.accounts[peer.account.ID] = time.Now()
+	entry.signals[peer.account.ID] = old
+	svc.priorityScheduling.latestInput = newPrioritySnapshotInput(request, cfg, candidates, time.Now())
+	before := svc.PrioritySchedulingSnapshot()
+	done := make(chan error, 1)
+	go func() {
+		result, err := svc.RecomputePriorityScheduling(context.Background())
+		if result != nil {
+			err = fmt.Errorf("incomplete read returned a result: %+v", result)
+		}
+		done <- err
+	}()
+	t.Cleanup(func() { reader.releaseRead(0) })
+	select {
+	case call := <-reader.entered:
+		require.Equal(t, 1, call)
+	case <-time.After(time.Second):
+		t.Fatal("forced history reader did not start")
+	}
+	assertPrioritySchedulerKeepsRisk(t, svc, cfg, request, candidates, old)
+	reader.releaseRead(0)
+	select {
+	case err := <-done:
+		require.ErrorIs(t, err, ErrPrioritySchedulingRecomputeIncomplete)
+	case <-time.After(2 * time.Second):
+		t.Fatal("incomplete history read was not rejected")
+	}
+	after := svc.PrioritySchedulingSnapshot()
+	require.Equal(t, "incomplete", after.HistoryError)
+	require.Equal(t, before.HistoryObservedAt, after.HistoryObservedAt)
+	require.Equal(t, before.HistoryWindowEnd, after.HistoryWindowEnd)
+	history := svc.priorityHistory(request, cfg, candidates)
+	require.Equal(t, map[int64]PrioritySchedulingSignal{8871: old, 8872: old}, history.signals)
+	assertPrioritySchedulerKeepsRisk(t, svc, cfg, request, candidates, old)
 }
 
 func TestPriorityRecomputeWaitsForFreshReadAfterInflightReader(t *testing.T) {
