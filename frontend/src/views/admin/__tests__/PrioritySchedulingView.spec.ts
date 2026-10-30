@@ -189,6 +189,74 @@ describe('priority scheduling', () => {
     wrapper.unmount()
   })
 
+  it('uses the configured percentile in every heatmap bucket', async () => {
+    vi.mocked(getPriorityConfig).mockResolvedValue({ ...config, latency_percentile: 50 })
+    vi.mocked(getPriorityLatency).mockResolvedValue({
+      at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, bucket_minutes: 5,
+      accounts: [{ account_id: 1, account_name: 'Mock OAuth', samples: 10, p50_ttft_ms: 500, p90_ttft_ms: 1500, p99_ttft_ms: 4000, slow_samples: 1, error_samples: 2, error_rate: 0.1667, buckets: [{ account_id: 1, bucket: '2026-10-30T00:00:00Z', samples: 10, p50_ttft_ms: 500, p90_ttft_ms: 1500, p99_ttft_ms: 4000, slow_samples: 1, error_samples: 0 }] }],
+    })
+    const wrapper = mount(PrioritySchedulingView); await flushPromises()
+    const heatmap = wrapper.get('[data-testid="latency-panel"]').findAll('tbody tr')[1]
+    expect(heatmap.findAll('td')[1].text()).toBe('500')
+    wrapper.unmount()
+  })
+
+  it('drops sticky rows as soon as the selected group changes', async () => {
+    vi.mocked(getPriorityConfig).mockResolvedValue({ ...config, group_ids: [11] })
+    vi.mocked(getPriorityStickyBindings).mockResolvedValue({ group_id: 11, total: 3, by_account: [{ account_id: 1, count: 3 }] })
+    const wrapper = mount(PrioritySchedulingView); await flushPromises()
+    expect(wrapper.find('[data-testid="sticky-clear-1"]').exists()).toBe(true)
+    await wrapper.get('[data-testid="sticky-group"]').setValue('12'); await flushPromises()
+    expect(wrapper.find('[data-testid="sticky-clear-1"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('does not let a recompute response overwrite a newer refreshed scope', async () => {
+    const oldSnapshot = { at: '2026-10-30T00:00:00Z', model: 'old-model', group_id: 11, mode: 'balanced', history_ready: true, candidates: [] }
+    let resolveRecompute!: (value: any) => void
+    vi.mocked(getPrioritySnapshot).mockResolvedValue(oldSnapshot)
+    vi.mocked(recomputePriorityScheduling).mockReturnValueOnce(new Promise(resolve => { resolveRecompute = resolve }))
+    const wrapper = mount(PrioritySchedulingView); await flushPromises()
+    await wrapper.get('[data-testid="recompute"]').trigger('click')
+    vi.mocked(getPrioritySnapshot).mockResolvedValueOnce({ ...oldSnapshot, at: '2026-10-30T00:01:00Z', model: 'new-model', group_id: 12 })
+    await (wrapper.vm as any).refresh(); await flushPromises()
+    resolveRecompute({
+      before: oldSnapshot, after: oldSnapshot, timed_out: false,
+      diff: [{ account_id: 1, account_name: 'Old scope', old_rank: 2, new_rank: 1, old_score: 70, new_score: 80, old_weight: 1, new_weight: 2, old_tier: 'insufficient', new_tier: 'eligible', old_p90_ttft_ms: 5000, new_p90_ttft_ms: 1000, old_samples: 5, new_samples: 6, old_error_samples: 1, new_error_samples: 0, changed: true }],
+    })
+    await flushPromises()
+    expect(wrapper.find('[data-testid="recompute-diff"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('new-model')
+    wrapper.unmount()
+  })
+
+  it('does not expose sticky cleanup for timed out recomputation', async () => {
+    vi.mocked(recomputePriorityScheduling).mockResolvedValue({
+      before: null, after: null, timed_out: true,
+      diff: [{ account_id: 1, account_name: 'Mock OAuth', old_rank: 2, new_rank: 1, old_score: 70, new_score: 80, old_weight: 1, new_weight: 2, old_tier: 'insufficient', new_tier: 'eligible', old_p90_ttft_ms: 5000, new_p90_ttft_ms: 1000, old_samples: 5, new_samples: 6, old_error_samples: 1, new_error_samples: 0, changed: true }],
+    })
+    const wrapper = mount(PrioritySchedulingView); await flushPromises()
+    await wrapper.get('[data-testid="recompute"]').trigger('click'); await flushPromises()
+    expect(wrapper.find('[data-testid="clear-changed-sticky"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('clears changed sticky rows in the recompute result scope', async () => {
+    vi.mocked(getPriorityConfig).mockResolvedValue({ ...config, group_ids: [11] })
+    vi.mocked(recomputePriorityScheduling).mockResolvedValue({
+      before: { at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_ready: true, candidates: [] },
+      after: { at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_ready: true, candidates: [] },
+      timed_out: false,
+      diff: [{ account_id: 1, account_name: 'Mock OAuth', old_rank: 2, new_rank: 1, old_score: 70, new_score: 80, old_weight: 1, new_weight: 2, old_tier: 'insufficient', new_tier: 'eligible', old_p90_ttft_ms: 5000, new_p90_ttft_ms: 1000, old_samples: 5, new_samples: 6, old_error_samples: 1, new_error_samples: 0, changed: true }],
+    })
+    const wrapper = mount(PrioritySchedulingView); await flushPromises()
+    await wrapper.get('[data-testid="recompute"]').trigger('click'); await flushPromises()
+    await wrapper.get('[data-testid="sticky-group"]').setValue('12')
+    await wrapper.get('[data-testid="clear-changed-sticky"]').trigger('click'); await flushPromises()
+    expect(clearPriorityStickyBindings).toHaveBeenLastCalledWith({ group_id: 11, account_ids: [1] })
+    wrapper.unmount()
+  })
+
   it('shows recompute diff and clears changed accounts sticky bindings', async () => {
     vi.mocked(getPriorityConfig).mockResolvedValue({ ...config, group_ids: [11] })
     vi.mocked(recomputePriorityScheduling).mockResolvedValue({
