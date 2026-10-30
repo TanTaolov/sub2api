@@ -198,3 +198,30 @@ func TestOpenAIConnectionOrdinaryAPIKeyRouteUnchanged(t *testing.T) {
 	require.Empty(t, out.AuthConnectionID)
 	require.Equal(t, "synthetic-primary", out.GetCredential("api_key"))
 }
+
+func TestOpenAIConnectionManagementRejectsUnsupportedParents(t *testing.T) {
+	for _, tc := range []struct {
+		name, platform, kind string
+		parentID             int64
+	}{
+		{"setup token", PlatformOpenAI, AccountTypeSetupToken, 0},
+		{"unknown", PlatformOpenAI, "unknown", 0},
+		{"other platform", PlatformAnthropic, AccountTypeOAuth, 0},
+		{"shadow", PlatformOpenAI, AccountTypeOAuth, 7},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s, r := connectionTypeService(tc.kind)
+			a := s.accounts.(*reauthTestAccountReader).account
+			a.Platform = tc.platform
+			if tc.parentID != 0 {
+				a.ParentAccountID = &tc.parentID
+			}
+			_, err := s.ListAuthConnections(context.Background(), 42)
+			require.Error(t, err)
+			require.Equal(t, "OPENAI_CONNECTION_ACCOUNT_INVALID", infraerrors.Reason(err))
+			_, err = s.CreateAuthConnection(context.Background(), 42, CreateOpenAIAuthConnectionInput{Kind: "codex", Label: "Synthetic"})
+			require.Error(t, err)
+			require.Zero(t, r.writes)
+		})
+	}
+}

@@ -46,8 +46,8 @@ func (u *issue594OfflineInference) DoWithTLS(r *http.Request, p string, id int64
 func TestIssue594ProductionGatewayConnectionRouteAndAccountSafety(t *testing.T) {
 	f := newConnectionHTTPFixture(t)
 	ctx := context.Background()
-	first := connectionResponse(t, f.request("POST", "", `{"kind":"api_key","label":"First route","api_key":"synthetic-route-one"}`))
-	second := connectionResponse(t, f.request("POST", "", `{"kind":"api_key","label":"Second route","api_key":"synthetic-route-two"}`))
+	first := f.seedHistoricalAPIKey(t, "First route", "synthetic-route-one")
+	second := f.seedHistoricalAPIKey(t, "Second route", "synthetic-route-two")
 	connectionResponse(t, f.request("PATCH", "/"+first.ID, fmt.Sprintf(`{"action":"select","revision":%d}`, first.Revision)))
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, "/v1/responses", r.URL.Path)
