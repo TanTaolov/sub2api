@@ -19,4 +19,4 @@
 
 PR596 的定向远端验证见 [dedicated CI](../../.github/workflows/pr596-cooldown-ownership.yml)：仅 PR596 原 head 分支 `fix/quality-state-probe-targets-and-model-input` 的 pull_request 运行实际 repository 包和 testcontainers 数据库测试。RED 保留新增测试，仅替换固定原 head `23b0dbae040e0d0b8c40f25ddb012ce2444feba3` 的三个生产文件，并要求测试断言失败；GREEN 恢复当前生产文件后验证恢复路径及既有所有权保护，日志按当前 head 上传。工作流随本地提交交付，未经推送触发前不代表已动态验证。
 
-没有数据库迁移，新字段存于现有规则/结果 JSON 和原生账号 Extra。回退代码前应暂停相关规则并通过新版本关闭自动处置、恢复本规则拥有的限制；旧版本无法识别新的动作/恢复状态，仅回退二进制不会撤销已持久化的模型冷却或并发变化。Unsupported 观察存于账号 Extra，人工确认支持已恢复后可移除对应的 `quality_unsupported_model_*` 观察，再重新保存规则。
+没有数据库迁移，新字段存于现有规则/结果 JSON 和原生账号 Extra。回退代码前可先暂停相关规则以停止新增处置，再通过新版本明确恢复本规则拥有的限制；需要探测恢复时保留原动作与目标并重新启用规则，或使用支持该所有权布局的受保护人工解除流程。确认模型限制、并发恢复状态和 ownership 均已清理后，才能改动作关闭自动处置或删除规则；不支持的布局与外部 owner 冲突应保留待复核，不通过手工清理数据库绕过保护。旧版本无法识别新的动作/恢复状态，仅回退二进制不会撤销已持久化的模型冷却或并发变化。Unsupported 观察存于账号 Extra，人工确认支持已恢复后可移除对应的 `quality_unsupported_model_*` 观察，再重新保存规则。

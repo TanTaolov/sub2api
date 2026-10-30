@@ -41,7 +41,7 @@ jobs:
           git fetch --no-tags --depth=1 origin "$original"
           for source in "${sources[@]}"; do git show "$original:$source" > "$source"; done
           set +e
-          (cd backend && go test -tags=integration ./internal/repository -run '^TestQualityCooldown(ActionGuardRetainsAllOwnershipLayouts|OwnedScopeRejectsEdits|MappingChangeCannotStrandOwnedTarget)$' -count=1 -timeout=15m -json) > evidence/red.jsonl 2>&1
+          (cd backend && go test -tags=integration ./internal/repository -run '^TestQualityCooldown(ActionGuardRetainsAllOwnershipLayouts|OwnedScopeRejectsEdits|MappingChangeCannotStrandOwnedTarget|DeletePreservesOwnedState|DeleteChecksLiveMarkersWithoutSnapshot|DeleteAfterRecoveryPreservesExternalRestrictions)$' -count=1 -timeout=15m -json) > evidence/red.jsonl 2>&1
           result=$?
           set -e
           cat evidence/red.jsonl
@@ -59,9 +59,10 @@ jobs:
           output = raw + ''.join(e.get('Output', '') for e in events)
           for forbidden in ('[build failed]', '[setup failed]', 'undefined:', 'syntax error:', 'no tests to run', 'panic:', '--- SKIP:'):
               assert forbidden not in output, forbidden
-          for name in ('TestQualityCooldownActionGuardRetainsAllOwnershipLayouts', 'TestQualityCooldownOwnedScopeRejectsEdits', 'TestQualityCooldownMappingChangeCannotStrandOwnedTarget'):
+          for name in ('TestQualityCooldownActionGuardRetainsAllOwnershipLayouts', 'TestQualityCooldownOwnedScopeRejectsEdits', 'TestQualityCooldownMappingChangeCannotStrandOwnedTarget', 'TestQualityCooldownDeletePreservesOwnedState', 'TestQualityCooldownDeleteChecksLiveMarkersWithoutSnapshot', 'TestQualityCooldownDeleteAfterRecoveryPreservesExternalRestrictions'):
               assert any(e.get('Action') == 'fail' and e.get('Test') == name for e in events), name
           assert 'owned cooldown edit must be rejected' in output
+          assert 'owned cooldown delete must be rejected' in output
           assert 'cooldown ownership must block action changes' in output
           assert 'Error Trace:' in output and 'An error is expected but got nil.' in output
           PY
@@ -78,7 +79,7 @@ jobs:
           from pathlib import Path
           events = [json.loads(line) for line in Path('evidence/green.jsonl').read_text().splitlines() if line.startswith('{')]
           assert not any(e.get('Action') in ('fail', 'skip') for e in events)
-          for name in ('TestQualityCooldownOwnedScopeRejectsEdits', 'TestQualityCooldownOrdinaryEditRetainsOwnershipUntilPassingRecovery', 'TestQualityCooldownExternalOwnerSurvivesEditsAndRecovery', 'TestQualityCooldownMappingChangeCannotStrandOwnedTarget', 'TestQualityCooldownChangedActionOutcomeRetainsOwnership', 'TestQualityCooldownActionGuardRetainsAllOwnershipLayouts', 'TestQualityCooldownDeadlinePersistedRecovery'):
+          for name in ('TestQualityCooldownOwnedScopeRejectsEdits', 'TestQualityCooldownOrdinaryEditRetainsOwnershipUntilPassingRecovery', 'TestQualityCooldownExternalOwnerSurvivesEditsAndRecovery', 'TestQualityCooldownMappingChangeCannotStrandOwnedTarget', 'TestQualityCooldownChangedActionOutcomeRetainsOwnership', 'TestQualityCooldownActionGuardRetainsAllOwnershipLayouts', 'TestQualityCooldownDeadlinePersistedRecovery', 'TestQualityCooldownDeletePreservesOwnedState', 'TestQualityCooldownDeleteChecksLiveMarkersWithoutSnapshot', 'TestQualityCooldownDeleteAfterRecoveryPreservesExternalRestrictions', 'TestQualityIsolationScopeAndDeleteGuard', 'TestQualityIsolationGroupsFollowIndependentModelRecovery'):
               assert any(e.get('Action') == 'pass' and e.get('Test') == name for e in events), name
           PY
       - name: Verify Node and locked i18n toolchain contract

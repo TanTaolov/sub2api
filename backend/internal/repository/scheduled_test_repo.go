@@ -161,14 +161,20 @@ func (r *scheduledTestPlanRepository) Delete(ctx context.Context, id int64) erro
 	if state.Action == service.QualityActionIsolateModels || state.Models != nil || state.Groups != nil {
 		return service.QualityScopeConflict("restore this rule's isolated models and groups before deleting it")
 	}
+	if hasQualityCooldownOwnership(&state) {
+		return service.QualityScopeConflict("restore this rule's cooled models and concurrency before deleting it")
+	}
 	// Revalidate live ownership as well as durable snapshots. A stale/cleared
 	// snapshot must not let deletion leave a marker pointing at a missing rule.
-	var live []byte
-	err = tx.QueryRowContext(ctx, `SELECT COALESCE(extra->'quality_model_isolation','{}'::jsonb) FROM accounts WHERE id=(SELECT account_id FROM scheduled_test_plans WHERE id=$1) FOR UPDATE`, id).Scan(&live)
+	var liveIsolation, liveCooldowns []byte
+	err = tx.QueryRowContext(ctx, `SELECT COALESCE(extra->'quality_model_isolation','{}'::jsonb),COALESCE(extra->'model_rate_limits','{}'::jsonb) FROM accounts WHERE id=(SELECT account_id FROM scheduled_test_plans WHERE id=$1) FOR UPDATE`, id).Scan(&liveIsolation, &liveCooldowns)
 	if err != nil && err != sql.ErrNoRows {
 		return err
 	}
-	if len(live) > 0 {
+	for _, live := range [][]byte{liveIsolation, liveCooldowns} {
+		if len(live) == 0 {
+			continue
+		}
 		var entries map[string]json.RawMessage
 		if json.Unmarshal(live, &entries) != nil {
 			return service.QualityScopeConflict("review unreadable model ownership before deleting this rule")
