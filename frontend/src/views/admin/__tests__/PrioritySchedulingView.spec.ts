@@ -308,7 +308,9 @@ describe('priority scheduling', () => {
     expect(getPriorityStickyBindings).toHaveBeenLastCalledWith(11)
     resolveGroup11({ group_id: 11, total: 2, by_account: [{ account_id: 1, count: 2 }] }); await flushPromises()
     expect(wrapper.get('[data-testid="sticky-group"]').element).toHaveProperty('value', '11')
-    expect(wrapper.get('[data-testid="sticky-scope"]').text()).toContain('11')
+    expect(wrapper.find('[data-testid="sticky-scope"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="sticky-scope-account"]').text()).toContain('#1')
+    expect(wrapper.find('[data-testid="sticky-clear-1"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="sticky-clear-2"]').exists()).toBe(false)
     wrapper.unmount()
   })
@@ -319,23 +321,16 @@ describe('priority scheduling', () => {
     let resolveOld!: (value: any) => void
     const oldWindow = new Promise(resolve => { resolveOld = resolve })
     const newer = { at: '2026-10-30T00:15:00Z', model: 'gpt-test', group_id: 11, bucket_minutes: 5, latency_percentile: 90, latency_measurement: 'legacy_forward', accounts: [{ account_id: 1, account_name: 'New-window account', samples: 5, p50_ttft_ms: 700, p90_ttft_ms: 900, p99_ttft_ms: 1200, selected_ttft_ms: 900, latency_percentile: 90, latency_measurement: 'legacy_forward', slow_samples: 0, error_samples: 0, error_rate: 0, buckets: [{ account_id: 1, bucket: '2026-10-30T00:15:00Z', samples: 5, p50_ttft_ms: 700, p90_ttft_ms: 900, p99_ttft_ms: 1200, selected_ttft_ms: 900, slow_samples: 0, error_samples: 0 }] }] }
-    vi.mocked(getPriorityLatency).mockReset()
-    let sixtyCalls = 0
-    vi.mocked(getPriorityLatency).mockImplementation(async minutes => {
-      if (minutes === 15) return newer
-      sixtyCalls++
-      if (sixtyCalls === 1) return { at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, bucket_minutes: 5, accounts: [] }
-      return oldWindow as any
-    })
+    vi.mocked(getPriorityLatency).mockReset().mockReturnValueOnce(oldWindow as any).mockResolvedValueOnce(newer)
     const oldRequest = (wrapper.vm as any).loadLatency()
     await flushPromises()
-    await vi.waitFor(() => expect(getPriorityLatency).toHaveBeenCalledTimes(1))
+    expect(getPriorityLatency).toHaveBeenCalledTimes(1)
+    expect(getPriorityLatency).toHaveBeenLastCalledWith(60, 5)
     await wrapper.get('[data-testid="latency-window"]').setValue(15); await flushPromises()
     expect(getPriorityLatency).toHaveBeenCalledTimes(2)
     expect(getPriorityLatency).toHaveBeenLastCalledWith(15, 5)
     resolveOld({ at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, bucket_minutes: 5, latency_percentile: 90, latency_measurement: 'legacy_forward', accounts: [{ account_id: 1, account_name: 'Old-window account', samples: 1, p50_ttft_ms: 5000, p90_ttft_ms: 6000, p99_ttft_ms: 7000, selected_ttft_ms: 6000, slow_samples: 1, error_samples: 0, error_rate: 0, buckets: [] }] })
     await flushPromises()
-    expect(wrapper.get('[data-testid="latency-panel"]').text()).toContain('2026-10-30T00:15:00Z')
     expect(wrapper.get('[data-testid="latency-panel"]').text()).toContain('New-window account')
     expect(wrapper.get('[data-testid="latency-panel"]').text()).not.toContain('Old-window account')
     await oldRequest

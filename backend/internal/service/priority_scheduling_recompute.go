@@ -73,13 +73,15 @@ func (s *OpenAIGatewayService) RecomputePriorityScheduling(ctx context.Context) 
 	capturedKey := key
 	entry.recomputeGeneration++
 	recomputeGeneration := entry.recomputeGeneration
-	// Preserve the last successful observation for online routing while forcing
-	// a read epoch newer than every reader already in flight. The next reader
-	// will launch when the current one completes; neither cached risk nor its
-	// observation timestamp is cleared while waiting.
-	entry.requiredReadEpoch = entry.readEpoch + 1
-	entry.expires = time.Time{}
-	entry.attempted = time.Time{}
+	if !entry.refreshing {
+		// Supersede old readers and require a fresh result for this exact input.
+		entry.expires = time.Time{}
+		entry.observed = time.Time{}
+		entry.failure = ""
+		entry.signals = make(map[int64]PrioritySchedulingSignal)
+		entry.generation++
+		entry.attempted = time.Time{}
+	}
 	state.mu.Unlock()
 
 	deadline := time.Now().Add(5 * time.Second)
@@ -95,16 +97,10 @@ func (s *OpenAIGatewayService) RecomputePriorityScheduling(ctx context.Context) 
 		if !valid {
 			return nil, ErrPrioritySchedulingSnapshotUnavailable
 		}
-		state.mu.Lock()
-		current = state.entries[capturedKey]
-		completedEpoch := current.completedReadEpoch
-		requiredEpoch := current.requiredReadEpoch
-		readFailure := current.completedReadFailure
-		state.mu.Unlock()
-		if completedEpoch >= requiredEpoch && readFailure != "" {
+		if after.HistoryError != "" || after.HistoryStatus == "error" || after.HistoryStatus == "unavailable" || after.HistoryStatus == "limited" {
 			return nil, ErrPrioritySchedulingRecomputeIncomplete
 		}
-		if completedEpoch >= requiredEpoch && readFailure == "" && !after.HistoryRefreshing && after.HistoryStatus == "ready" && after.HistoryError == "" {
+		if !after.HistoryRefreshing && after.HistoryStatus == "ready" {
 			return &PrioritySchedulingRecomputeResult{Before: before, After: after, Diff: diffPrioritySnapshots(before, after)}, nil
 		}
 		if time.Now().After(deadline) {
