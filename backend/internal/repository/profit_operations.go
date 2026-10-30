@@ -109,13 +109,16 @@ const profitOperationsCohort = `accounts_config AS (
 ), cohort AS (
  SELECT * FROM accounts_config WHERE ($4='' OR key=$4) AND ($5::bigint=0 OR id=$5) AND ($11::bigint=0 OR channel_id=$11)
 )`
+
+// Join the complete projection before applying the selected cohort. Joining only
+// cohort would turn every configured account outside it into account_missing.
 const profitOperationsBase = `WITH ` + profitOperationsCohort + `, scoped AS (
  SELECT u.*,COALESCE(c.key,'unknown:account_missing') AS upstream_key,
  COALESCE(c.attribution,'account_missing') AS attribution,c.name AS account_name,c.updated_at AS config_updated_at,c.deleted,c.multiplier,c.channel_id AS explicit_channel_id,c.channel_name,c.channel_code,c.channel_remark,c.channel_revision,c.assignment,COALESCE(c.cost_basis,'account_missing') AS cost_basis,
  COALESCE(NULLIF(u.requested_model,''),u.model) AS public_model,
  u.total_cost AS cost_base
- FROM usage_logs u LEFT JOIN cohort c ON c.id=u.account_id
- WHERE u.created_at >= $1 AND u.created_at < $2 AND ($5::bigint=0 OR u.account_id=$5) AND ($11::bigint=0 OR c.id IS NOT NULL)
+ FROM usage_logs u LEFT JOIN accounts_config c ON c.id=u.account_id
+ WHERE u.created_at >= $1 AND u.created_at < $2 AND ($5::bigint=0 OR u.account_id=$5) AND ($11::bigint=0 OR c.id IN (SELECT id FROM cohort))
  AND ($4='' OR COALESCE(c.key,'unknown:account_missing')=$4) AND ($6::bigint=0 OR u.group_id=$6)
  AND ($7='' OR CASE $8 WHEN 'public' THEN COALESCE(NULLIF(u.requested_model,''),u.model) WHEN 'recorded' THEN u.model WHEN 'upstream' THEN u.upstream_model END=$7)
 ), priced AS (

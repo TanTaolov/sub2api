@@ -35,6 +35,42 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - run: git rev-parse HEAD
+      - name: Mixed-cohort P1 RED on exact reviewed head and GREEN on current head
+        working-directory: backend
+        shell: bash
+        env:
+          PROFIT_COHORT_OLD_HEAD: ec820522203515e67823c267badb7b01be4b8b23
+          PROFIT_COHORT_NEW_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$PROFIT_COHORT_NEW_HEAD"
+          git fetch --no-tags --depth=1 origin "$PROFIT_COHORT_OLD_HEAD"
+          old_tree="$RUNNER_TEMP/profit-cohort-old"
+          mkdir "$old_tree"
+          git archive "$PROFIT_COHORT_OLD_HEAD" | tar -x -C "$old_tree"
+          regression=internal/repository/profit_operations_cohort_integration_test.go
+          test ! -e "$old_tree/backend/$regression"
+          cp "$regression" "$old_tree/backend/$regression"
+          python3 - <<'PYPROVENANCE'
+          import hashlib,json,os,subprocess
+          from pathlib import Path
+          test=Path('internal/repository/profit_operations_cohort_integration_test.go')
+          out={k:os.environ[k] for k in ['PROFIT_COHORT_OLD_HEAD','PROFIT_COHORT_NEW_HEAD','GITHUB_EVENT_NAME','GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT','GITHUB_JOB']}
+          out['old_tree_overlay']='Only the new regression test is copied into the exact old git archive; no implementation overlay.'
+          out['regression_sha256']=hashlib.sha256(test.read_bytes()).hexdigest()
+          out['old_repository_blob']=subprocess.check_output(['git','rev-parse',os.environ['PROFIT_COHORT_OLD_HEAD']+':backend/internal/repository/profit_operations.go'],text=True).strip()
+          Path(os.environ['RUNNER_TEMP'],'entity-cohort-provenance.json').write_text(json.dumps(out,indent=2)+'\n')
+          PYPROVENANCE
+          cat "$RUNNER_TEMP/entity-cohort-provenance.json"
+          set +e
+          (cd "$old_tree/backend" && go test -tags=integration ./internal/repository -run '^TestProfitOperationsMixedCohortMissingAccountDrilldown$' -count=1 -v) > "$RUNNER_TEMP/entity-cohort-red.log" 2>&1
+          result=$?
+          set -e
+          cat "$RUNNER_TEMP/entity-cohort-red.log"
+          test "$result" -ne 0
+          grep -q 'missing-account drill-down must exclude configured accounts outside the selected cohort' "$RUNNER_TEMP/entity-cohort-red.log"
+          grep -q 'FAIL: TestProfitOperationsMixedCohortMissingAccountDrilldown' "$RUNNER_TEMP/entity-cohort-red.log"
+          go test -tags=integration ./internal/repository -run '^TestProfitOperationsMixedCohortMissingAccountDrilldown$' -count=1 -v | tee "$RUNNER_TEMP/entity-cohort-green.log"
       - name: DTO, URL identity and actual admin route authorization
         working-directory: backend
         run: go test -tags=unit ./internal/service ./internal/handler/admin ./internal/server/routes -run '^Test(UpstreamChannel|ProfitOperations|ExplicitChannelProfitFilter)' -count=1 -v
@@ -96,7 +132,9 @@ jobs:
         if: always()
         with:
           name: upstream-channel-postgres-${{ github.event_name }}-${{ github.event.pull_request.head.sha || github.sha }}
-          path: ${{ runner.temp }}/entity-*.log
+          path: |
+            ${{ runner.temp }}/entity-*.log
+            ${{ runner.temp }}/entity-cohort-provenance.json
   frontend:
     runs-on: ubuntu-latest
     timeout-minutes: 25

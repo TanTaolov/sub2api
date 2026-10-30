@@ -1,5 +1,17 @@
 # PR #593：独立上游渠道实体与多账号绑定
 
+## P1 复审修复（当前进行中，覆盖此前冻结结论）
+
+- 固定缺陷 head：`ec820522203515e67823c267badb7b01be4b8b23`。旧 head 的 push/dispatch 绿色与截图保留为历史证据，不能证明本次 P1 已闭合。
+- 根因：usage LEFT JOIN 预先筛选的 cohort，正常但不属于筛选范围的账号被补 NULL，误归为 `unknown:account_missing`。
+- [x] 新增私有迁移数据库的真实 HTTP→DB→GET 混合回归：显式渠道跨 URL、不同实体共享 URL、未绑定 URL fallback、无效 URL、真正 missing；请求数、金额、unknown 覆盖、分页 summary 和各维度下钻一致；读取前后 usage 不变。只有私有 fixture 暂移除 usage→account FK 以构造缺失历史记录，不改应用迁移或共享 DB。
+- [x] 修复为 LEFT JOIN 完整 accounts_config 后分别筛选真正 missing 和选中 cohort，不改收入/成本公式。
+- [x] 专属 CI 保留旧断言与变异回归，并新增精确旧 head 仅叠加新测试的 RED、新 head GREEN，上传日志及 run/job/event/SHA provenance。
+- [ ] 普通 merge 最新 origin/production，保留双方 PROGRESS 内容并静态复核自动合并的账号仓储；不 rebase/force push。
+- [ ] 提交并普通 push 原分支；取得新 head 的 pull_request 事件 CI，不能以 push/dispatch 替代；如需触发 ready_for_review 可标 ready，仍禁止合并 PR。
+- [ ] filter=all、全部当前 head 实际 raw 日志与 RED/GREEN provenance 复核后交 Hermes/父级独立审查。
+- 本机仅静态/gofmt；禁止 Go compile/build/test/run/generate、Docker、全量前端动态。最新产物记录于 `p1-cohort/`，此前最终冻结记录已经失效。本次不改生产账本、usage、路由或凭据。
+
 - Worktree / branch：`sub2api-profit-url-channel-remarks` / `feat/profit-url-channel-remarks`；base `production` @ `08d69a522c79a182fd681ead8fa4d848d9e1554e`。
 - Draft PR：https://github.com/ranxi2001/sub2api/pull/593；同一 PR 按用户更正完成完整实体需求。
 - 此前文档 head `0a91e6df1` 之后，复核补强软删保留归属、显式渠道错误记录筛选、新建实体确认和ID下钻成员展示。最终 head/checks/冻结记录统一写入产物 `entity-final-ACCEPTANCE.md` / `entity-final-freeze.json`，避免文档提交循环触发CI。
