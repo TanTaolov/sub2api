@@ -2,15 +2,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { reactive } from 'vue'
 import { mount, flushPromises } from '@vue/test-utils'
 import PrioritySchedulingView from '../PrioritySchedulingView.vue'
-import { getPriorityConfig, getPrioritySnapshot, savePriorityConfig, type PrioritySchedulingConfig, type PriorityCandidate } from '@/api/admin/priorityScheduling'
+import { getPriorityConfig, getPrioritySnapshot, savePriorityConfig, getPriorityLatency, recomputePriorityScheduling, getPriorityStickyBindings, clearPriorityStickyBindings, type PrioritySchedulingConfig, type PriorityCandidate } from '@/api/admin/priorityScheduling'
 const state = vi.hoisted(() => ({ auth: null as any }))
 vi.mock('@/stores/auth', () => ({ useAuthStore: () => state.auth }))
 vi.mock('@/components/layout/AppLayout.vue', () => ({ default: { template: '<main><slot /></main>' } }))
 vi.mock('@/components/admin/operations/SmartOpsNav.vue', () => ({ default: { template: '<nav />' } }))
 vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key: string) => key }) }))
-vi.mock('@/api/admin/priorityScheduling', () => ({ getPriorityConfig: vi.fn(), getPrioritySnapshot: vi.fn(), savePriorityConfig: vi.fn() }))
+vi.mock('@/api/admin/priorityScheduling', () => ({ getPriorityConfig: vi.fn(), getPrioritySnapshot: vi.fn(), savePriorityConfig: vi.fn(), getPriorityLatency: vi.fn(), recomputePriorityScheduling: vi.fn(), getPriorityStickyBindings: vi.fn(), clearPriorityStickyBindings: vi.fn() }))
 const config: PrioritySchedulingConfig = { error_rate_weight: 25, error_rate_window_minutes: 10, error_rate_prior_samples: 5, latency_percentile: 90, latency_measurement: 'legacy_forward', recovery_exploration_percent: 0, oauth_quota_priority: false, oauth_quota_threshold: 90, balance_protocols: true, enabled: false, mode: 'balanced', group_ids: [], models: [], window_minutes: 60, min_samples: 5, target_ttft_ms: 3000, latency_penalty_mode: 'deprioritize', latency_penalty_minutes: 10, max_load_percent: 80, min_quality_percent: 90, quality_max_age_hours: 24, quality_weight: 30, latency_weight: 25, load_weight: 25, cost_weight: 20 }
-beforeEach(() => { vi.resetAllMocks(); state.auth = reactive({ user: { id: 1, role: 'admin' } }); vi.mocked(getPriorityConfig).mockResolvedValue({ ...config }); vi.mocked(getPrioritySnapshot).mockResolvedValue(null); vi.mocked(savePriorityConfig).mockImplementation(async c => c) })
+beforeEach(() => {
+  vi.resetAllMocks()
+  state.auth = reactive({ user: { id: 1, role: 'admin' } })
+  vi.mocked(getPriorityConfig).mockResolvedValue({ ...config })
+  vi.mocked(getPrioritySnapshot).mockResolvedValue(null)
+  vi.mocked(savePriorityConfig).mockImplementation(async c => c)
+  vi.mocked(getPriorityLatency).mockResolvedValue({ at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, bucket_minutes: 5, accounts: [] })
+  vi.mocked(getPriorityStickyBindings).mockResolvedValue({ group_id: 2, total: 0, by_account: [] })
+  vi.mocked(recomputePriorityScheduling).mockResolvedValue({ before: null, after: null, diff: [], timed_out: false })
+  vi.mocked(clearPriorityStickyBindings).mockResolvedValue({ group_id: 2, deleted: 0, remaining: 0, by_account: [] })
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
+})
 describe('priority scheduling', () => {
   it('shows scoped error evidence and unknown samples, and saves an explicit zero weight', async () => {
     const candidate: PriorityCandidate = { account_id: 1, account_name: 'Mock attempt evidence', score: 72, tier: 'eligible', reasons: [], priority: 1, concurrency: 10, load_factor: 10, load_percent: 0, waiting: 0, rate: 0.1, revenue: 0, theoretical_cost: 0, profit: null, margin: null, economics_source: 'rate', profit_samples: 0, samples: 0, p90_ttft_ms: 0, quality_passed: 1, quality_samples: 1, error_rate: 0.25, error_successes: 3, error_failures: 1, error_window_minutes: 10, error_prior_samples: 5, error_observed_at: '2026-10-22T01:02:03Z', error_endpoint: '/v1/responses', error_penalty: 0.9, base_score: 80 }
@@ -159,6 +170,38 @@ describe('priority scheduling', () => {
     vi.mocked(getPriorityConfig).mockReturnValueOnce(new Promise(r => { resolve = r }))
     const wrapper = mount(PrioritySchedulingView); state.auth.user = null; resolve(config); await flushPromises()
     expect(wrapper.find('form').exists()).toBe(false); wrapper.unmount()
+  })
+
+  it('renders latency analysis and clears sticky bindings', async () => {
+    vi.mocked(getPriorityConfig).mockResolvedValue({ ...config, group_ids: [11] })
+    vi.mocked(getPriorityLatency).mockResolvedValue({
+      at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, bucket_minutes: 5,
+      accounts: [{ account_id: 1, account_name: 'Mock OAuth', samples: 10, p50_ttft_ms: 500, p90_ttft_ms: 1500, p99_ttft_ms: 4000, slow_samples: 1, error_samples: 2, error_rate: 0.1667, buckets: [{ account_id: 1, bucket: '2026-10-30T00:00:00Z', samples: 10, p50_ttft_ms: 500, p90_ttft_ms: 1500, p99_ttft_ms: 4000, slow_samples: 1, error_samples: 0 }] }],
+    })
+    vi.mocked(getPriorityStickyBindings).mockResolvedValue({ group_id: 11, total: 3, by_account: [{ account_id: 1, count: 3 }] })
+    const wrapper = mount(PrioritySchedulingView); await flushPromises()
+    expect(wrapper.find('[data-testid="latency-panel"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('priorityScheduling.latencyPanel.title')
+    expect(wrapper.text()).toContain('1500 ms')
+    expect(wrapper.text()).toContain('priorityScheduling.sticky.total')
+    await wrapper.get('[data-testid="sticky-clear-1"]').trigger('click'); await flushPromises()
+    expect(clearPriorityStickyBindings).toHaveBeenCalledWith({ group_id: 11, account_ids: [1] })
+    wrapper.unmount()
+  })
+
+  it('shows recompute diff and clears changed accounts sticky bindings', async () => {
+    vi.mocked(getPriorityConfig).mockResolvedValue({ ...config, group_ids: [11] })
+    vi.mocked(recomputePriorityScheduling).mockResolvedValue({
+      before: null, after: null, timed_out: false,
+      diff: [{ account_id: 1, account_name: 'Mock OAuth', old_rank: 2, new_rank: 1, old_score: 70, new_score: 80, old_weight: 1, new_weight: 2, old_tier: 'insufficient', new_tier: 'eligible', old_p90_ttft_ms: 5000, new_p90_ttft_ms: 1000, old_samples: 5, new_samples: 6, old_error_samples: 1, new_error_samples: 0, changed: true }],
+    })
+    const wrapper = mount(PrioritySchedulingView); await flushPromises()
+    await wrapper.get('[data-testid="recompute"]').trigger('click'); await flushPromises()
+    expect(wrapper.find('[data-testid="recompute-diff"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('70.0 → 80.0')
+    await wrapper.get('[data-testid="clear-changed-sticky"]').trigger('click'); await flushPromises()
+    expect(clearPriorityStickyBindings).toHaveBeenCalledWith({ group_id: 11, account_ids: [1] })
+    wrapper.unmount()
   })
 })
 
