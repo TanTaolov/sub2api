@@ -26,6 +26,14 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+      - name: Record exact source and production baseline
+        env:
+          SOURCE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          PRODUCTION_BASE: ${{ github.event.pull_request.base.sha || '99f25942738ff12056ac82d97ee6b74cb07cd163' }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_HEAD"
+          printf 'exact_head=%s\nproduction_baseline=%s\nred_scanner_baseline=%s\n' "$SOURCE_HEAD" "$PRODUCTION_BASE" e7b6e505560fbe810c36c2bbd50b57b1f437ff49
+          git cat-file -p HEAD | sed -n 's/^parent /merge_parent=/p'
       - uses: actions/setup-go@v6
         with:
           go-version-file: backend/go.mod

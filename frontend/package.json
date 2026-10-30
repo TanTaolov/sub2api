@@ -3,9 +3,6 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "engines": {
-    "node": ">=22"
-  },
   "scripts": {
     "dev": "vite",
     "check:i18n": "vitest run src/i18n/__tests__/localeKeyCompleteness.spec.ts",
@@ -75,5 +72,8 @@
       "dompurify@<3.4.17": ">=3.4.17",
       "decode-uri-component@<0.5.1": "0.5.1"
     }
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
