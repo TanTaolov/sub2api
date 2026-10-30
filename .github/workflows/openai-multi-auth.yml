@@ -129,6 +129,9 @@ jobs:
           test "$result" -ne 0
           ! grep -E 'build failed|setup failed|undefined:|syntax error:|no tests to run|panic:' "$RUNNER_TEMP/issue594-lease-proof-red.log"
           grep -F -- '--- FAIL: TestIssue594LeaseTakeoverCannotAdoptAnotherOwnersProof' "$RUNNER_TEMP/issue594-lease-proof-red.log"
+          ! grep -E 'Messages:.*must exercise A lease' "$RUNNER_TEMP/issue594-lease-proof-red.log"
+          grep -F 'a stolen lease snapshot cannot authorize an OAuth network operation' "$RUNNER_TEMP/issue594-lease-proof-red.log"
+
       - uses: actions/upload-artifact@v6
         if: always()
         with:

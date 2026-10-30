@@ -107,3 +107,5 @@
 - Remote first-fix security raw exposes existing transitive decode-uri-component GHSA-qr28-fpjm-wq7f; official advisory states patched 0.5.1. Isolated lock candidate job now generates a narrowly scoped override; no audit exception. Candidate lock still pending remote generation.
 
 - Downloaded remote lock candidate from exact `05f9f40d0`, reviewed the diff: only decode-uri-component override/dependency 0.4.1→0.5.1 plus its integrity. Unrelated lock metadata retained. No local install/build/lint/typecheck or audit exception. UI now offers candidate recovery only for active registrations and explains disabled registrations require explicit reauthorization/unlink.
+
+- Read first new RED raw: disable/unlink/failure/revoke reproduce A adopting B owner. The added refresh subcase revealed a fixture mistake (attempted to change immutable kind from API key to SIWC, so no lease path ran). Corrected it to create SIWC initially; strengthened RED to reject that missing-path failure and require the stale worker's actual network-operation assertion. No assertion weakened.
