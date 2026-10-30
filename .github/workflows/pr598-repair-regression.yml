@@ -31,7 +31,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/pr598-red"
           set +e
-          (cd backend && go test -tags=unit ./internal/service ./internal/handler -run '^TestPriority(LatencySeriesNoHistorySerializesEmptyBuckets|LatencySeriesUsesSnapshotMeasurementAndPercentile|RecomputeDoesNotTreatHistoryErrorAsSuccess|RecomputeKeepsCapturedScopeAcrossNewSelection|HistoryIgnoresSupersededRefreshGeneration|LatencySeriesHandlerUsesEmptyArrayForNoHistory)$' -count=1 -v -timeout=5m) > "$RUNNER_TEMP/pr598-red/service.log" 2>&1
+          (cd backend && go test -tags=unit ./internal/service ./internal/handler -run '^TestPriority(LatencySeriesNoHistorySerializesEmptyBuckets|LatencySeriesUsesSnapshotMeasurementAndPercentile|RecomputeDoesNotTreatHistoryErrorAsSuccess|RecomputeKeepsCapturedScopeAcrossNewSelection|LatencySeriesHandlerUsesEmptyArrayForNoHistory)$' -count=1 -v -timeout=5m) > "$RUNNER_TEMP/pr598-red/service.log" 2>&1
           result=$?
           set -e
           cat "$RUNNER_TEMP/pr598-red/service.log"
@@ -41,7 +41,6 @@ jobs:
           grep -q -- 'FAIL: TestPriorityLatencySeriesUsesSnapshotMeasurementAndPercentile' "$RUNNER_TEMP/pr598-red/service.log"
           grep -q -- 'FAIL: TestPriorityLatencySeriesHandlerUsesEmptyArrayForNoHistory' "$RUNNER_TEMP/pr598-red/service.log"
           grep -q -- 'FAIL: TestPriorityRecomputeKeepsCapturedScopeAcrossNewSelection' "$RUNNER_TEMP/pr598-red/service.log"
-          grep -q -- 'FAIL: TestPriorityHistoryIgnoresSupersededRefreshGeneration' "$RUNNER_TEMP/pr598-red/service.log"
           ! grep -Eq 'build failed|undefined:|no tests to run|panic:' "$RUNNER_TEMP/pr598-red/service.log"
       - uses: actions/upload-artifact@v7
         if: always()

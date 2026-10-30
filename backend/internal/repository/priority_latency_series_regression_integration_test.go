@@ -94,7 +94,7 @@ func TestPriorityLatencySeriesUsesConfiguredMeasurementAndPercentile(t *testing.
 	seriesQuery.AccountIDs = []int64{account.ID}
 	seriesQuery.Model = "fixture-model"
 	seriesQuery.Since = now.Add(-time.Hour)
-	seriesQuery.BucketMinutes = 60
+	seriesQuery.BucketMinutes = 1440
 	series, err := repo.ReadPriorityLatencySeries(ctx, seriesQuery)
 	require.NoError(t, err)
 	require.Len(t, series, 1)
@@ -102,6 +102,10 @@ func TestPriorityLatencySeriesUsesConfiguredMeasurementAndPercentile(t *testing.
 	require.NoError(t, err)
 	var bucket map[string]any
 	require.NoError(t, json.Unmarshal(encoded, &bucket))
-	require.InDelta(t, *signals[account.ID].SelectedTTFTMs, bucket["selected_ttft_ms"], .01,
+	selected, exists := bucket["selected_ttft_ms"]
+	require.True(t, exists, "latency series must expose the configured percentile")
+	selectedTTFTMs, ok := selected.(float64)
+	require.True(t, ok, "selected latency must be numeric for a measured bucket")
+	require.InDelta(t, *signals[account.ID].SelectedTTFTMs, selectedTTFTMs, .01,
 		"the heatmap bucket and snapshot summary must share the configured measurement and percentile")
 }
