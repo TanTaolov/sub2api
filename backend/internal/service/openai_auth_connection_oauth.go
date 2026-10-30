@@ -184,11 +184,11 @@ func (s *OpenAIOAuthReauthService) CompleteConnectionAuthorization(ctx context.C
 	if clientID == "" || clientID == openai.SIWCDynamicClientID || q.Get("code") == "" {
 		return infraerrors.BadRequest("OPENAI_CONNECTION_CALLBACK_INVALID", "Callback requires code and issued client")
 	}
-	unlock, err := s.lockAuthConnection(ctx, accountID, id)
+	lease, err := s.lockAuthConnection(ctx, accountID, id)
 	if err != nil {
 		return err
 	}
-	defer unlock()
+	defer lease.release()
 	operationCtx, stopOperation := context.WithTimeout(ctx, 50*time.Second)
 	defer stopOperation()
 	ctx = operationCtx
@@ -198,6 +198,9 @@ func (s *OpenAIOAuthReauthService) CompleteConnectionAuthorization(ctx context.C
 	}
 	if current.Revision != session.ConnectionRevision {
 		return connectionChanged()
+	}
+	if err = lease.bind(current); err != nil {
+		return err
 	}
 	c = current
 	consumed, ok := s.readSIWCSession(ctx, sessionID, true)
@@ -305,16 +308,19 @@ func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, ac
 	if c.RefreshCandidateCiphertext == "" && expiry > time.Now().Add(openAITokenRefreshSkew).Unix() {
 		return stringCredential(creds, "access_token"), nil
 	}
-	unlock, err := s.lockAuthConnection(ctx, accountID, id)
+	lease, err := s.lockAuthConnection(ctx, accountID, id)
 	if err != nil {
 		return "", err
 	}
-	defer unlock()
+	defer lease.release()
 	leaseCtx, stop := context.WithTimeout(ctx, 50*time.Second)
 	defer stop()
 	ctx = leaseCtx
 	c, err = s.authConnection(ctx, accountID, id)
 	if err != nil {
+		return "", err
+	}
+	if err = lease.bind(c); err != nil {
 		return "", err
 	}
 	if c.Status != "active" {
@@ -375,9 +381,10 @@ func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, ac
 		state := "uncertain"
 		var outcome *OpenAIConnectionTokenError
 		if errors.As(err, &outcome) {
-			if outcome.Outcome == "not_sent" {
+			switch outcome.Outcome {
+			case "not_sent":
 				state = "idle"
-			} else if outcome.Outcome == "rejected" {
+			case "rejected":
 				state = "rejected"
 			}
 		}
@@ -430,16 +437,19 @@ func (s *OpenAIOAuthReauthService) ConnectionAccessToken(ctx context.Context, ac
 func stringCredential(creds map[string]any, key string) string { v, _ := creds[key].(string); return v }
 
 func (s *OpenAIOAuthReauthService) RevokeAuthConnection(ctx context.Context, accountID int64, id string, revision int64) (bool, error) {
-	unlock, err := s.lockAuthConnection(ctx, accountID, id)
+	lease, err := s.lockAuthConnection(ctx, accountID, id)
 	if err != nil {
 		return false, err
 	}
-	defer unlock()
+	defer lease.release()
 	operationCtx, stopOperation := context.WithTimeout(ctx, 50*time.Second)
 	defer stopOperation()
 	ctx = operationCtx
 	c, err := s.authConnection(ctx, accountID, id)
 	if err != nil {
+		return false, err
+	}
+	if err = lease.bind(c); err != nil {
 		return false, err
 	}
 	if c.Revision != revision {
@@ -486,21 +496,34 @@ func (s *OpenAIOAuthReauthService) RevokeAuthConnection(ctx context.Context, acc
 	return client.RevokeConnectionToken(revokeCtx, stringCredential(creds, "refresh_token"), c.ClientID, proxy) == nil, nil
 }
 
-func (s *OpenAIOAuthReauthService) lockAuthConnection(ctx context.Context, accountID int64, id string) (func(), error) {
+type authConnectionLease struct {
+	proof   OpenAIAuthConnectionLease
+	release func()
+}
+
+func (l *authConnectionLease) bind(c *OpenAIAuthConnection) error {
+	if l == nil || c == nil || c.LeaseOwner != l.proof.Owner || c.LeaseEpoch != l.proof.Epoch {
+		return connectionChanged()
+	}
+	c.LeaseOwner = l.proof.Owner
+	c.LeaseEpoch = l.proof.Epoch
+	return nil
+}
+func (s *OpenAIOAuthReauthService) lockAuthConnection(ctx context.Context, accountID int64, id string) (*authConnectionLease, error) {
 	r, err := s.connectionRepository()
 	if err != nil {
 		return nil, err
 	}
 	owner := uuid.NewString()
-	acquired, err := r.AcquireAuthConnectionLease(ctx, accountID, id, owner)
-	if err != nil || !acquired {
+	proof, err := r.AcquireAuthConnectionLeaseProof(ctx, accountID, id, owner)
+	if err != nil || proof == nil || proof.Owner != owner {
 		return nil, infraerrors.Conflict("OPENAI_CONNECTION_REFRESH_BUSY", "Connection lifecycle operation is busy; retry later")
 	}
-	return func() {
+	return &authConnectionLease{proof: *proof, release: func() {
 		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Second)
 		defer cancel()
 		_ = r.ReleaseAuthConnectionLease(cleanup, accountID, id, owner)
-	}, nil
+	}}, nil
 }
 
 // The adapter has already verified this exact ID token's signature, issuer,

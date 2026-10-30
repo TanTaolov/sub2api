@@ -86,7 +86,7 @@ func TestIssue594ReviewRealHTTPSelectionSlotsOutputAndUsage(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "text/event-stream")
 		w.Header().Set("x-request-id", "synthetic-"+marker)
-		_, _ = fmt.Fprintf(w, "data: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_%s\",\"status\":\"completed\",\"model\":\"gpt-4\",\"output\":[{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"confirmed-%s\"}]}],\"usage\":{\"input_tokens\":3,\"output_tokens\":1,\"total_tokens\":4}}}\n\n", marker, marker)
+		_, _ = fmt.Fprintf(w, "data: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_%s\",\"status\":\"completed\",\"model\":\"gpt-5.4\",\"output\":[{\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"confirmed-%s\"}]}],\"usage\":{\"input_tokens\":3,\"output_tokens\":1,\"total_tokens\":4}}}\n\n", marker, marker)
 	}))
 	defer upstream.Close()
 	transport := &issue594OfflineInference{t: t, endpoint: strings.TrimPrefix(upstream.URL, "http://")}
@@ -105,7 +105,12 @@ func TestIssue594ReviewRealHTTPSelectionSlotsOutputAndUsage(t *testing.T) {
 	billing := service.NewBillingCacheService(repository.NewBillingCache(redis), users, nil, keyRepo, nil, nil, cfg, nil)
 	t.Cleanup(billing.Stop)
 	deferred := service.NewDeferredService(f.accounts, nil, time.Hour)
-	gateway := service.NewOpenAIGatewayService(f.accounts, nil, repository.NewUsageLogRepository(client, f.db), repository.NewUsageBillingRepository(client, f.db), users, nil, nil, repository.NewGatewayCache(redis), cfg, nil, concurrency, service.NewBillingService(cfg, nil), nil, billing, transport, deferred, nil, nil, nil, nil, nil, nil, nil, service.WithOpenAIAuthConnections(f.svc))
+	prices := service.NewBillingService(cfg, nil)
+	fixturePricing, pricingErr := prices.GetModelPricing("gpt-5.4")
+	require.NoError(t, pricingErr)
+	require.Greater(t, fixturePricing.InputPricePerToken, 0.0)
+	require.Greater(t, fixturePricing.OutputPricePerToken, 0.0)
+	gateway := service.NewOpenAIGatewayService(f.accounts, nil, repository.NewUsageLogRepository(client, f.db), repository.NewUsageBillingRepository(client, f.db), users, nil, nil, repository.NewGatewayCache(redis), cfg, nil, concurrency, prices, nil, billing, transport, deferred, nil, nil, nil, nil, nil, nil, nil, service.WithOpenAIAuthConnections(f.svc))
 	t.Cleanup(gateway.StopOpenAICodexTicketHarvester)
 	t.Cleanup(gateway.CloseOpenAIWSPool)
 	keyService := service.NewAPIKeyService(keyRepo, users, groups, nil, nil, nil, cfg)
@@ -115,7 +120,7 @@ func TestIssue594ReviewRealHTTPSelectionSlotsOutputAndUsage(t *testing.T) {
 	router.POST("/v1/responses", h.Responses)
 	request := func(marker string) *httptest.ResponseRecorder {
 		rec := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "/v1/responses", strings.NewReader(fmt.Sprintf(`{"model":"gpt-4","input":%q,"stream":false}`, marker)))
+		req := httptest.NewRequest(http.MethodPost, "/v1/responses", strings.NewReader(fmt.Sprintf(`{"model":"gpt-5.4","input":%q,"stream":false}`, marker)))
 		req.Header.Set("Authorization", "Bearer "+key.Key)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Session-Id", marker)
@@ -182,6 +187,11 @@ func TestIssue594ReviewRealHTTPSelectionSlotsOutputAndUsage(t *testing.T) {
 	var balance float64
 	require.NoError(t, f.db.QueryRow(`SELECT balance FROM users WHERE id=$1`, user.ID).Scan(&balance))
 	require.Less(t, balance, 1000.0, "actual existing billing must execute")
+	var settledCost float64
+	require.NoError(t, f.db.QueryRow(`SELECT COALESCE(SUM(actual_cost),0) FROM usage_logs WHERE account_id=$1`, f.accountID).Scan(&settledCost))
+	require.Greater(t, settledCost, 0.0)
+	require.InDelta(t, settledCost, 1000-balance, 1e-9, "usage rows and actual balance settlement must agree")
+
 	_, err = f.db.Exec(`UPDATE accounts SET rate_limited_at=NOW(),rate_limit_reset_at=NOW()+INTERVAL '5 minutes' WHERE id=$1`, f.accountID)
 	require.NoError(t, err)
 	denied := request("quota-two")

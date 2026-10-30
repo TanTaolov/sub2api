@@ -42,6 +42,13 @@ type OpenAIAuthConnection struct {
 	CredentialsCiphertext      string     `json:"-"`
 }
 
+// The lease proof is returned by the atomic acquisition, never reconstructed
+// from a later registration snapshot owned by another process.
+type OpenAIAuthConnectionLease struct {
+	Owner string
+	Epoch int64
+}
+
 type OpenAIAuthConnectionRepository interface {
 	BeginAuthConnectionRefresh(context.Context, *OpenAIAuthConnection, string) (bool, error)
 	MarkAuthConnectionRefresh(context.Context, *OpenAIAuthConnection, string) (bool, error)
@@ -55,6 +62,7 @@ type OpenAIAuthConnectionRepository interface {
 	CASAuthConnection(context.Context, *OpenAIAuthConnection, int64) (bool, error)
 	SelectAuthConnection(context.Context, int64, string, int64) (bool, error)
 	AcquireAuthConnectionLease(context.Context, int64, string, string) (bool, error)
+	AcquireAuthConnectionLeaseProof(context.Context, int64, string, string) (*OpenAIAuthConnectionLease, error)
 	ReleaseAuthConnectionLease(context.Context, int64, string, string) error
 }
 
@@ -185,16 +193,19 @@ func (s *OpenAIOAuthReauthService) UpdateAuthConnection(ctx context.Context, acc
 		return nil, infraerrors.BadRequest("OPENAI_CONNECTION_LEGACY_READ_ONLY", "Use the existing account controls for a legacy registration")
 	}
 	if input.Action == "disable" || input.Action == "enable" || input.Action == "unlink" {
-		unlock, lockErr := s.lockAuthConnection(ctx, accountID, id)
+		lease, lockErr := s.lockAuthConnection(ctx, accountID, id)
 		if lockErr != nil {
 			return nil, lockErr
 		}
-		defer unlock()
+		defer lease.release()
 		operationCtx, stopOperation := context.WithTimeout(ctx, 50*time.Second)
 		defer stopOperation()
 		ctx = operationCtx
 		c, err = s.authConnection(ctx, accountID, id)
 		if err != nil {
+			return nil, err
+		}
+		if err = lease.bind(c); err != nil {
 			return nil, err
 		}
 	}

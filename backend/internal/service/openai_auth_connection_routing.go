@@ -219,14 +219,17 @@ func (s *OpenAIGatewayService) prepareAuthConnection(ctx context.Context, c *gin
 // 429 remains account-scoped because entitlement sharing is not independently
 // proven for these registrations.
 func (s *OpenAIOAuthReauthService) FailAuthConnection(ctx context.Context, account *Account, status int) error {
-	unlock, lockErr := s.lockAuthConnection(ctx, account.ID, account.AuthConnectionID)
+	lease, lockErr := s.lockAuthConnection(ctx, account.ID, account.AuthConnectionID)
 	if lockErr != nil {
 		return nil
 	} // A live refresh may already be healing the rejected access token.
-	defer unlock()
+	defer lease.release()
 
 	c, err := s.authConnection(ctx, account.ID, account.AuthConnectionID)
 	if err != nil {
+		return err
+	}
+	if err = lease.bind(c); err != nil {
 		return err
 	}
 	if c.Revision != account.AuthConnectionRevision {

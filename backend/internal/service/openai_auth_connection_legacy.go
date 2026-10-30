@@ -95,8 +95,16 @@ func (s *OpenAIOAuthReauthService) SelectLegacyAuthConnection(ctx context.Contex
 
 func (s *OpenAIOAuthReauthService) RotateConnectionAPIKey(ctx context.Context, accountID int64, id string, revision int64, key string) (*OpenAIAuthConnection, error) {
 	key = strings.TrimSpace(key)
+	lease, err := s.lockAuthConnection(ctx, accountID, id)
+	if err != nil {
+		return nil, err
+	}
+	defer lease.release()
 	c, err := s.authConnection(ctx, accountID, id)
 	if err != nil {
+		return nil, err
+	}
+	if err = lease.bind(c); err != nil {
 		return nil, err
 	}
 	if c.Legacy || c.Kind != "api_key" || len(key) == 0 || len(key) > 16384 {

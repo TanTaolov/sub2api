@@ -139,12 +139,19 @@ func (r *openAIOAuthReauthRepository) SelectAuthConnection(ctx context.Context, 
 }
 
 func (r *openAIOAuthReauthRepository) AcquireAuthConnectionLease(ctx context.Context, accountID int64, id, owner string) (bool, error) {
-	result, err := r.db.ExecContext(ctx, `UPDATE openai_auth_connections SET lease_owner=$3,lease_epoch=lease_epoch+1,lease_until=clock_timestamp()+INTERVAL '60 seconds' WHERE account_id=$1 AND id=$2 AND (lease_until IS NULL OR lease_until<clock_timestamp())`, accountID, id, owner)
-	if err != nil {
-		return false, err
+	proof, err := r.AcquireAuthConnectionLeaseProof(ctx, accountID, id, owner)
+	return proof != nil, err
+}
+func (r *openAIOAuthReauthRepository) AcquireAuthConnectionLeaseProof(ctx context.Context, accountID int64, id, owner string) (*service.OpenAIAuthConnectionLease, error) {
+	proof := &service.OpenAIAuthConnectionLease{Owner: owner}
+	err := r.db.QueryRowContext(ctx, `UPDATE openai_auth_connections SET lease_owner=$3,lease_epoch=lease_epoch+1,lease_until=clock_timestamp()+INTERVAL '60 seconds' WHERE account_id=$1 AND id=$2 AND (lease_until IS NULL OR lease_until<clock_timestamp()) RETURNING lease_epoch`, accountID, id, owner).Scan(&proof.Epoch)
+	if err == sql.ErrNoRows {
+		return nil, nil
 	}
-	n, err := result.RowsAffected()
-	return n == 1, err
+	if err != nil {
+		return nil, err
+	}
+	return proof, nil
 }
 func (r *openAIOAuthReauthRepository) ReleaseAuthConnectionLease(ctx context.Context, accountID int64, id, owner string) error {
 	_, err := r.db.ExecContext(ctx, `UPDATE openai_auth_connections SET lease_owner='',lease_until=NULL WHERE account_id=$1 AND id=$2 AND lease_owner=$3`, accountID, id, owner)
