@@ -4,6 +4,10 @@ package repository_test
 
 import (
 	"context"
+	"encoding/json"
+	"io"
+	"net/http"
+	"strconv"
 	"sync/atomic"
 	"testing"
 
@@ -30,11 +34,31 @@ func (r *takeoverConnectionRepository) ListAuthConnections(ctx context.Context, 
 	return rows, err
 }
 func TestIssue594LeaseTakeoverCannotAdoptAnotherOwnersProof(t *testing.T) {
-	for _, action := range []string{"disable", "unlink", "failure"} {
+	for _, action := range []string{"disable", "unlink", "failure", "refresh", "revoke"} {
 		t.Run(action, func(t *testing.T) {
 			f := newConnectionHTTPFixture(t)
 			ctx := context.Background()
 			c := connectionResponse(t, f.request("POST", "", `{"kind":"api_key","label":"lease takeover","api_key":"synthetic-takeover-key"}`))
+
+			var network atomic.Int32
+			if action == "refresh" {
+				c.Kind = "siwc"
+				c.ClientID = "issued-takeover"
+				c.Subject = "verified-takeover"
+				c.IdentityVerified = true
+				c.Capabilities = []string{"responses"}
+				raw, e := json.Marshal(map[string]any{"_connection_id": c.ID, "_account_id": strconv.FormatInt(f.accountID, 10), "_connection_kind": c.Kind, "_connection_subject": c.Subject, "client_id": c.ClientID, "access_token": "synthetic-expired", "refresh_token": "synthetic-takeover-refresh", "expires_at": "0"})
+				require.NoError(t, e)
+				c.CredentialsCiphertext, e = f.encryptor.Encrypt(string(raw))
+				require.NoError(t, e)
+				changed, e := f.repo.CASAuthConnection(ctx, c, c.Revision)
+				require.NoError(t, e)
+				require.True(t, changed)
+				rows, e := f.repo.ListAuthConnections(ctx, f.accountID)
+				require.NoError(t, e)
+				c = rows[0]
+				repository.Issue594InstallOfflineOAuthTransport(t, func(*http.Request) (*http.Response, error) { network.Add(1); return nil, io.ErrUnexpectedEOF })
+			}
 			base := repository.NewOpenAIOAuthReauthRepository(f.db)
 			wrapper := &takeoverConnectionRepository{OpenAIOAuthReauthRepository: base, OpenAIAuthConnectionRepository: base.(service.OpenAIAuthConnectionRepository)}
 			var ownerA string
@@ -49,11 +73,16 @@ func TestIssue594LeaseTakeoverCannotAdoptAnotherOwnersProof(t *testing.T) {
 			}
 			svc := service.NewOpenAIOAuthReauthService(wrapper, connectionDBReader{f.accounts}, f.accounts.(service.OpenAIOAuthReauthCredentialUpdater), service.NewOpenAIOAuthService(nil, repository.NewOpenAIOAuthClient()), f.encryptor, true, nil, nil)
 			var err error
-			if action == "failure" {
+			if action == "refresh" {
+				_, err = svc.ConnectionAccessToken(ctx, f.accountID, c.ID)
+			} else if action == "revoke" {
+				_, err = svc.RevokeAuthConnection(ctx, f.accountID, c.ID, c.Revision)
+			} else if action == "failure" {
 				err = svc.FailAuthConnection(ctx, &service.Account{ID: f.accountID, AuthConnectionID: c.ID, AuthConnectionRevision: c.Revision}, 401)
 			} else {
 				_, err = svc.UpdateAuthConnection(ctx, f.accountID, c.ID, service.UpdateOpenAIAuthConnectionInput{Action: action, Revision: c.Revision})
 			}
+			require.Zero(t, network.Load(), "a stolen lease snapshot cannot authorize an OAuth network operation")
 			require.True(t, wrapper.done.Load(), "must exercise A lease → expiry → B takeover → A reread")
 			require.Error(t, err, "A cannot commit using owner/epoch obtained from B's snapshot")
 			rows, e := f.repo.ListAuthConnections(ctx, f.accountID)
