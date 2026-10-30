@@ -1,3 +1,4 @@
+import upstreamEntities from './upstreamEntities'
 import profitOps from './profitOps'
 import upstreamOps from './upstreamOps'
 import channelOps from './channelOps'
@@ -30,6 +31,7 @@ import requestTiming from './requestTiming'
 import autoConfig from './autoConfig'
 
 export default {
+  upstreamEntities,
   traffic,
   ipAudit,
   connections,
