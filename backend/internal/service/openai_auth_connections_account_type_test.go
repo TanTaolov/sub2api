@@ -229,3 +229,11 @@ func TestOpenAIConnectionManagementRejectsUnsupportedParents(t *testing.T) {
 		})
 	}
 }
+
+func TestOpenAIConnectionManagementUnavailable(t *testing.T) {
+	s := &OpenAIOAuthReauthService{}
+	_, err := s.ListAuthConnections(context.Background(), 42)
+	require.Equal(t, "OPENAI_CONNECTIONS_UNAVAILABLE", infraerrors.Reason(err))
+	_, err = s.UpdateAuthConnection(context.Background(), 42, "c910c45b-79a0-4367-a1dc-60e12210e199", UpdateOpenAIAuthConnectionInput{Revision: 1, Action: "select"})
+	require.Equal(t, "OPENAI_CONNECTIONS_UNAVAILABLE", infraerrors.Reason(err))
+}

@@ -102,6 +102,9 @@ func (s *OpenAIOAuthReauthService) connectionAccount(ctx context.Context, id int
 // Management accepts only OAuth parents. Keep connectionAccount and the internal
 // readers compatible with persisted API key grants still used by inference.
 func (s *OpenAIOAuthReauthService) managementConnectionAccount(ctx context.Context, id int64) (*Account, error) {
+	if _, err := s.connectionRepository(); err != nil {
+		return nil, err
+	}
 	a, err := s.connectionAccount(ctx, id)
 	if err != nil {
 		return nil, err
