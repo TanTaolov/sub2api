@@ -1,5 +1,5 @@
 export default {
-  "refreshUncertain": "刷新未能安全完成，推理已暂停。请恢复已保存的替换凭据或重新授权此连接；不会重试旧 refresh token。",
+  "refreshUncertain": "刷新未能安全完成，推理已暂停。可用连接可恢复已保存的替换凭据；已停用连接须重新授权或解绑。不会重试旧 refresh token。",
   "recoverRefresh": "恢复已保存的刷新",
   "bpsResponsesOnly": "BPS 连接仅支持 Responses，暂不提供 Chat Completions 和 Messages 桥接。",
   "codexTicketBoundary": "此连接不能使用父账号保存的 ticket 或浏览器会话。需要该会话的模型须使用另行支持的授权。",

@@ -1,5 +1,5 @@
 export default {
-  "refreshUncertain": "Refresh did not finish safely. Inference is paused. Recover a saved replacement or authorize this connection again; its old refresh token will not be retried.",
+  "refreshUncertain": "Refresh did not finish safely. Inference is paused. An active connection can recover a saved replacement; a disabled connection requires reauthorization or unlinking. Its old refresh token will not be retried.",
   "recoverRefresh": "Recover saved refresh",
   "bpsResponsesOnly": "BPS connections support Responses only. Chat Completions and Messages bridges are unavailable.",
   "codexTicketBoundary": "This connection cannot use tickets or browser sessions saved on the parent account. Models requiring that session need separate supported authorization.",

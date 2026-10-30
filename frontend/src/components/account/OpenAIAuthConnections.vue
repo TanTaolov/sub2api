@@ -34,7 +34,7 @@
         <p v-if="connection.legacy" class="input-hint">{{ t('openaiAuth.legacyHint') }}</p>
         <div v-else class="mt-2 flex flex-wrap gap-2">
           <button type="button" class="btn btn-secondary btn-sm" :disabled="busy || connection.status !== 'active' || !connection.capabilities.length || (!!connection.refresh_state && connection.refresh_state !== 'idle')" data-testid="select-connection" @click="mutate(connection, 'select')">{{ t('openaiAuth.select') }}</button>
-          <button v-if="connection.refresh_state && connection.refresh_state !== 'idle'" type="button" class="btn btn-secondary btn-sm" :disabled="busy" @click="mutate(connection, 'recover')">{{ t('openaiAuth.recoverRefresh') }}</button>
+          <button v-if="connection.status === 'active' && connection.refresh_state && connection.refresh_state !== 'idle'" type="button" class="btn btn-secondary btn-sm" :disabled="busy" @click="mutate(connection, 'recover')">{{ t('openaiAuth.recoverRefresh') }}</button>
           <button v-if="connection.kind !== 'api_key'" type="button" class="btn btn-secondary btn-sm" :disabled="busy" @click="authorize(connection)">{{ t('openaiAuth.authorize') }}</button>
           <button v-else type="button" class="btn btn-secondary btn-sm" :disabled="busy" @click="rotation = connection; apiKey = ''">{{ t('openaiAuth.rotate') }}</button>
           <button v-if="connection.status === 'active'" type="button" class="btn btn-secondary btn-sm" :disabled="busy" @click="mutate(connection, 'disable')">{{ t('openaiAuth.disable') }}</button>
