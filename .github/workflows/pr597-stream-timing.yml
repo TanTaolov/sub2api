@@ -3,23 +3,27 @@ name: PR597 dedicated streaming timing regression
 on:
   pull_request:
     branches: [production]
+  push:
+    branches: [ci/pr597-stream-timing-evidence]
 
 permissions:
   contents: read
 
 concurrency:
-  group: pr597-stream-timing-${{ github.event.pull_request.number }}
+  group: pr597-stream-timing-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
   regression:
-    if: github.event.pull_request.number == 597 && github.head_ref == 'codex/stream-stage-timing'
+    if: >-
+      (github.event_name == 'pull_request' && github.event.pull_request.number == 597 && github.head_ref == 'codex/stream-stage-timing') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/ci/pr597-stream-timing-evidence')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - uses: actions/setup-go@v6
         with:
@@ -53,7 +57,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: pr597-stream-timing-${{ github.event.pull_request.head.sha }}
+          name: pr597-stream-timing-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             ${{ runner.temp }}/pr597-red.jsonl
             ${{ runner.temp }}/pr597-red.stderr.log
