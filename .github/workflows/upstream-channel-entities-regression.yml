@@ -47,7 +47,7 @@ jobs:
           git fetch --no-tags --depth=1 origin "$PROFIT_COHORT_OLD_HEAD"
           old_tree="$RUNNER_TEMP/profit-cohort-old"
           mkdir "$old_tree"
-          git archive "$PROFIT_COHORT_OLD_HEAD" | tar -x -C "$old_tree"
+          git -C .. archive "$PROFIT_COHORT_OLD_HEAD" | tar -x -C "$old_tree"
           regression=internal/repository/profit_operations_cohort_integration_test.go
           test ! -e "$old_tree/backend/$regression"
           cp "$regression" "$old_tree/backend/$regression"
@@ -68,9 +68,12 @@ jobs:
           set -e
           cat "$RUNNER_TEMP/entity-cohort-red.log"
           test "$result" -ne 0
+          if grep -Eq '\[build failed\]|\[setup failed\]|no tests to run|panic:|--- SKIP:' "$RUNNER_TEMP/entity-cohort-red.log"; then exit 1; fi
           grep -q 'missing-account drill-down must exclude configured accounts outside the selected cohort' "$RUNNER_TEMP/entity-cohort-red.log"
           grep -q 'FAIL: TestProfitOperationsMixedCohortMissingAccountDrilldown' "$RUNNER_TEMP/entity-cohort-red.log"
-          go test -tags=integration ./internal/repository -run '^TestProfitOperationsMixedCohortMissingAccountDrilldown$' -count=1 -v | tee "$RUNNER_TEMP/entity-cohort-green.log"
+          go test -tags=integration ./internal/repository -run '^TestProfitOperationsMixedCohortMissingAccountDrilldown$' -count=1 -v 2>&1 | tee "$RUNNER_TEMP/entity-cohort-green.log"
+          grep -q '^--- PASS: TestProfitOperationsMixedCohortMissingAccountDrilldown' "$RUNNER_TEMP/entity-cohort-green.log"
+          if grep -Eq 'no tests to run|--- SKIP:' "$RUNNER_TEMP/entity-cohort-green.log"; then exit 1; fi
       - name: DTO, URL identity and actual admin route authorization
         working-directory: backend
         run: go test -tags=unit ./internal/service ./internal/handler/admin ./internal/server/routes -run '^Test(UpstreamChannel|ProfitOperations|ExplicitChannelProfitFilter)' -count=1 -v
@@ -147,7 +150,7 @@ jobs:
           version: 9
       - uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm --dir frontend install --frozen-lockfile

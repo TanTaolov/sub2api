@@ -8,8 +8,10 @@
 - [x] 修复为 LEFT JOIN 完整 accounts_config 后分别筛选真正 missing 和选中 cohort，不改收入/成本公式。
 - [x] 专属 CI 保留旧断言与变异回归，并新增精确旧 head 仅叠加新测试的 RED、新 head GREEN，上传日志及 run/job/event/SHA provenance。
 - [x] 普通 merge origin/production @ `76b54ea02b3cd3ed8dbfb8865d1aa46c19799a5a`；PROGRESS 保留双方完整内容。账号仓储静态复核：保留 production 的 Codex snapshot 事务/顺序处理及本 PR 的初始实体绑定事务，不 rebase/force push。
-- [ ] 提交并普通 push 原分支；取得新 head 的 pull_request 事件 CI，不能以 push/dispatch 替代；如需触发 ready_for_review 可标 ready，仍禁止合并 PR。
+- [x] 提交并普通 push 原分支，普通 merge 后 GitHub 已恢复 pull_request 事件 CI；保持 Draft，不需要 ready_for_review，仍禁止合并 PR。当前 head 的最终绿色另列下项验收。
 - [ ] filter=all、全部当前 head 实际 raw 日志与 RED/GREEN provenance 复核后交 Hermes/父级独立审查。
+- 首轮 `a9ca7fd36`：RED 导出路径错误（backend 工作目录下 git archive 子树），未执行测试，不能称 RED；已改从仓库根导出精确旧树并加强拒绝 build/setup/skip 的证据检查。
+- 首轮安全 CI 真实失败：GHSA-83rm-6c8r-g728 与 GHSA-qr28-fpjm-wq7f。升级 vue-i18n / compiler 到11.4.16、decode-uri-component到0.5.1；本 PR 活跃前端CI使用 Node22以符合修复库引擎要求；不新增安全豁免。完整组件/语言/构建兼容性仍由新head远端CI验证。本机只更新lockfile（ignore-scripts），不运行全量前端动态。
 - 本机仅静态/gofmt；禁止 Go compile/build/test/run/generate、Docker、全量前端动态。最新产物记录于 `p1-cohort/`，此前最终冻结记录已经失效。本次不改生产账本、usage、路由或凭据。
 
 - Worktree / branch：`sub2api-profit-url-channel-remarks` / `feat/profit-url-channel-remarks`；base `production` @ `08d69a522c79a182fd681ead8fa4d848d9e1554e`。
