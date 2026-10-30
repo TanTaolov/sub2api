@@ -176,6 +176,15 @@ func TestPriorityRecomputeWaitsForFreshReadAfterInflightReader(t *testing.T) {
 		done <- recomputeResponse{result: result, err: err}
 	}()
 
+	// Both the c0c baseline and the repair increment this production counter
+	// under the force-refresh lock. Observe that boundary before releasing the
+	// old reader; goroutine launch alone does not establish that ordering.
+	require.Eventually(t, func() bool {
+		svc.priorityScheduling.mu.Lock()
+		defer svc.priorityScheduling.mu.Unlock()
+		return svc.priorityScheduling.entries[key].recomputeGeneration > 0
+	}, time.Second, time.Millisecond, "recompute must reach its force-refresh boundary before the old reader completes")
+
 	reader.releaseRead(0)
 	select {
 	case call := <-reader.entered:

@@ -338,10 +338,10 @@ function scheduleHistoryRefresh(version: number, delay: number, attempt: number)
   }, delay)
 }
 async function loadLatency() {
-  if (latencyLoading.value) return
-  const version = generation, request = ++latencyRequestGeneration, scope = snapshotScope(snapshot.value)
+  const version = generation, request = ++latencyRequestGeneration, scope = snapshotScope(snapshot.value), minutes = latencyMinutes.value
+  latency.value = null
   latencyLoading.value = true; latencyError.value = ''
-  try { const value = await getPriorityLatency(latencyMinutes.value, 5); if (active(version) && request === latencyRequestGeneration && scope === snapshotScope(snapshot.value) && value.model === snapshot.value?.model && value.group_id === snapshot.value?.group_id) latency.value = value }
+  try { const value = await getPriorityLatency(minutes, 5); if (active(version) && request === latencyRequestGeneration && minutes === latencyMinutes.value && scope === snapshotScope(snapshot.value) && value.model === snapshot.value?.model && value.group_id === snapshot.value?.group_id) latency.value = value }
   catch { if (active(version) && request === latencyRequestGeneration && scope === snapshotScope(snapshot.value)) latencyError.value = t('priorityScheduling.latencyPanel.error') }
   finally { if (active(version) && request === latencyRequestGeneration) latencyLoading.value = false }
 }
@@ -410,7 +410,7 @@ function clearChangedSticky() {
 watch(stickyGroupID, () => {
   stickyRequestGeneration++
   sticky.value = null; stickyError.value = ''; stickyNotice.value = ''; stickyLoading.value = false
-})
+}, { flush: 'sync' })
 watch(latencyMinutes, () => { void loadLatency() })
 watch(() => auth.user ? `${auth.user.id}:${auth.user.role}` : '', () => {
   stopHistoryRefresh(); generation++; draft.value = null; snapshot.value = null

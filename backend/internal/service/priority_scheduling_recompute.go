@@ -73,20 +73,16 @@ func (s *OpenAIGatewayService) RecomputePriorityScheduling(ctx context.Context) 
 	capturedKey := key
 	entry.recomputeGeneration++
 	recomputeGeneration := entry.recomputeGeneration
-	if !entry.refreshing {
-		// Supersede old readers and require a fresh result for this exact input.
-		entry.expires = time.Time{}
-		entry.observed = time.Time{}
-		entry.failure = ""
-		entry.signals = make(map[int64]PrioritySchedulingSignal)
-		entry.generation++
-		entry.attempted = time.Time{}
-	}
+	// Keep successful risk evidence available to routing throughout this refresh.
+	// A reader already launched (including by the before snapshot) cannot satisfy
+	// this request. Its completion makes room for the required subsequent read.
+	requiredReadGeneration := entry.generation + 1
+	entry.requiredReadGeneration = requiredReadGeneration
 	state.mu.Unlock()
 
 	deadline := time.Now().Add(5 * time.Second)
 	for {
-		after := s.prioritySchedulingSnapshot(capturedInput)
+		after, history := s.prioritySchedulingSnapshotWithHistory(capturedInput)
 		if after == nil {
 			return nil, ErrPrioritySchedulingSnapshotUnavailable
 		}
@@ -94,14 +90,18 @@ func (s *OpenAIGatewayService) RecomputePriorityScheduling(ctx context.Context) 
 		current := state.entries[capturedKey]
 		valid := current == entry && current.recomputeGeneration == recomputeGeneration
 		state.mu.Unlock()
-		if !valid {
+		if !valid || history.entry != entry {
 			return nil, ErrPrioritySchedulingSnapshotUnavailable
 		}
-		if after.HistoryError != "" || after.HistoryStatus == "error" || after.HistoryStatus == "unavailable" || after.HistoryStatus == "limited" {
-			return nil, ErrPrioritySchedulingRecomputeIncomplete
-		}
-		if !after.HistoryRefreshing && after.HistoryStatus == "ready" {
-			return &PrioritySchedulingRecomputeResult{Before: before, After: after, Diff: diffPrioritySnapshots(before, after)}, nil
+		// Check the generation captured with this snapshot's signals, rather than
+		// a newer completion that could race with snapshot scoring.
+		if history.completedReadGeneration >= requiredReadGeneration {
+			if after.HistoryError != "" || after.HistoryStatus == "error" || after.HistoryStatus == "unavailable" || after.HistoryStatus == "limited" {
+				return nil, ErrPrioritySchedulingRecomputeIncomplete
+			}
+			if !after.HistoryRefreshing && after.HistoryStatus == "ready" {
+				return &PrioritySchedulingRecomputeResult{Before: before, After: after, Diff: diffPrioritySnapshots(before, after)}, nil
+			}
 		}
 		if time.Now().After(deadline) {
 			return nil, ErrPrioritySchedulingRecomputeIncomplete
