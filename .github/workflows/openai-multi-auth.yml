@@ -155,6 +155,14 @@ jobs:
           set -euo pipefail
           go test -race -tags=integration ./internal/repository -run '^TestIssue594' -count=1 -v | tee "$RUNNER_TEMP/issue594-integration.log"
           ! grep -E -- '--- SKIP: TestIssue594|no tests to run' "$RUNNER_TEMP/issue594-integration.log"
+      - name: Actual SIWC final send boundary with isolated PostgreSQL
+        working-directory: backend
+        env:
+          CI: 'true'
+        run: |
+          set -euo pipefail
+          go test -race -tags=integration ./internal/service -run '^TestIssue594SIWCFinalEgress' -count=1 -v | tee "$RUNNER_TEMP/issue594-siwc-final-egress.log"
+          ! grep -E -- '--- SKIP: TestIssue594|no tests to run' "$RUNNER_TEMP/issue594-siwc-final-egress.log"
       - uses: actions/upload-artifact@v6
         if: always()
         with:
