@@ -176,7 +176,7 @@ describe('priority scheduling', () => {
     vi.mocked(getPriorityConfig).mockResolvedValue({ ...config, group_ids: [11] })
     vi.mocked(getPriorityLatency).mockResolvedValue({
       at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, bucket_minutes: 5,
-      accounts: [{ account_id: 1, account_name: 'Mock OAuth', samples: 10, p50_ttft_ms: 500, p90_ttft_ms: 1500, p99_ttft_ms: 4000, slow_samples: 1, error_samples: 2, error_rate: 0.1667, buckets: [{ account_id: 1, bucket: '2026-10-30T00:00:00Z', samples: 10, p50_ttft_ms: 500, p90_ttft_ms: 1500, p99_ttft_ms: 4000, slow_samples: 1, error_samples: 0 }] }],
+      accounts: [{ account_id: 1, account_name: 'Mock OAuth', samples: 10, p50_ttft_ms: 500, p90_ttft_ms: 1500, p99_ttft_ms: 4000, selected_ttft_ms: 500, latency_percentile: 50, slow_samples: 1, error_samples: 2, error_rate: 0.1667, buckets: [{ account_id: 1, bucket: '2026-10-30T00:00:00Z', samples: 10, p50_ttft_ms: 500, p90_ttft_ms: 1500, p99_ttft_ms: 4000, selected_ttft_ms: 500, slow_samples: 1, error_samples: 0 }] }],
     })
     vi.mocked(getPriorityStickyBindings).mockResolvedValue({ group_id: 11, total: 3, by_account: [{ account_id: 1, count: 3 }] })
     const wrapper = mount(PrioritySchedulingView); await flushPromises()
@@ -232,7 +232,7 @@ describe('priority scheduling', () => {
 
   it('does not expose sticky cleanup for timed out recomputation', async () => {
     vi.mocked(recomputePriorityScheduling).mockResolvedValue({
-      before: null, after: null, timed_out: true,
+      before: { at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_status: 'ready', history_ready: true, candidates: [] }, after: { at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_status: 'ready', history_ready: true, candidates: [] }, timed_out: true,
       diff: [{ account_id: 1, account_name: 'Mock OAuth', old_rank: 2, new_rank: 1, old_score: 70, new_score: 80, old_weight: 1, new_weight: 2, old_tier: 'insufficient', new_tier: 'eligible', old_p90_ttft_ms: 5000, new_p90_ttft_ms: 1000, old_samples: 5, new_samples: 6, old_error_samples: 1, new_error_samples: 0, changed: true }],
     })
     const wrapper = mount(PrioritySchedulingView); await flushPromises()
@@ -241,11 +241,25 @@ describe('priority scheduling', () => {
     wrapper.unmount()
   })
 
+  it('treats a failed history recompute as an error without a diff or cleanup action', async () => {
+    const failed = { at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_status: 'error' as const, history_error: 'timeout', history_ready: false, candidates: [] }
+    vi.mocked(getPriorityConfig).mockResolvedValue({ ...config, group_ids: [11] })
+    vi.mocked(getPrioritySnapshot).mockResolvedValue(failed)
+    vi.mocked(recomputePriorityScheduling).mockResolvedValue({ before: failed, after: failed, timed_out: false, diff: [{ account_id: 1, account_name: 'Mock OAuth', old_rank: 2, new_rank: 1, old_score: 70, new_score: 80, old_weight: 1, new_weight: 2, old_tier: 'insufficient', new_tier: 'eligible', old_p90_ttft_ms: 5000, new_p90_ttft_ms: 1000, old_samples: 5, new_samples: 6, old_error_samples: 1, new_error_samples: 0, changed: true }] })
+    const wrapper = mount(PrioritySchedulingView); await flushPromises()
+    await wrapper.get('[data-testid="recompute"]').trigger('click'); await flushPromises()
+    expect(wrapper.find('[data-testid="recompute-diff"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="clear-changed-sticky"]').exists()).toBe(false)
+    expect(wrapper.get('[role="alert"]').text()).toContain('priorityScheduling.recompute.error')
+    wrapper.unmount()
+  })
+
   it('clears changed sticky rows in the recompute result scope', async () => {
     vi.mocked(getPriorityConfig).mockResolvedValue({ ...config, group_ids: [11] })
+    vi.mocked(getPrioritySnapshot).mockResolvedValue({ at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_status: 'ready', history_ready: true, candidates: [] })
     vi.mocked(recomputePriorityScheduling).mockResolvedValue({
-      before: { at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_ready: true, candidates: [] },
-      after: { at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_ready: true, candidates: [] },
+      before: { at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_status: 'ready', history_ready: true, candidates: [] },
+      after: { at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_status: 'ready', history_ready: true, candidates: [] },
       timed_out: false,
       diff: [{ account_id: 1, account_name: 'Mock OAuth', old_rank: 2, new_rank: 1, old_score: 70, new_score: 80, old_weight: 1, new_weight: 2, old_tier: 'insufficient', new_tier: 'eligible', old_p90_ttft_ms: 5000, new_p90_ttft_ms: 1000, old_samples: 5, new_samples: 6, old_error_samples: 1, new_error_samples: 0, changed: true }],
     })
@@ -259,8 +273,10 @@ describe('priority scheduling', () => {
 
   it('shows recompute diff and clears changed accounts sticky bindings', async () => {
     vi.mocked(getPriorityConfig).mockResolvedValue({ ...config, group_ids: [11] })
+    vi.mocked(getPrioritySnapshot).mockResolvedValue({ at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_status: 'ready', history_ready: true, candidates: [] })
     vi.mocked(recomputePriorityScheduling).mockResolvedValue({
-      before: null, after: null, timed_out: false,
+      before: { at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_status: 'ready', history_ready: true, candidates: [] },
+      after: { at: '2026-10-30T00:00:00Z', model: 'gpt-test', group_id: 11, mode: 'balanced', history_status: 'ready', history_ready: true, candidates: [] }, timed_out: false,
       diff: [{ account_id: 1, account_name: 'Mock OAuth', old_rank: 2, new_rank: 1, old_score: 70, new_score: 80, old_weight: 1, new_weight: 2, old_tier: 'insufficient', new_tier: 'eligible', old_p90_ttft_ms: 5000, new_p90_ttft_ms: 1000, old_samples: 5, new_samples: 6, old_error_samples: 1, new_error_samples: 0, changed: true }],
     })
     const wrapper = mount(PrioritySchedulingView); await flushPromises()

@@ -30,6 +30,8 @@ type prioritySignalEntry struct {
 	expires, observed, lastUsed, attempted time.Time
 	refreshing                             bool
 	failure                                string
+	generation                             uint64
+	recomputeGeneration                    uint64
 }
 
 type prioritySchedulingState struct {
@@ -170,6 +172,8 @@ func (s *OpenAIGatewayService) priorityHistory(req OpenAIAccountScheduleRequest,
 		state.launchIndex = (state.launchIndex + 1) % len(state.launches)
 		entry.refreshing = true
 		entry.attempted = now
+		entry.generation++
+		generation := entry.generation
 		state.active++
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -193,6 +197,9 @@ func (s *OpenAIGatewayService) priorityHistory(req OpenAIAccountScheduleRequest,
 			state.mu.Lock()
 			defer state.mu.Unlock()
 			state.active--
+			if state.entries[key] != entry || entry.generation != generation {
+				return
+			}
 			entry.refreshing = false
 			if err != nil {
 				// Keep recent evidence, including known risk, through transient failures.

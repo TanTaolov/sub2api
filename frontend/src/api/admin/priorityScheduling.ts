@@ -107,8 +107,12 @@ export interface PriorityLatencyBucket {
   bucket: string
   samples: number
   p50_ttft_ms: number
+  p70_ttft_ms?: number
   p90_ttft_ms: number
+  p95_ttft_ms?: number
   p99_ttft_ms: number
+  mean_ttft_ms?: number
+  selected_ttft_ms?: number
   slow_samples: number
   error_samples: number
 }
@@ -117,8 +121,14 @@ export interface PriorityLatencyAccount {
   account_name: string
   samples: number
   p50_ttft_ms: number
+  p70_ttft_ms?: number
   p90_ttft_ms: number
+  p95_ttft_ms?: number
   p99_ttft_ms: number
+  mean_ttft_ms?: number
+  selected_ttft_ms?: number
+  latency_percentile?: number
+  latency_measurement?: string
   slow_samples: number
   error_samples: number
   error_rate: number
@@ -129,6 +139,8 @@ export interface PriorityLatencySeries {
   model: string
   group_id: number | null
   bucket_minutes: number
+  latency_percentile?: number
+  latency_measurement?: string
   accounts: PriorityLatencyAccount[]
 }
 export interface PrioritySchedulingDiffRow {

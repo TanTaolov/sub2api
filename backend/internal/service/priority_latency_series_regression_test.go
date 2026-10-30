@@ -124,6 +124,7 @@ func TestPriorityRecomputeKeepsCapturedScopeAcrossNewSelection(t *testing.T) {
 		[]openAIAccountCandidateScore{priorityCandidate(77, 1, 1)},
 		time.Now(),
 	)
+	_ = svc.priorityHistory(svc.priorityScheduling.latestInput.request, cfg, svc.priorityScheduling.latestInput.candidates)
 
 	result, err := svc.RecomputePriorityScheduling(context.Background())
 	require.NoError(t, err)

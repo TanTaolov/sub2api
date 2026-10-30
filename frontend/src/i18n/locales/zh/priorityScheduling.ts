@@ -82,14 +82,14 @@ export default {
   recompute: {
     action: '重算对比', running: '重算中…', title: '重算对比（不写回账号）',
     hint: '强制读取最新历史信号，对比最近一次候选池的排名、得分和分流权重。候选池与并发占用仍取自最近一次选号；要应用新排名，请清理对应账号的会话粘性。',
-    clearChanged: '清理变化账号的粘性', timedOut: '历史统计刷新超时，展示的是当前可用结果。', noChange: '重算完成，排名与得分没有变化。', error: '重算失败，请稍后重试。',
+    clearChanged: '清理变化账号的粘性', timedOut: '历史统计刷新超时，展示的是当前可用结果。', noChange: '重算完成，排名与得分没有变化。', error: '重算失败，请稍后重试。', scope: '重算范围：模型 {model}，分组 {group}，变化账号 {accounts}。',
     account: '账号', rank: '排名', score: '得分', weight: '分流权重', tier: '状态', p90: 'P90 首字', errors: '错误'
   },
   sticky: {
     title: '会话粘性', group: '分组', refresh: '统计', clearAll: '全部清除', clear: '清除', count: '绑定数',
     total: '当前 {count} 个会话绑定', empty: '该分组当前没有会话绑定', loadHint: '选择分组并点击“统计”查看当前会话绑定。',
     hint: '只删除 session-hash 绑定，保留 response 续链和 owner 绑定。清除后会话会重新选号，可能造成一次上游缓存冷启动。',
-    confirmAll: '确认清除该分组全部 {count} 个会话粘性？', confirmAccount: '确认清除该账号的 {count} 个会话粘性？', confirmSome: '确认清除所选 {count} 个账号的会话粘性？',
-    cleared: '已清除 {count} 个会话粘性。', error: '读取会话粘性失败。', clearError: '清除会话粘性失败。', invalidGroup: '分组 ID 必须是正整数。'
+    confirmAll: '确认清除分组 {group} 的全部 {count} 个会话粘性？', confirmAccount: '确认清除分组 {group} 中账号 {account} 的 {count} 个会话粘性？', confirmSome: '确认清除分组 {group} 中变化的 {count} 个账号会话粘性？',
+    cleared: '已清除 {count} 个会话粘性。', error: '读取会话粘性失败。', clearError: '清除会话粘性失败。', invalidGroup: '分组 ID 必须是正整数。', scopeAccount: '粘性作用域：分组 {group}；账号 {accounts}。'
   }
 }

@@ -74,14 +74,14 @@ export default {
   recompute: {
     action: 'Recompute diff', running: 'Recomputing…', title: 'Recompute diff (no account write-back)',
     hint: 'Forces a fresh history read and compares the latest candidate pool by rank, score and selection weight. Pool and concurrency remain those observed at the last selection; clear the affected accounts’ sticky sessions to apply the new ranking.',
-    clearChanged: 'Clear changed accounts’ sticky sessions', timedOut: 'History refresh timed out; showing the current available result.', noChange: 'Recomputed with no rank or score changes.', error: 'Recompute failed. Please retry.',
+    clearChanged: 'Clear changed accounts’ sticky sessions', timedOut: 'History refresh timed out; showing the current available result.', noChange: 'Recomputed with no rank or score changes.', error: 'Recompute failed. Please retry.', scope: 'Recompute scope: model {model}, group {group}, changed accounts {accounts}.',
     account: 'Account', rank: 'Rank', score: 'Score', weight: 'Selection weight', tier: 'Status', p90: 'P90 first token', errors: 'Errors'
   },
   sticky: {
     title: 'Session stickiness', group: 'Group', refresh: 'Count', clearAll: 'Clear all', clear: 'Clear', count: 'Bindings',
     total: '{count} session bindings', empty: 'No session bindings in this group', loadHint: 'Choose a group and click Count to load session bindings.',
     hint: 'Deletes session-hash bindings only; response continuation and owner bindings are preserved. Sessions will re-select accounts and may incur one upstream cache cold start.',
-    confirmAll: 'Clear all {count} session bindings in this group?', confirmAccount: 'Clear {count} session bindings for this account?', confirmSome: 'Clear session bindings for the {count} selected accounts?',
-    cleared: 'Cleared {count} session bindings.', error: 'Could not read session bindings.', clearError: 'Could not clear session bindings.', invalidGroup: 'Group ID must be a positive integer.'
+    confirmAll: 'Clear all {count} session bindings in group {group}?', confirmAccount: 'Clear {count} session bindings for account {account} in group {group}?', confirmSome: 'Clear session bindings for the {count} changed accounts in group {group}?',
+    cleared: 'Cleared {count} session bindings.', error: 'Could not read session bindings.', clearError: 'Could not clear session bindings.', invalidGroup: 'Group ID must be a positive integer.', scopeAccount: 'Sticky scope: group {group}; accounts {accounts}.'
   }
 }

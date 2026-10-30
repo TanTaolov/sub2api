@@ -57,6 +57,13 @@ func (s *OpenAIGatewayService) PrioritySchedulingSnapshot() *PrioritySchedulingS
 	if input == nil {
 		return nil
 	}
+	return s.prioritySchedulingSnapshot(input)
+}
+
+func (s *OpenAIGatewayService) prioritySchedulingSnapshot(input *prioritySnapshotInput) *PrioritySchedulingSnapshot {
+	if s == nil || input == nil {
+		return nil
+	}
 	h := priorityHistoryResult{status: "limited"}
 	if !input.limited {
 		h = s.priorityHistory(input.request, input.config, input.candidates)

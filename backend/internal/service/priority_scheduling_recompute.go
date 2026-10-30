@@ -8,6 +8,7 @@ import (
 )
 
 var ErrPrioritySchedulingSnapshotUnavailable = errors.New("priority scheduling snapshot unavailable")
+var ErrPrioritySchedulingRecomputeIncomplete = errors.New("priority scheduling history refresh incomplete")
 
 // PrioritySchedulingDiffRow compares one account's last observed ranking with
 // the ranking produced by a forced history refresh. It is a diagnostic diff:
@@ -49,38 +50,61 @@ func (s *OpenAIGatewayService) RecomputePriorityScheduling(ctx context.Context) 
 	if s == nil {
 		return nil, ErrPrioritySchedulingSnapshotUnavailable
 	}
-	before := s.PrioritySchedulingSnapshot()
-	if before == nil {
-		return nil, ErrPrioritySchedulingSnapshotUnavailable
-	}
 	state := &s.priorityScheduling
 	state.mu.Lock()
 	input := state.latestInput
+	state.mu.Unlock()
 	if input == nil {
-		state.mu.Unlock()
 		return nil, ErrPrioritySchedulingSnapshotUnavailable
 	}
+	// This snapshot uses one immutable owned copy of the last selection input.
+	before := s.prioritySchedulingSnapshot(input)
+	if before == nil {
+		return nil, ErrPrioritySchedulingSnapshotUnavailable
+	}
+	state.mu.Lock()
 	key := priorityHistoryKey(input.request, input.config)
 	entry := state.entries[key]
 	if entry == nil {
 		state.mu.Unlock()
 		return nil, ErrPrioritySchedulingSnapshotUnavailable
 	}
-	// Expire the observation so the next snapshot read starts a history query.
-	// Keep the entry's account set and any in-flight refresh intact.
-	entry.expires = time.Time{}
-	entry.observed = time.Time{}
-	entry.failure = ""
+	capturedInput := input
+	capturedKey := key
+	entry.recomputeGeneration++
+	recomputeGeneration := entry.recomputeGeneration
+	if !entry.refreshing {
+		// Supersede old readers and require a fresh result for this exact input.
+		entry.expires = time.Time{}
+		entry.observed = time.Time{}
+		entry.failure = ""
+		entry.signals = make(map[int64]PrioritySchedulingSignal)
+		entry.generation++
+		entry.attempted = time.Time{}
+	}
 	state.mu.Unlock()
 
 	deadline := time.Now().Add(5 * time.Second)
 	for {
-		after := s.PrioritySchedulingSnapshot()
-		if after != nil && !after.HistoryRefreshing && after.HistoryStatus != "loading" && after.HistoryStatus != "partial" {
+		after := s.prioritySchedulingSnapshot(capturedInput)
+		if after == nil {
+			return nil, ErrPrioritySchedulingSnapshotUnavailable
+		}
+		state.mu.Lock()
+		current := state.entries[capturedKey]
+		valid := current == entry && current.recomputeGeneration == recomputeGeneration
+		state.mu.Unlock()
+		if !valid {
+			return nil, ErrPrioritySchedulingSnapshotUnavailable
+		}
+		if after.HistoryError != "" || after.HistoryStatus == "error" || after.HistoryStatus == "unavailable" || after.HistoryStatus == "limited" {
+			return nil, ErrPrioritySchedulingRecomputeIncomplete
+		}
+		if !after.HistoryRefreshing && after.HistoryStatus == "ready" {
 			return &PrioritySchedulingRecomputeResult{Before: before, After: after, Diff: diffPrioritySnapshots(before, after)}, nil
 		}
 		if time.Now().After(deadline) {
-			return &PrioritySchedulingRecomputeResult{Before: before, After: after, Diff: diffPrioritySnapshots(before, after), TimedOut: true}, nil
+			return nil, ErrPrioritySchedulingRecomputeIncomplete
 		}
 		select {
 		case <-ctx.Done():

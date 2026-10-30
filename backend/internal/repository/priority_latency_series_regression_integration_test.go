@@ -49,7 +49,7 @@ func TestPriorityLatencySeriesUsesConfiguredMeasurementAndPercentile(t *testing.
 	key := mustCreateApiKey(t, client, &service.APIKey{UserID: user.ID, Key: "sk-latency-measurement-fixture", Name: "test"})
 	account := mustCreateAccount(t, client, &service.Account{Name: "measured", Platform: service.PlatformOpenAI})
 	delays := []int{1000, 2000, 10000, 20000, 40000}
-	now := time.Now().UTC()
+	now := time.Now().UTC().Truncate(time.Hour).Add(-time.Hour)
 	for i, delay := range delays {
 		legacy := 99000
 		usage := &service.UsageLog{
