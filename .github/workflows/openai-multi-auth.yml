@@ -246,7 +246,7 @@ jobs:
           cp frontend/package.json frontend/pnpm-lock.yaml "$RUNNER_TEMP/issue594-i18n-candidate/"
           node - <<'JS'
           const fs = require('fs'); const p = `${process.env.RUNNER_TEMP}/issue594-i18n-candidate/package.json`
-          const data = JSON.parse(fs.readFileSync(p)); data.dependencies['vue-i18n'] = '11.4.14'; data.devDependencies['@intlify/message-compiler'] = '11.4.14'; data.pnpm.overrides['decode-uri-component@<0.5.1'] = '0.5.1'; fs.writeFileSync(p, JSON.stringify(data, null, 2) + '\n')
+          const data = JSON.parse(fs.readFileSync(p)); data.pnpm.overrides['decode-uri-component@<0.5.1'] = '0.5.1'; fs.writeFileSync(p, JSON.stringify(data, null, 2) + '\n')
           JS
           pnpm --dir "$RUNNER_TEMP/issue594-i18n-candidate" install --lockfile-only --ignore-scripts
       - uses: actions/upload-artifact@v6

@@ -1,4 +1,5 @@
 import openaiAuth from './openaiAuth'
+import upstreamEntities from './upstreamEntities'
 import profitOps from './profitOps'
 import upstreamOps from './upstreamOps'
 import channelOps from './channelOps'
@@ -32,6 +33,7 @@ import autoConfig from './autoConfig'
 
 export default {
   openaiAuth,
+  upstreamEntities,
   traffic,
   ipAudit,
   connections,
