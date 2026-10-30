@@ -32,6 +32,10 @@ type prioritySignalEntry struct {
 	failure                                string
 	generation                             uint64
 	recomputeGeneration                    uint64
+	readEpoch                              uint64
+	completedReadEpoch                     uint64
+	requiredReadEpoch                      uint64
+	completedReadFailure                   string
 }
 
 type prioritySchedulingState struct {
@@ -154,8 +158,9 @@ func (s *OpenAIGatewayService) priorityHistory(req OpenAIAccountScheduleRequest,
 			break
 		}
 	}
-	due := now.After(entry.expires) || (missing && entry.failure == "" && now.Sub(entry.attempted) >= time.Second)
-	if !entry.refreshing && due && state.active < 2 && now.Sub(state.launches[state.launchIndex]) >= priorityHistoryLaunchWindow {
+	forcedReadDue := entry.requiredReadEpoch > entry.completedReadEpoch
+	due := forcedReadDue || now.After(entry.expires) || (missing && entry.failure == "" && now.Sub(entry.attempted) >= time.Second)
+	if !entry.refreshing && due && state.active < 2 && (forcedReadDue || now.Sub(state.launches[state.launchIndex]) >= priorityHistoryLaunchWindow) {
 		ids := make([]int64, 0, len(entry.accounts))
 		for id := range entry.accounts {
 			ids = append(ids, id)
@@ -168,12 +173,17 @@ func (s *OpenAIGatewayService) priorityHistory(req OpenAIAccountScheduleRequest,
 			group = &value
 		}
 		query := PrioritySchedulingQuery{LatencyPercentile: c.LatencyPercentile, LatencyMeasurement: c.LatencyMeasurement, TargetTTFTMs: c.TargetTTFTMs, AccountIDs: ids, Model: priorityHistoryModel(req), QualityModel: strings.TrimSpace(req.RequestedModel), GroupID: group, UsageUntil: now, UsageSince: now.Add(-time.Duration(c.WindowMinutes) * time.Minute), QualitySince: now.Add(-time.Duration(c.QualityMaxAgeHours) * time.Hour)}
-		state.launches[state.launchIndex] = now
-		state.launchIndex = (state.launchIndex + 1) % len(state.launches)
+		if !forcedReadDue {
+			state.launches[state.launchIndex] = now
+			state.launchIndex = (state.launchIndex + 1) % len(state.launches)
+		}
 		entry.refreshing = true
 		entry.attempted = now
 		entry.generation++
 		generation := entry.generation
+		entry.readEpoch++
+		readEpoch := entry.readEpoch
+		queriedIDs := slices.Clone(ids)
 		state.active++
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -201,21 +211,46 @@ func (s *OpenAIGatewayService) priorityHistory(req OpenAIAccountScheduleRequest,
 				return
 			}
 			entry.refreshing = false
+			entry.completedReadEpoch = readEpoch
 			if err != nil {
-				// Keep recent evidence, including known risk, through transient failures.
+				// Keep the last successful observation and its risk signals on failure.
 				entry.failure = failure
+				entry.completedReadFailure = failure
 				entry.expires = time.Now().Add(priorityHistoryRetry)
 				return
 			}
-			entry.signals = make(map[int64]PrioritySchedulingSignal, len(ids))
-			for _, id := range ids {
+			queried := make(map[int64]struct{}, len(queriedIDs))
+			nextSignals := make(map[int64]PrioritySchedulingSignal, max(len(entry.signals), len(queriedIDs)))
+			missingFromRead := false
+			for _, id := range queriedIDs {
+				queried[id] = struct{}{}
 				if signal, returned := signals[id]; returned {
 					if _, tracked := entry.accounts[id]; tracked {
-						entry.signals[id] = signal
+						nextSignals[id] = signal
+					}
+				} else {
+					missingFromRead = true
+					if prior, exists := entry.signals[id]; exists {
+						nextSignals[id] = prior
 					}
 				}
 			}
+			for id, prior := range entry.signals {
+				if _, wasQueried := queried[id]; !wasQueried {
+					nextSignals[id] = prior
+				}
+			}
+			entry.signals = nextSignals
 			entry.failure = ""
+			entry.completedReadFailure = ""
+			if missingFromRead {
+				// A successful SQL call with omitted rows is still incomplete. Preserve
+				// the previous evidence for those accounts and expose stale/error state.
+				entry.failure = "incomplete"
+				entry.completedReadFailure = "incomplete"
+				entry.expires = time.Now().Add(priorityHistoryRetry)
+				return
+			}
 			entry.windowEnd = query.UsageUntil
 			entry.observed = time.Now()
 			// A completed call may commit just after the previous read. Revisit
