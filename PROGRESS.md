@@ -109,3 +109,14 @@
 - Downloaded remote lock candidate from exact `05f9f40d0`, reviewed the diff: only decode-uri-component override/dependency 0.4.1→0.5.1 plus its integrity. Unrelated lock metadata retained. No local install/build/lint/typecheck or audit exception. UI now offers candidate recovery only for active registrations and explains disabled registrations require explicit reauthorization/unlink.
 
 - Read first new RED raw: disable/unlink/failure/revoke reproduce A adopting B owner. The added refresh subcase revealed a fixture mistake (attempted to change immutable kind from API key to SIWC, so no lease path ran). Corrected it to create SIWC initially; strengthened RED to reject that missing-path failure and require the stale worker's actual network-operation assertion. No assertion weakened.
+
+### Resume remediation evidence and handoff gates
+
+- [x] This call's lease proof is atomically returned and retained across every lifecycle reread; owner/epoch cannot be replaced by a peer's snapshot. SQL owner/epoch/clock-expiry fence remains in force.
+- [x] Actual DB candidate stage→finish failure→service restart recovers once without another rotating POST. Disabled candidate is retained encrypted, recovery/enable refused; reauthorization/unlink is explicit and unlink erases it.
+- [x] Real HTTP fixture now has asserted nonzero model pricing and actual debit/usage-cost agreement. Existing balance assertion retained; following shared quota and account-slot assertions execute.
+- [x] QF1003 fixed; SIWC calls the shared fresh fence at the final send boundary, with real DB disable/revision changes after initial validation.
+- Source-head evidence `03a5afb6c57713c17fbdb2ea88621d8cdbe7e6c3`: dedicated push job `123878636238` GREEN raw read (`green-03a5afb6c-push.log`). HTTP/debit/slots/quota, all five lease-takeover branches, candidate recovery active/disabled branches, and SIWC unchanged/disable/revision all pass; no Issue594 skip.
+- Valid baseline RED raw `lease-siwc-red-03a5afb6c.log` read: dd0a7fb5a fails all five lease takeover branches, including actual stale-worker OAuth network attempt; SIWC unchanged passes and disable/revision wrongly send. RED forbids missing-path/setup/build errors as evidence.
+- Latest full PR/push checks still pending when this source record is committed. Final exact-head checks/statuses/raw go in PR and artifact handoff; historical GREEN never implies the new head or independent source approval.
+- Fixed dd0a7fb5a independent review remains completed/blocked until parent reviews these fixes; no new parent approval is invented. Managed account ticket/Cookie inheritance remains disabled; BPS Responses-only remains explicit. Merge/release/deploy is solely parent's decision, none performed here.
